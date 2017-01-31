@@ -1,8 +1,8 @@
 Distribution Installation
-*************************
+=========================
 
 Introduction
-============
+------------
 
 Installation script will not be able to configure DHCP and FTP servers as well as automatic start
 unless you are running this script on a supported system.
@@ -19,7 +19,7 @@ Supported Systems:
  
 
 Installation Procedure
-======================
+----------------------
 
 To install `gate` package on supported system follow this procedure:
 
@@ -67,5 +67,8 @@ To install `gate` package on supported system follow this procedure:
 
 	`sudo python run_gate.py`
 
+
+Further Information
+-------------------
 Please refer to documentation if you have any additional questions.
 It should be included as part of the distribution. Look under ``/root/gate_data/docs/index.html``
