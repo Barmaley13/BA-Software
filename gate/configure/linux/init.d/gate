@@ -1,0 +1,80 @@
+#!/bin/sh
+# /etc/init.d/gate
+
+### BEGIN INIT INFO
+# Provides:          gate
+# Required-Start:    $remote_fs $syslog $network
+# Required-Stop:     $remote_fs $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Runs gate instance at the boot time
+# Description: Runs gate instance at the boot time
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Gate settings
+DAEMON_NAME=gate
+DAEMON_DIR=/root
+
+DAEMON=$DAEMON_DIR/run_gate.py
+DAEMON_OPTS=""
+RESET_DAEMON=$DAEMON_DIR/reset_gate.py
+
+# According to WiringPi pinout
+RESET_BUTTON_PIN=25
+
+# The process ID of the script when it runs is stored here:
+PIDFILE=/var/run/$DAEMON_NAME.pid
+LOGFILE=/var/log/$DAEMON_NAME.log
+
+. /lib/lsb/init-functions
+
+# test -f $DAEMON || exit 0
+
+case "$1" in
+    start)
+        # Set direction of the Raspberry Pi reset button
+        gpio mode $RESET_BUTTON_PIN in
+        # Read value of the Raspberry Pi reset button
+        if [ $(gpio read $RESET_BUTTON_PIN) = 0 ]; then
+            log_daemon_msg "Resetting $DAEMON_NAME"
+            DAEMON=$RESET_DAEMON
+            DAEMON_OPTS=""
+        else
+            log_daemon_msg "Starting $DAEMON_NAME"
+        fi
+
+        # start-stop-daemon --start --background --pidfile $PIDFILE --make-pidfile --startas $DAEMON -- $DAEMON_OPTS
+        start-stop-daemon --start --background \
+            --pidfile $PIDFILE --make-pidfile --startas /bin/bash \
+            -- -c "exec stdbuf -oL -eL $DAEMON $DAEMON_OPTS > $LOGFILE 2>&1"
+        log_end_msg $?
+        ;;
+
+    stop)
+        log_daemon_msg "Stopping $DAEMON_NAME"
+        start-stop-daemon --stop --pidfile $PIDFILE --retry 10
+        killall run_gate.py
+        killall reset_gate.py
+        log_end_msg $?
+        ;;
+
+    restart)
+        $0 stop
+        sleep 1
+        $0 start
+        ;;
+
+    status)
+        start-stop-daemon --status --pidfile $PIDFILE
+        log_end_msg $?
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 2
+        ;;
+
+esac
+exit 0

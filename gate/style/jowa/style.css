@@ -1,0 +1,268 @@
+@charset "UTF-8";
+
+body
+{
+	text-align:center;
+	background-image:url(/img/Liquid_4.jpg);
+	/*background: #ebebeb;      #c8f2ca*/
+	font-family:Georgia,Serif;
+}
+
+.content
+{
+	position:relative;
+	margin:10px;
+	padding:10px 40px;
+	width:1100px;
+	/*min-height:465px;*/
+	margin-left:auto;
+	margin-right:auto;
+	/*background-image:url(/img/notepad_bg.jpg);*/
+	background-color:#e8ebfa;
+	text-align:left;
+	outline:2px solid black;
+	display:block;
+	clear:both;
+}
+
+.footer
+{
+	position:relative;
+	width:180px;
+	margin-left:auto;
+	margin-right:auto;
+	/*  top: 45px;*/
+	right: -450px;
+	clear:both;
+	text-align:center;
+	/*background-color:gray;*/
+	/*outline:3px dotted pink;*/
+	/*text-shadow: 0 1px 1px rgba(0,0,0, .3);*/
+	padding:8px 10px;
+	margin:10px;
+	border:1px solid #1e0fbe;
+	border-radius:10px;
+	background:#e7e5e5;                 //lightgray
+	box-shadow: 2px 2px 2px #888888;
+}
+
+/* Navigation */
+#nav
+{
+	margin: 0;
+	padding: 7px 6px 0;
+	background: #c0f9ff /*url(/img/gradient.png)*/ repeat-x 0 -110px;
+	line-height: 100%;
+	display: inline-block;
+
+	border-radius: 2em;
+	-webkit-border-radius: 2em;
+	-moz-border-radius: 2em;
+
+	/*-webkit-box-shadow: 0 1px 3px rgba(0,0,0, .4);
+	-moz-box-shadow: 0 1px 3px rgba(0,0,0, .4);*/
+}
+
+/* main level link */
+#nav a 
+{
+	font-weight: bold;
+	color: #1e0fbe;
+	text-decoration: none;
+	display: block;
+	padding:  8px 20px;
+	margin: 0;
+
+	-webkit-border-radius: 1.6em;
+	-moz-border-radius: 1.6em;
+
+	text-shadow: 0 1px 1px rgba(0,0,0, .3);
+	padding:8px 10px;
+	margin:10px;
+	border:1px solid #1e0fbe;
+	border-radius:10px;
+	background:#e7e5e5;                 //lightgray
+	box-shadow: 2px 2px 2px #888888;
+}
+
+#nav a:visited {color:#1e0fbe;}
+
+/* main level link hover */
+#nav .current a
+{
+	background: #8cc63e /*url(/img/gradient.png)*/ repeat-x 0 -40px;
+	color: #ffffff;
+	/*border-top: solid 1px #f8f8f8;*/
+
+	-webkit-box-shadow: 0 1px 1px rgba(0,0,0, .2);
+	-moz-box-shadow: 0 1px 1px rgba(0,0,0, .2);
+	box-shadow: 0 1px 1px rgba(0,0,0, .2);
+
+	/*text-shadow: 0 1px 0 rgba(255,255,255, 1);*/
+}
+
+#nav li:hover > a
+{
+	background: #8cc63e url(/img/gradient.png) repeat-x 0 -40px;
+	color: #444;
+	/*border-top: solid 1px #f8f8f8;*/
+
+	-webkit-box-shadow: 0 1px 1px rgba(0,0,0, .2);
+	-moz-box-shadow: 0 1px 1px rgba(0,0,0, .2);
+	box-shadow: 0 1px 1px rgba(0,0,0, .2);
+
+	text-shadow: 0 1px 0 rgba(255,255,255, 1);
+}
+
+/* level 2 list */
+#nav ul
+{
+	display: none;
+
+	margin: 0;
+	padding: 0;
+	width: 80px;
+	position: absolute;
+	top: 45px;
+	left: 0;
+	background: #ddd url(/img/gradient.png) repeat-x 0 0;
+	border: solid 1px #b4b4b4;
+
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+
+	-webkit-box-shadow: 0 1px 3px rgba(0,0,0, .3);
+	-moz-box-shadow: 0 1px 3px rgba(0,0,0, .3);
+	box-shadow: 0 1px 3px rgba(0,0,0, .3);
+}
+
+#nav ul a
+{
+	text-shadow: 0 1px 0 #fff;
+}
+
+/* sub levels link hover */
+#nav ul li:hover a, #nav li:hover li a
+{
+	background: none;
+	border: none;
+	color: #666;
+
+	box-shadow: none;
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+
+	padding:4px 5px;
+	margin:1px;
+}
+
+#nav ul a:hover
+{
+	background: #0078ff url(/img/gradient.png) repeat-x 0 -100px !important;
+	color: #fff !important;
+
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+
+	text-shadow: 0 1px 1px rgba(0,0,0, .1);
+}
+
+/* rounded corners of first and last link */
+#nav ul li:first-child > a
+{
+	-webkit-border-top-left-radius: 9px;
+	-moz-border-radius-topleft: 9px;
+
+	-webkit-border-top-right-radius: 9px;
+	-moz-border-radius-topright: 9px;
+}
+
+#nav ul li:last-child > a
+{
+	-webkit-border-bottom-left-radius: 9px;
+	-moz-border-radius-bottomleft: 9px;
+
+	-webkit-border-bottom-right-radius: 9px;
+	-moz-border-radius-bottomright: 9px;
+}
+
+#nav li
+{
+	margin: 0 5px;
+	padding: 0 0 8px;
+	float: left;
+	position: relative;
+	list-style: none;
+}
+
+#nav a:hover
+{
+	background: #000;
+	color: #fff;
+}
+
+/* dropdown */
+#nav li:hover > ul
+{
+	display: block;
+	z-index:3;
+}
+
+#nav ul li
+{
+	float: none;
+	margin: 0;
+	padding: 0;
+}
+
+#nav ul a
+{
+	font-weight: normal;
+}
+
+/* level 3+ list */
+#nav ul ul
+{
+	left: 75px;
+	top: 0px;
+}
+
+/* Navigation */
+/* clearfix */
+#nav:after
+{
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}
+
+/*
+html[xmlns] #nav
+{
+	display: block;
+}
+*/
+
+* html #nav
+{
+	height: 1%;
+}
+
+/* Overlay Styles */
+.overlay3
+{
+	position:relative;
+	display: inline-block;
+	margin-left:auto;
+	margin-right:auto;
+	padding:40px;
+	background-color:#e8ebfa;
+	/*background-image: url(/img/notepad_bg.jpg);*/
+	outline:2px solid black;
+	text-align: center;
+	z-index:13;
+}
