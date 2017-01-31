@@ -35,6 +35,9 @@ MANIFEST
 system/swe.py
 system/jowa.py
 
+# Image source files
+source/
+
 # Obsolete copies left for the reference locally
 obsolete/
 obsolete.zip
