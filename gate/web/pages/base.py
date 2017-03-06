@@ -521,13 +521,16 @@ class PagesBase(DatabaseOrderedDict):
 
                 if page_name == 'nodes_subpage':
                     output += "\n<script><!--\n"
-                    output += "function GoBase(){\n"
 
-                    output += "$(\"<form id='" + page_name + "' action='/" + _url + "' method='post'>"
+                    output += "$(document.body).append("
+                    output += "\"<form id='" + page_name + "' action='/" + _url + "' method='post'>"
                     output += "<input type='hidden' name='action_method' value='load_base_page'>"
-                    output += "</form>\").submit();\n"
+                    output += "</form>\");\n"
 
+                    output += "function GoBase(){\n"
+                    output += "$('#" + page_name + "').submit();\n"
                     output += "}\n"
+
                     output += "//--></script>\n"
 
                 if 'sub_pages' in page and not self['login_page']['selected'] and recursion_depth < NAV_DEPTH:
