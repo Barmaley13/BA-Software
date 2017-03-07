@@ -436,8 +436,9 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         if node['presence'] and not self.update_in_progress():
             if node['inactive']:
                 for enable_type in ('live', 'log'):
-                    # Overwrite headers
-                    node.headers.node_enables(enable_type, node, overwrite_headers=True)
+                    if node.headers is not None:
+                        # Overwrite headers
+                        node.headers.node_enables(enable_type, node, overwrite_headers=True)
             else:
                 # Update headers (if needed)
                 update_dict = dict()
