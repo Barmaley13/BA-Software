@@ -17,7 +17,7 @@
 <script><!--
 function validate_user(form)
 {
-    if (form.action_method.value == 'update')
+    if (form.action_method.value == 'update_user')
     {
         if (form.username.value == "" || form.username.value == null) 
         {
