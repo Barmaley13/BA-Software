@@ -6,10 +6,10 @@
 
 
 %### CONSTANTS ###
-%INDEX = None
+%USER_KEY = None
 %COOKIE = pages.get_cookie()
 %if 'index' in COOKIE:
-    %INDEX = COOKIE['index']
+    %USER_KEY = COOKIE['index']
 %end
 
 %## Enable/Disable Strings ##
@@ -35,12 +35,12 @@
         </tr></thead>
     
         %#Table Data
-        %for index, user in enumerate(users):
+        %for user_key, user in users.items():
             <tr>
                 <td>
-                    <input type='radio' name='index' value="{{index}}"
-                    onchange="GetForm('form', {{index}})"
-                    {{checked(INDEX == index)}} >
+                    <input type='radio' name='index' value="{{user_key}}"
+                    onchange="GetForm('form', '{{user_key}}')"
+                    {{checked(USER_KEY == user_key)}} >
                 </td>
                 <td>{{user['name']}}</td>
                 %#<td>{{user['password']}}</td>

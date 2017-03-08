@@ -8,7 +8,7 @@ import copy
 import logging
 
 from ..common import DATABASE_FOLDER
-
+from ..conversions import internal_name
 
 ### CONSTANTS ###
 ## SNMP Responses ##
@@ -36,33 +36,30 @@ class SNMPMixin(object):
         json_dict = {}
         field_name_taken = False
 
-        field_key = address['index']
-        LOGGER.debug('field_key: ' + str(field_key))
-
-        validate = self.validation_string + NAME_FREE
+        validate = NAME_FREE
         if not prospective_name:
-            validate = self.validation_string + NAME_EMPTY
+            validate = NAME_EMPTY
         else:
-            field_name_taken = self.name_taken(field_key, prospective_name)
+            field_name_taken = self.name_taken(address, prospective_name)
             if field_name_taken:
-                validate = self.validation_string + NAME_TAKEN
+                validate = NAME_TAKEN
 
-        json_dict['form'] = validate
+        json_dict['form'] = self.validation_string + validate
         json_dict['field_name_taken'] = int(field_name_taken)
 
         return json_dict
 
     def name_taken(self, field_key, prospective_name):
         """ Checks if SNMP Agent/Command name is taken already. Returns True or False """
-        _name_taken = False
+        output = False
 
         for snmp_key, snmp_item in self.items():
             if field_key != snmp_key:
-                if snmp_item['name'] == prospective_name:
-                    _name_taken = True
+                if internal_name(snmp_item['name']) == internal_name(prospective_name):
+                    output = True
                     break
 
-        return _name_taken
+        return output
 
     ## External(Web) Methods ##
     def get_by_key(self, snmp_key):

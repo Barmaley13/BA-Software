@@ -443,8 +443,11 @@ function GetUserValidation()
     JsonData.kwargs = new Object();
     JsonData.kwargs.username = $("input[name='username']").val();
     JsonData.kwargs.access = $("input[name='total_access']").val();
-    JsonData.kwargs.active = $("input[name='active']").prop('checked');
-    
+    if ($("input[name='active']").length)
+        JsonData.kwargs.active = $("input[name='active']").prop('checked');
+    else
+        JsonData.kwargs.active = true;
+
     RequestForm(JsonData, ParseUserValidation);
 }
 

@@ -3,11 +3,14 @@ Users Web Handler with integrated Edit Methods
 """
 
 ### INCLUDES ###
+import copy
+
 from bottle import request
 
 from gate.strings import VALIDATION_FAIL
+from gate.conversions import internal_name
 
-from gate.web.pages.handlers import WebHandlerList
+from gate.web.pages.handlers import WebHandlerOrderedDict
 
 
 ### CONSTANTS ###
@@ -16,15 +19,15 @@ NO_USER = "No such user in the database!"
 
 
 ### CLASSES ###
-class WebHandler(WebHandlerList):
+class WebHandler(WebHandlerOrderedDict):
     def __init__(self, pages):
         super(WebHandler, self).__init__(pages, pages.users)
 
-    def _remove(self, index):
+    def _remove(self, user_key):
         """ Removing user """
         # Last user that we are about to delete?
         # Last admin that we are about to delete?
-        validate = not(len(self._object) <= 1) and self._object.admin_present(index, 'no_access', False)
+        validate = not(len(self._object) <= 1) and self._object.admin_present(user_key, 'no_access', False)
 
         return_dict = {
             'kwargs': {},
@@ -33,10 +36,10 @@ class WebHandler(WebHandlerList):
 
         if validate:
             # Log out current user (if needed)
-            if self._object.current_user()['name'] == self._object[index]['name']:
+            if self._object.current_user()['name'] == self._object[user_key]['name']:
                 self._object.log_out()
 
-            return_dict = super(WebHandler, self)._remove(index)
+            return_dict = super(WebHandler, self)._remove(user_key)
 
             self._object.save()
         else:
@@ -44,7 +47,7 @@ class WebHandler(WebHandlerList):
 
         return return_dict
 
-    def _update_user(self, index):
+    def _update_user(self, user_key):
         """ Update/Create users """
         return_dict = {
             'kwargs': {},
@@ -52,7 +55,7 @@ class WebHandler(WebHandlerList):
         }
 
         admin = self._object.check_access('admin')
-        if admin or index < len(self._object):
+        if admin or user_key in self._object.keys():
             validate = True
             access = 'no_access'
             active = False
@@ -74,7 +77,7 @@ class WebHandler(WebHandlerList):
                     validate &= (len(value) > 0)
 
                 # Check if username is already in use
-                validate &= not(self._object.user_name_taken(index, username))
+                validate &= not(self._object.name_taken(user_key, username))
 
                 # Make sure both password fields match
                 validate &= (password1 == password2)
@@ -84,7 +87,7 @@ class WebHandler(WebHandlerList):
                 active = bool(request.forms.active)
 
                 # Check if admin exists already
-                validate &= self._object.admin_present(index, access, active)
+                validate &= self._object.admin_present(user_key, access, active)
 
             if validate:
                 # Create save dictionary
@@ -99,9 +102,32 @@ class WebHandler(WebHandlerList):
                     save_dict.update({'access': access, 'active': active})
 
                 # Load local buffers with save dictionary
-                self._object.update_user(index, save_dict)
+                self._object.update_user(user_key, save_dict)
+
+                if user_key in self._object.keys():
+                    self._object[user_key].update(save_dict)
+
+                    if username:
+                        new_user_key = internal_name(username)
+                        if user_key != new_user_key:
+                            default_dict = copy.deepcopy(self._object.new_defaults)
+                            self._object.insert_before(user_key, (new_user_key, default_dict))
+                            self._object[new_user_key].update(save_dict)
+                            del self._object[user_key]
+
+                            # Create new cookie
+                            new_cookie = self._pages.get_cookie()
+                            new_cookie['index'] = new_user_key
+                            return_dict['new_cookie'] = new_cookie
+                            return_dict['save_cookie'] = True
+
+                elif username:
+                    new_user_key = internal_name(username)
+                    self._object[new_user_key] = copy.deepcopy(self._object.new_defaults)
+                    self._object[new_user_key].update(save_dict)
 
                 self._object.save()
+
             else:
                 return_dict['kwargs']['alert'] = VALIDATION_FAIL
         else:
@@ -109,7 +135,7 @@ class WebHandler(WebHandlerList):
 
         return return_dict
 
-    def _toggle_user_bypass(self, index):
+    def _toggle_user_bypass(self, user_key):
         """ Toggles User System Enable """
         return_dict = {
             'kwargs': {},

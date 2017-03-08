@@ -8,7 +8,10 @@ import logging
 
 from bottle import response, request
 
-from ..database import DatabaseList
+from py_knife.ordered_dict import OrderedDict
+
+from ..database import DatabaseOrderedDict
+from ..conversions import internal_name
 
 
 ### CONSTANTS ###
@@ -21,6 +24,7 @@ ACCESS = {
     'admin': 40
 }
 
+## Default Users ##
 # Note: name and password will be overwritten by system settings (refer to system.py)
 DEFAULT_USER = {
     'name': 'admin',
@@ -47,9 +51,10 @@ GUEST_USER = {
 }
 
 ## Strings ##
-USERNAME_FREE = "*Username is available"
-USERNAME_EMPTY = "*Username can not be empty!"
-USERNAME_TAKEN = "*Username is taken already!"
+USER_VALIDATION = '*User'
+NAME_FREE = ' name is available'
+NAME_EMPTY = ' name can not be empty!'
+NAME_TAKEN = ' name is taken already!'
 
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
@@ -88,29 +93,35 @@ def _format_cookies(target, integer_check=True):
     
 
 ### CLASSES ###
-class Users(DatabaseList):
+class Users(DatabaseOrderedDict):
     """ System related class """
     def __init__(self, callbacks, system):
         self._callbacks = callbacks
         self._system_settings = system
 
+        self.validation_string = USER_VALIDATION
+        self.new_defaults = NEW_USER_DEFAULTS
+
         # User Related #
         default_user = copy.deepcopy(DEFAULT_USER)
         default_user.update({'name': system.username, 'password': system.password})
 
+        default_users = OrderedDict()
+        default_users[internal_name(default_user['name'])] = default_user
+        default_users[internal_name(GUEST_USER['name'])] = GUEST_USER
+
         super(Users, self).__init__(
             db_file='users.db',
-            # defaults=[default_user]
-            defaults=[default_user, GUEST_USER]
+            defaults=default_users
         )
-        self._current_user = GUEST_USER
+        self._current_user = self[internal_name(GUEST_USER['name'])]
 
     ## Cookie Methods ##
     def log_in(self, username, password):
         """ Try to login user with provided username and password """
         logged_in = False
         # LOGGER.debug("username given = " + username)
-        for user in iter(self):
+        for user in self.values():
             # LOGGER.debug("server username = " + user['name'])
             if user['name'] == username and user['active']:
                 # LOGGER.debug("password given = " + password)
@@ -131,7 +142,7 @@ class Users(DatabaseList):
 
         else:
             response.delete_cookie('current_user', path='/')
-            self._current_user = GUEST_USER
+            self._current_user = self[internal_name(GUEST_USER['name'])]
 
         self._callbacks['update_user_panel']()
 
@@ -156,16 +167,16 @@ class Users(DatabaseList):
 
         return self._current_user
 
-    def get_user(self, user_index):
+    def get_user(self, user_key):
         """ Fetches particular user """
-        if user_index < len(self):
-            return self[user_index]
+        if user_key in self.keys():
+            return self[user_key]
         else:
-            return copy.deepcopy(NEW_USER_DEFAULTS)
+            return copy.deepcopy(self.new_defaults)
        
     def load_user(self):
         """ Fetches current username from cookies """
-        self._current_user = GUEST_USER
+        self._current_user = self[internal_name(GUEST_USER['name'])]
 
         cookie_password = self._system_settings.cookie_password
         username = request.get_cookie(
@@ -179,14 +190,11 @@ class Users(DatabaseList):
         if username:
             username = username.encode('ascii', 'ignore')
         
-            for user in iter(self):
+            for user in self.values():
                 if user['name'] == username and user['active']:
                     self._current_user = user
                     self._callbacks['update_user_panel']()
                     break
-
-        else:
-            self.log_out()
 
     ## Cookie Data Methods ##   
     def update_current_user_cookies(self, update_dict, pre_format_cookies=False):
@@ -207,31 +215,24 @@ class Users(DatabaseList):
         
         return bool(ACCESS[user['access']] >= ACCESS[access_level])
 
-    def update_user(self, user_index, upd_dict):
+    def update_user(self, user_key, upd_dict):
         """ Update user with regards to current user cookies """
-        # Create user
-        if user_index >= len(self):
-            user_index = -1
-            self.append({})
-            self[user_index].update(NEW_USER_DEFAULTS)
-
         # Update user
-        if self._current_user == self[user_index]:
-            if 'name' in upd_dict:
-                cookie_password = self._system_settings.cookie_password
-                response.set_cookie(
-                    'current_user',
-                    upd_dict['name'],
-                    secret=cookie_password,
-                    path='/'
-                )
+        if user_key in self.keys():
+            if self._current_user == self[user_key]:
+                if 'name' in upd_dict:
+                    cookie_password = self._system_settings.cookie_password
+                    response.set_cookie(
+                        'current_user',
+                        upd_dict['name'],
+                        secret=cookie_password,
+                        path='/'
+                    )
 
-            if 'access' in upd_dict:
-                self._current_user['access'] = upd_dict['access']
-                self._callbacks['update_user_panel']()
-                self._callbacks['select_user_panel']()
-
-        self[user_index].update(upd_dict)
+                if 'access' in upd_dict:
+                    self._current_user['access'] = upd_dict['access']
+                    self._callbacks['update_user_panel']()
+                    self._callbacks['select_user_panel']()
 
     ## Validation Methods ##
     def user_name_validation(self, address, username, access, active):
@@ -239,43 +240,40 @@ class Users(DatabaseList):
         json_dict = {}
         user_name_taken = False
 
-        user_index = address['index']
-        # LOGGER.debug('user_index: ' + str(user_index))
-
-        validate = USERNAME_FREE
+        validate = NAME_FREE
         if not username:
-            validate = USERNAME_EMPTY
+            validate = NAME_EMPTY
         else:
-            user_name_taken = self.user_name_taken(user_index, username)
+            user_name_taken = self.name_taken(address, username)
             if user_name_taken:
-                validate = USERNAME_TAKEN
+                validate = NAME_TAKEN
 
-        json_dict['form'] = validate
+        json_dict['form'] = self.validation_string + validate
         json_dict['user_name_taken'] = int(user_name_taken)
-        json_dict['admin_present'] = int(self.admin_present(user_index, access, active))
+        json_dict['admin_present'] = int(self.admin_present(address, access, active))
         
         return json_dict
 
-    def user_name_taken(self, user_index, user_name):
+    def name_taken(self, current_user_key, prospective_name):
         """ Checks if username is taken already. Returns True or False """
-        name_taken = False
+        output = False
 
-        for index, user in enumerate(iter(self)):
-            if index != user_index:
-                if user['name'] == user_name:
-                    name_taken = True
+        for user_key, user in self.items():
+            if user_key != current_user_key:
+                if internal_name(user['name']) == internal_name(prospective_name):
+                    output = True
                     break
 
-        return name_taken
+        return output
 
-    def admin_present(self, user_index, new_user_access, new_user_active):
+    def admin_present(self, current_user_key, new_user_access, new_user_active):
         """ Checks if admin is present in the system. Returns True or False """
         present = False
 
-        for index, user in enumerate(iter(self)):
+        for user_key, user in self.items():
             access = user['access']
             active = user['active']
-            if index == user_index:
+            if user_key == current_user_key:
                 access = new_user_access
                 active = new_user_active
 

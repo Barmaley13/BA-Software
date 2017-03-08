@@ -10,14 +10,8 @@
 %### CONSTANTS ###
 %URL = pages.url()
 %USER = users.current_user()
+%USER_KEY = pages.get_cookie()
 
-%# Set index for current user. Just in case
-%INDEX = None
-%for index, user in enumerate(users):
-    %if users.current_user() == user:
-        %INDEX = pages.set_cookie(index)
-    %end
-%end
 
 %### JS ###
 <script><!--
@@ -68,7 +62,7 @@ function validate_user(form)
         %# Action
         <input type='hidden' name='action_method' value='update_user' >
         %# Index, used by validation
-        <input type='hidden' name='index' value='{{INDEX}}' >
+        <input type='hidden' name='index' value='{{USER_KEY}}' >
         %# Access
         <input type='hidden' name='total_access' value="{{USER['access']}}" >
         

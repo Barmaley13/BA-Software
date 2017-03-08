@@ -60,9 +60,7 @@ class WebHandler(WebHandlerOrderedDict):
             if command_key in self._object.keys():
                 self._object[command_key].update(save_dict)
 
-                if command_key == new_command_key:
-                    self._object[command_key].update(save_dict)
-                else:
+                if command_key != new_command_key:
                     self._object.insert_before(command_key, (new_command_key, save_dict))
                     del self._object[command_key]
 

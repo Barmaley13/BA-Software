@@ -11,8 +11,8 @@
 
 %### CONSTANTS ###
 %URL = pages.url()
-%INDEX = pages.get_cookie()['index']
-%USER = users.get_user(INDEX)
+%USER_KEY = pages.get_cookie()['index']
+%USER = users.get_user(USER_KEY)
 
 
 %### JS ###
@@ -32,7 +32,7 @@ function validate_admin_form(form)
             return false;
         }
 %if USER['name'] != GUEST_USER['name']:
-    %if INDEX >= len(users):
+    %if USER_KEY in users.keys():
         else if (form.password1.value == "" || form.password1.value == null)
         {
             alert("Password can not be empty!");
@@ -69,19 +69,6 @@ function validate_admin_form(form)
             return false;
         }
     }
-    %"""
-    else
-    {   
-        %# Do nothing cases
-        var up_validation = (form.action_method.value == 'up' && form.index.value > 0);
-        var down_validation = (form.action_method.value == 'down' && form.index.value < ($("input:radio[name='index']").length - 1));
-        
-        if (!up_validation && !down_validation)
-        {
-            return false;
-        }
-    }
-    %"""
 
     %# Test that JS works properly
     %# alert('Success!')
@@ -127,7 +114,7 @@ function Permissions(access)
 %### HTML ###
 <form action='/{{URL}}' onsubmit='return validate_admin_form(this)' method='post' ><fieldset>
     
-    %if INDEX < len(users):
+    %if USER_KEY in users.keys():
         <legend><h3>User Update</h3></legend>
         %if users.current_user() == USER:
             <p class="current_user" ><small>{{USER_WARNING}}</small></p>
@@ -137,7 +124,7 @@ function Permissions(access)
     %end
 
     <input type='hidden' name='action_method' value='update_user' >
-    <input type='hidden' name='index' value='{{INDEX}}' >
+    <input type='hidden' name='index' value='{{USER_KEY}}' >
 
     %# Access
     <input type='hidden' name='total_access' value="{{USER['access']}}" >
@@ -179,11 +166,12 @@ function Permissions(access)
     
     %## BUTTONS ##
     <p>
-        %if INDEX < len(users):
+        %if USER_KEY in users.keys():
+            %user_index = users.keys().index(USER_KEY)
             %# Up, Down, Remove
             <span class="float_left">
-                <input type='button' value='Up' onclick="SubmitAction('admin', 'up')" {{disabled(INDEX == 0)}} >
-                <input type='button' value='Down' onclick="SubmitAction('admin', 'down')" {{disabled(INDEX == len(users)-1)}} >
+                <input type='button' value='Up' onclick="SubmitAction('admin', 'up')" {{disabled(user_index == 0)}} >
+                <input type='button' value='Down' onclick="SubmitAction('admin', 'down')" {{disabled(user_index == len(users)-1)}} >
                 <input type='button' value='Remove' onclick="SubmitAction('admin', 'remove')" {{disabled(users.current_user() == USER or USER['name'] == GUEST_USER['name'])}} >
             </span>
             %# Save, Cancel Buttons

@@ -269,7 +269,12 @@ class WebPages(PagesJsonData):
     # TODO: Might want to combine those subroutines
     def __validation(self, **kwargs):
         """ Validate provided username or group name """
-        address = self.get_cookie()
+        cookie = self.get_cookie()
+        if type(cookie) is dict and 'index' in cookie:
+            address = cookie['index']
+        else:
+            address = cookie
+
         validation_routine = self.users.user_name_validation
 
         _url = self.url()
