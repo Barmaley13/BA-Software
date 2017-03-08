@@ -185,6 +185,9 @@ class Users(DatabaseList):
                     self._callbacks['update_user_panel']()
                     break
 
+        else:
+            self.log_out()
+
     ## Cookie Data Methods ##   
     def update_current_user_cookies(self, update_dict, pre_format_cookies=False):
         """ Updates current user cookies """
