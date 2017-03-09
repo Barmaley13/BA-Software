@@ -32,7 +32,7 @@ function validate_admin_form(form)
             return false;
         }
 %if USER['name'] != GUEST_USER['name']:
-    %if USER_KEY in users.keys():
+    %if USER_KEY not in users.keys():
         else if (form.password1.value == "" || form.password1.value == null)
         {
             alert("Password can not be empty!");
@@ -68,6 +68,11 @@ function validate_admin_form(form)
             alert("System must have at least one admin!");
             return false;
         }
+    }
+
+    if (form.password1.value == "" || form.password1.value == null)
+    {
+        alert("System will keep your old password!")
     }
 
     %# Test that JS works properly

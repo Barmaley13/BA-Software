@@ -33,19 +33,21 @@ function validate_user(form)
             form.password1.focus();
             return false;
         }
-        else
+        else if (user_name_taken == true)
         {
-            if (user_name_taken == true)
-            {
-                alert("This username is taken already!");
-                form.username.focus();
-                return false;
-            }
-            if (admin_present == false)
-            {
-                alert("System must have at least one admin!");
-                return false;
-            }      
+            alert("This username is taken already!");
+            form.username.focus();
+            return false;
+        }
+        else if (admin_present == false)
+        {
+            alert("System must have at least one admin!");
+            return false;
+        }
+
+        if (form.password1.value == "" || form.password1.value == null)
+        {
+            alert("System will keep your old password!")
         }
     }
 
