@@ -60,6 +60,12 @@ function validate_admin_form(form)
             alert("System must have at least one admin!");
             return false;
         }
+
+        if (form.password1.value == "" || form.password1.value == null)
+        {
+            alert("System will keep your old password!")
+        }
+
     }
     else if (form.action_method.value == 'remove')
     {        
@@ -68,11 +74,6 @@ function validate_admin_form(form)
             alert("System must have at least one admin!");
             return false;
         }
-    }
-
-    if (form.password1.value == "" || form.password1.value == null)
-    {
-        alert("System will keep your old password!")
     }
 
     %# Test that JS works properly

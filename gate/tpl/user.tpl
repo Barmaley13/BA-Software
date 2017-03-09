@@ -49,6 +49,7 @@ function validate_user(form)
         {
             alert("System will keep your old password!")
         }
+
     }
 
     %# Test that JS works properly
