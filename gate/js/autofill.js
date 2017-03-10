@@ -63,9 +63,8 @@ function AutoTime(automatic_update)
         {
             $("input[name='" + DateTimeArray[i] + "']").attr("disabled", BrowserTimeEnable);
         }
-    
-        // Time Zone Offset in seconds
-        $("[name='timezone']").val(CurrentDate.getTimezoneOffset()*60);
+        $("select[name='timezone']").attr("disabled", BrowserTimeEnable);
+
         if (BrowserTimeEnable || automatic_update === undefined)
         {
             $("input[name='year']").val(CurrentDate.getFullYear());
@@ -74,6 +73,7 @@ function AutoTime(automatic_update)
             $("input[name='hours']").val(CurrentDate.getHours());
             $("input[name='minutes']").val(CurrentDate.getMinutes());
             $("input[name='seconds']").val(CurrentDate.getSeconds());
+            $("select[name='timezone']").val(CurrentDate.getTimezoneOffset()*60);
         }
     }
     else
@@ -81,7 +81,6 @@ function AutoTime(automatic_update)
         HideForm('SystemTime');
         $("input[name='browser_time'][value='1']").prop('checked', true);
         $("[name='time']").val(null);
-        $("[name='timezone']").val(null);
     }
 }
 
@@ -94,8 +93,7 @@ function UpdateTime()
     NewDate.setHours($("input[name='hours']").val());
     NewDate.setMinutes($("input[name='minutes']").val());
     NewDate.setSeconds($("input[name='seconds']").val());
-    $("[name='time']").val(NewDate.getTime()/1000);
-    $("[name='timezone']").val(NewDate.getTimezoneOffset()*60);
+    $("[name='time']").val(NewDate.getTime()/1000 - NewDate.getTimezoneOffset()*60);
 }
 
 function UpdateAddress(prefix)

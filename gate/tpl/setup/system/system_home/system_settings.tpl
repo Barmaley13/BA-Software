@@ -8,7 +8,8 @@
 %from gate.strings import IP_SCHEMES
 %from gate.common import TITLE_MAX_LENGTH
 %from gate.conversions import get_ip_scheme, get_net_addresses
-%from gate.tpl import checked, hidden
+%from gate.tpl import checked, hidden, selected
+%from gate.system import TIMEZONE_DICT
 
 
 %### CONSTANTS ###
@@ -37,6 +38,8 @@ function validate_system_form(form)
     else if(UpdateTimeEnable && BrowserTimeEnable)
     {
         AutoTime();
+        $("[name='browser_time']:checked").prop('checked', false);
+        AutoTime();
     }
     
     %# Test that JS works properly
@@ -52,8 +55,6 @@ function validate_system_form(form)
     <input type='hidden' name='action_method' value='update_system' >
     %# Epoch Time
     <input type='hidden' name='time' value='' >
-    %# Time Zone Offset
-    <input type='hidden' name='timezone' value='' >
     %ip_address, subnet_mask = get_net_addresses()
     %# IP Address
     <input type='hidden' name='ip_address' value="{{ip_address}}" >
@@ -111,6 +112,7 @@ function validate_system_form(form)
                     <th>Hours</th>
                     <th>Minutes</th>
                     <th>Seconds</th>
+                    <th>Timezone</th>
                 </tr></thead>
                 <tr>
                     <td>
@@ -137,16 +139,18 @@ function validate_system_form(form)
                         <input type='number' name='seconds' value="{{time.strftime('%S', time.gmtime(TIME))}}"
                         min='0' max='59' step='1' size='5' onchange='UpdateTime()' disabled >
                     </td>
+                    <td>
+                        <select name='timezone' disabled >
+                        %for timezone_name, timezone_value in TIMEZONE_DICT.items():
+                            <option value='{{timezone_value}}' {{selected(timezone_value == system_settings['timezone'])}} >
+                                {{timezone_name}}
+                            </option>
+                        %end
+                        </select>
+                    </td>
                 </tr>
             </table>
         </span>
-        %"""
-        <p>Timezone:
-            <input type='number' name='timezone' value="{{system_settings['timezone']}}"
-            min='-12' max='14' step='1' size='5' onchange='UpdateTime()' >
-            <small>*Updating timezone will not affect internal timing (System is using UTC)</small>
-        </p>
-        %"""
     %end
     
     %## LOG OPTIONS ##

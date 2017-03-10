@@ -5,7 +5,6 @@ System Settings Web Handler with integrated Edit Methods
 ### INCLUDES ###
 import os
 import time
-import copy
 import zipfile
 import glob
 import logging

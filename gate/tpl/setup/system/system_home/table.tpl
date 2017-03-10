@@ -1,14 +1,19 @@
-
 %### INCLUDES ###
+%import time
+
 %from py_knife import platforms
 
 %from gate.main import system_settings, pages, users
 %from gate.strings import IP_SCHEMES
 %from gate.conversions import get_ip_scheme, get_net_addresses
 %from gate.tpl import checked, OFF_ON, BYTE_ORDER, REGISTER_ORDER
+%from gate.system import TIMEZONE_DICT
 
 
 %### CONSTANTS ###
+%## Strings ##
+%SIGN_DICT = {True: '+', False: '-'}
+
 %SYSTEM_INDEX = 0
 %INDEX = None
 %COOKIE = pages.get_cookie()
@@ -43,7 +48,7 @@
         %end
         
         <th scope='col'>System Time</th>
-        %#<th scope='col'>Timezone</th>
+        <th scope='col'>Timezone</th>
         <th scope='col'>Log Limit</th>
         <th scope='col'>Software</th>
 
@@ -72,7 +77,14 @@
         %end
         
         <td>{{system_settings.local_time()}}</td>
-        %#<td>{{int(system_settings['timezone'])}}</td>
+
+        %timezone = int(system_settings['timezone'])
+        %if timezone in TIMEZONE_DICT.values():
+        <td>{{TIMEZONE_DICT.keys()[TIMEZONE_DICT.values().index(timezone)]}}</td>
+        %else:
+        <td>UTC {{SIGN_DICT[timezone >= 0]}}{{time.strftime('%H:%M', time.gmtime(abs(timezone)))}}</td>
+        %end
+
         <td>{{system_settings['log_limit']}}</td>
         <td>{{system_settings.version}}</td>
     </tr>

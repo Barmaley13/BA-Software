@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 System Related Intricacies
 """
@@ -12,6 +13,7 @@ import logging
 import bottle
 
 from py_knife import platforms, file_system
+from py_knife.ordered_dict import OrderedDict
 
 from gate import __version__
 from gate import configure
@@ -31,7 +33,7 @@ SYSTEM_DEFAULTS = {
     'modbus_byte_order': True,          # False == little_endian, True == big_endian
     'modbus_register_order': False,
     'time_offset': 0.0,
-    'timezone': 0.0,
+    'timezone': time.timezone,
     'log_limit': 100,
     'time_diff': None,                  # Used strictly to perform base timing changes
     'warnings_pop_up_enable': True,
@@ -48,6 +50,47 @@ for importer, module_name, is_package in pkgutil.iter_modules([SYSTEM_FOLDER]):
             handler_module = importer.find_module(module_name).load_module(module_name)
             DEFAULT_SYSTEM_DATA[system_name] = handler_module.SYSTEM_DATA
 
+## Timezones List ##
+TIMEZONE_DICT = OrderedDict()
+TIMEZONE_DICT['UTC-12:00'] = 12*60*60
+TIMEZONE_DICT['UTC-11:00'] = 11*60*60
+TIMEZONE_DICT['UTC-10:00'] = 10*60*60
+TIMEZONE_DICT['UTC-09:30'] = 9.5*60*60
+TIMEZONE_DICT['UTC-09:00'] = 9*60*60
+TIMEZONE_DICT['UTC-08:00'] = 8*60*60
+TIMEZONE_DICT['UTC-07:00'] = 7*60*60
+TIMEZONE_DICT['UTC-06:00'] = 6*60*60
+TIMEZONE_DICT['UTC-05:00'] = 5*60*60
+TIMEZONE_DICT['UTC-04:00'] = 4*60*60
+TIMEZONE_DICT['UTC-03:30'] = 3.5*60*60
+TIMEZONE_DICT['UTC-03:00'] = 3*60*60
+TIMEZONE_DICT['UTC-02:00'] = 2*60*60
+TIMEZONE_DICT['UTC-01:00'] = 1*60*60
+TIMEZONE_DICT['UTC±00:00'] = 0*60*60
+TIMEZONE_DICT['UTC+01:00'] = -1*60*60
+TIMEZONE_DICT['UTC+02:00'] = -2*60*60
+TIMEZONE_DICT['UTC+03:00'] = -3*60*60
+TIMEZONE_DICT['UTC+03:30'] = -3.5*60*60
+TIMEZONE_DICT['UTC+04:00'] = -4*60*60
+TIMEZONE_DICT['UTC+04:30'] = -4.5*60*60
+TIMEZONE_DICT['UTC+05:00'] = -5*60*60
+TIMEZONE_DICT['UTC+05:30'] = -5.5*60*60
+TIMEZONE_DICT['UTC+05:45'] = -5.75*60*60
+TIMEZONE_DICT['UTC+06:00'] = -6*60*60
+TIMEZONE_DICT['UTC+06:30'] = -6.5*60*60
+TIMEZONE_DICT['UTC+07:00'] = -7*60*60
+TIMEZONE_DICT['UTC+08:00'] = -8*60*60
+TIMEZONE_DICT['UTC+08:30'] = -8.5*60*60
+TIMEZONE_DICT['UTC+08:45'] = -8.75*60*60
+TIMEZONE_DICT['UTC+09:00'] = -9*60*60
+TIMEZONE_DICT['UTC+09:30'] = -9.5*60*60
+TIMEZONE_DICT['UTC+10:00'] = -10*60*60
+TIMEZONE_DICT['UTC+10:30'] = -10.5*60*60
+TIMEZONE_DICT['UTC+11:00'] = -11*60*60
+TIMEZONE_DICT['UTC+12:00'] = -12*60*60
+TIMEZONE_DICT['UTC+12:45'] = -12.75*60*60
+TIMEZONE_DICT['UTC+13:00'] = -13*60*60
+TIMEZONE_DICT['UTC+14:00'] = -14*60*60
 
 ## Strings ##
 UTC_TIME1 = "System UTC   Time: "
@@ -55,6 +98,7 @@ UTC_TIME2 = " ("
 UTC_TIME3 = ")"
 LOCAL_TIME = "System Local Time: "
 TIMEZONE = "System Time  Zone: "
+
 
 ## Bottle Templates ##
 _TEMPLATE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -178,11 +222,8 @@ class SystemSettings(DatabaseDict):
         """ Converts Epoch time to UTC time string for the E10 time change """
         if not epoch_time:
             epoch_time = self.time()
-        linux_time = time.strftime(
-            '%Y.%m.%d-%H:%M:%S',
-            time.localtime(epoch_time)
-        )
-        set_time_str = "date -s " + linux_time
+        linux_time = time.strftime('%Y.%m.%d-%H:%M:%S', time.localtime(epoch_time))
+        set_time_str = "date +%Y.%m.%d-%H:%M:%S -s '" + linux_time + "'"
         return set_time_str
 
     def log_file_time(self, epoch_time=None):
@@ -197,7 +238,7 @@ class SystemSettings(DatabaseDict):
         output += str(self.time()) + UTC_TIME3 + '\n'
         output += LOCAL_TIME + self.local_time() + '\n'
         # Display in hours
-        output += TIMEZONE + str(self['timezone'] / 3600) + '\n'
+        output += TIMEZONE + str(TIMEZONE_DICT.keys()[TIMEZONE_DICT.values().index(self['timezone'])]) + '\n'
 
         return output
 
