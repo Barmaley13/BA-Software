@@ -55,6 +55,10 @@ class WebHandler(WebHandlerOrderedDict):
         }
 
         admin = self._object.check_access('admin')
+
+        if not admin:
+            user_key = internal_name(self._object.current_user()['name'])
+
         if admin or user_key in self._object.keys():
             validate = True
             access = 'no_access'
@@ -105,13 +109,14 @@ class WebHandler(WebHandlerOrderedDict):
                 self._object.update_user(user_key, save_dict)
 
                 if user_key in self._object.keys():
+                    # Updating user properties
                     self._object[user_key].update(save_dict)
 
                     if username:
+                        # Renaming user
                         new_user_key = internal_name(username)
                         if user_key != new_user_key:
-                            # FYI: self._object[new_user_key] will provide default value (since it does not exist yet)
-                            default_dict = copy.deepcopy(self._object[new_user_key])
+                            default_dict = copy.deepcopy(self._object[user_key])
                             self._object.insert_before(user_key, (new_user_key, default_dict))
                             self._object[new_user_key].update(save_dict)
                             del self._object[user_key]
@@ -123,6 +128,7 @@ class WebHandler(WebHandlerOrderedDict):
                             return_dict['save_cookie'] = True
 
                 elif username:
+                    # Creating new user
                     new_user_key = internal_name(username)
                     # FYI: self._object[new_user_key] will provide default value (since it does not exist yet)
                     self._object[new_user_key] = copy.deepcopy(self._object[new_user_key])

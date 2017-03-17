@@ -91,10 +91,8 @@ function AdcAlarms()
 
 function CreateNew()
 {
-    var index = $("input:radio[name='index']").length;
-
     $("input:radio[name='index']:checked").prop('checked', false);
-    GetForm('form', index);
+    GetForm('form', null);
 }
 
 // FIELD UNIT FUNCTIONS
