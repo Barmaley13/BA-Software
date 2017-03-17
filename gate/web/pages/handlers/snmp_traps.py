@@ -27,7 +27,7 @@ class WebHandler(WebHandlerOrderedDict):
 
         # Validate
         validate &= (len(trap_name) > 0)
-        validate &= not(self._object.name_taken(trap_key, trap_name))
+        validate &= not(self.name_taken(trap_key, trap_name))
         validate &= validate_oid(trap_oid)
 
         return_dict = {

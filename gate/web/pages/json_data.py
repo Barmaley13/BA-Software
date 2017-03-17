@@ -3,6 +3,7 @@ Everything related to generating JSON data
 """
 
 ### INCLUDES ###
+import os
 import copy
 import logging
 
@@ -12,7 +13,7 @@ from py_knife.file_system import remove_file
 from py_knife.pickle import unpickle_file
 
 from gate import strings
-from gate.snmp import SNMP_RESPONSES_PATH
+from gate.common import SNMP_RESPONSES_PATH
 from gate.conversions import internal_name
 
 from .status_icons import StatusIcons
@@ -71,9 +72,66 @@ class PagesJsonData(StatusIcons):
     based on jquery and javascript
     """
 
+    def __init__(self, **kwargs):
+        super(PagesJsonData, self).__init__(**kwargs)
+
+        ## Initialize Forms ##
+        self._forms = [
+            # Page Specific Forms #
+            # Live Data Form
+            {
+                'template': os.path.join(os.path.join(*self.url('live_data').split('/')), 'table'),
+                'get_handler': (self.__live_table, 'read')
+            },
+            # Logs Data Form
+            {
+                'template': os.path.join(os.path.join(*self.url('logs_data').split('/')), 'table'),
+                'get_handler': (self.__logs_table, 'read')
+            },
+            # Field Unit Update Form
+            {
+                'template': os.path.join(os.path.join(*self.url('nodes_subpage').split('/')), 'field_unit_update'),
+                'get_handler': (None, 'read')
+            },
+            # Sensor Parameters Form
+            {
+                'template': os.path.join(os.path.join(*self.url('nodes_subpage').split('/')), 'sensor_parameters'),
+                'get_handler': (None, 'read')
+            },
+            # Generic Forms(across multiple pages) #
+            # User/Group/Agent/Command Validation Form
+            {
+                'template': 'name_validation',
+                'get_handler': (self.__name_validation, 'user')
+            },
+            # Software Form
+            {
+                'template': 'software_update',
+                'get_handler': (None, 'user')
+            },
+            # Ack Update
+            {
+                'template': 'ack_update',
+                'get_handler': (self.__ack_update, 'read')
+            },
+        ]
+
     ## Private Methods ##
+    # JSON #
+    def _json_for_ajax_update(self):
+        """ Creates JSON dictionary for AJAX update """
+        json_dict = dict()
+
+        json_dict.update(self._status_icons_json())
+
+        if self.manager.system_settings.snmp_enable:
+            json_dict.update(self.__get_snmp_responses())
+
+        return json_dict
+
+    ## Class-Private Methods ##
     # LiveData #
-    def _live_table(self, group_url=None):
+    def __live_table(self, group_url=None):
         """ Generate json for both table and form """
         group = self.platforms.fetch_group_from_url(group_url)
 
@@ -85,7 +143,7 @@ class PagesJsonData(StatusIcons):
         return json_dict
 
     # Logs #
-    def _logs_table(self, group_url=None):
+    def __logs_table(self, group_url=None):
         """ Generate json for both table and form """
         group = self.platforms.fetch_group_from_url(group_url)
 
@@ -96,8 +154,27 @@ class PagesJsonData(StatusIcons):
 
         return json_dict
 
+    # Validation Method #
+    def __name_validation(self, **kwargs):
+        """ Validate provided username or group name """
+        output = {}
+
+        cookie = self.get_cookie()
+        if type(cookie) is dict and 'index' in cookie:
+            address = cookie['index']
+        else:
+            address = cookie
+
+        handler_tuple = self._parse('post_handler')
+        if handler_tuple is not None:
+            post_handler = handler_tuple[0]
+
+            output = post_handler.name_validation(address, **kwargs)
+
+        return output
+
     # Warning Ack Update #
-    def _ack_update(self, warning_key, ack_value):
+    def __ack_update(self, warning_key, ack_value):
         """ Update warning acknowledgements """
         json_dict = dict()
 
@@ -128,19 +205,6 @@ class PagesJsonData(StatusIcons):
 
         return json_dict
 
-    # JSON #
-    def _json_for_ajax_update(self):
-        """ Creates JSON dictionary for AJAX update """
-        json_dict = dict()
-
-        json_dict.update(self._status_icons_json())
-
-        if self.manager.system_settings.snmp_enable:
-            json_dict.update(self.__get_snmp_responses())
-
-        return json_dict
-
-    ## Class-Private Methods ##
     def __live_form(self, group):
         """ Generate json for Live Data page """
         json_dict = {'nodes': []}

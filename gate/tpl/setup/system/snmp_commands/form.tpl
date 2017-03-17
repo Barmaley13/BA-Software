@@ -8,14 +8,14 @@
 %### CONSTANTS ###
 %URL = pages.url()
 %COMMAND_KEY = pages.get_cookie()['index']
-%COMMAND = snmp_commands.get_by_key(COMMAND_KEY)
+%COMMAND = snmp_commands[COMMAND_KEY]
 
 
 %### JS ###
 <script><!--
 
 %# Initialize agent_name_taken variables
-GetSNMPValidation();
+GetNameValidation();
 
 function validate_commands_form(form)
 {
@@ -27,7 +27,7 @@ function validate_commands_form(form)
             form.snmp_name.focus();
             return false;
         }
-        else if (field_name_taken == true)
+        else if (name_taken == true)
         {
             alert("This SNMP Command name is taken already!");
             form.snmp_name.focus();
@@ -85,8 +85,8 @@ function validate_commands_form(form)
     
     <p>Name:
         <input type='text' name='snmp_name'
-        value="{{COMMAND['name']}}" size='20' onkeyup="GetSNMPValidation()" >
-        <small id='validation' ></small>
+        value="{{COMMAND['name']}}" size='20' onkeyup="GetNameValidation()" >
+        <small id='name_validation' ></small>
     </p>
     <p>Type:       
         <select name='type' >

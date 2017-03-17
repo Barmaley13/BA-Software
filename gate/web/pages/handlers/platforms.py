@@ -16,6 +16,7 @@ from py_knife import file_system, pickle
 
 from gate import strings
 from gate.common import UPLOADS_FOLDER, LOGS_FOLDER
+from gate.conversions import internal_name
 from gate.update_interface import WorkerThread
 from gate.sleepy_mesh.platforms import Platform, Group
 
@@ -190,7 +191,7 @@ class WebHandler(WebHandlerBase):
     def _create_group(self, address):
         """ Creates new group """
         group_name = request.forms.group_name.encode('ascii', 'ignore')
-        validate = len(group_name) > 0 and not (self._object.group_name_taken(address, group_name))
+        validate = len(group_name) > 0 and not (self.name_taken(address, group_name))
         new_address = address
 
         return_dict = {
@@ -219,7 +220,7 @@ class WebHandler(WebHandlerBase):
     def _update_group(self, address):
         """ Updates group (group_name) and associated group key """
         group_name = request.forms.group_name.encode('ascii', 'ignore')
-        validate = len(group_name) > 0 and not (self._object.group_name_taken(address, group_name))
+        validate = len(group_name) > 0 and not (self.name_taken(address, group_name))
         new_address = address
 
         return_dict = {
@@ -622,6 +623,20 @@ class WebHandler(WebHandlerBase):
             return_dict['new_cookie'] = self._pages.default_cookie()
 
         return return_dict
+
+    def name_taken(self, address, prospective_name):
+        """ Checks if group_name is taken """
+        group_key = internal_name(prospective_name)
+
+        if 'group' in address:
+            old_group_key = bool(group_key == address['group'])
+        else:
+            old_group_key = False
+
+        group_key_taken = bool(group_key in self._object[address['platform']].groups)
+
+        output = group_key_taken and not old_group_key
+        return output
 
 
 class LogExportThread(WorkerThread):

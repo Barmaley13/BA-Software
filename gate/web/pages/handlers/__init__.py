@@ -14,6 +14,7 @@ import logging
 from bottle import request
 
 from gate.strings import VALIDATION_FAIL
+from gate.conversions import internal_name
 
 
 ### CONSTANTS ###
@@ -23,7 +24,9 @@ REBOOT_DELAY = 3.0          # seconds
 ## Strings ##
 NO_METHOD1 = "Edit method named "
 NO_METHOD2 = " does not exist!"
-
+NAME_FREE = ' name is available'
+NAME_EMPTY = ' name can not be empty!'
+NAME_TAKEN = ' name is taken already!'
 
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
@@ -104,6 +107,38 @@ class WebHandlerBase(object):
             self._manager.bridge.schedule(REBOOT_DELAY, self._manager.uploader.reboot_ack)
 
         return return_dict
+
+    # FIXME: This should belong to JSON (or get_handlers)
+    def name_validation(self, address, prospective_name, **kwargs):
+        """ Validates prospective SNMP Agent/Command Name """
+        json_dict = {}
+        name_taken = False
+
+        validate = NAME_FREE
+        if not prospective_name:
+            validate = NAME_EMPTY
+        else:
+            name_taken = self.name_taken(address, prospective_name)
+            if name_taken:
+                validate = NAME_TAKEN
+
+        json_dict['form'] = self._object.validation_string + validate
+        json_dict['name_taken'] = int(name_taken)
+
+        return json_dict
+
+    # FYI: This is shared by get and post handlers
+    def name_taken(self, address, prospective_name):
+        """ Checks if SNMP Agent/Command name is taken already. Returns True or False """
+        output = False
+
+        for object_key, object_value in self._object.items():
+            if address != object_key:
+                if internal_name(object_value['name']) == internal_name(prospective_name):
+                    output = True
+                    break
+
+        return output
 
 
 class WebHandlerList(WebHandlerBase):

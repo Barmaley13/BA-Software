@@ -12,14 +12,14 @@
 %### CONSTANTS ###
 %URL = pages.url()
 %USER_KEY = pages.get_cookie()['index']
-%USER = users.get_user(USER_KEY)
+%USER = users[USER_KEY]
 
 
 %### JS ###
 <script><!--
 
-%# Initialize user_name_taken and admin_present variables
-GetUserValidation();
+%# Initialize name_taken and admin_present variables
+GetNameValidation();
 
 function validate_admin_form(form)
 {
@@ -49,7 +49,7 @@ function validate_admin_form(form)
             return false;
         }
 %end
-        else if (user_name_taken == true)
+        else if (name_taken == true)
         {
             alert("This username is taken already!");
             form.username.focus();
@@ -112,7 +112,7 @@ function Permissions(access)
     %# console.log(access);
     $("input[name='total_access']").val(access);
 
-    GetUserValidation();
+    GetNameValidation();
 }
 
 //--></script>
@@ -137,8 +137,8 @@ function Permissions(access)
     
     <p>Username:
         <input type='text' name='username'
-        value="{{USER['name']}}" size='10' onkeyup='GetUserValidation()' {{disabled(USER['name'] == GUEST_USER['name'])}} >
-        <small id='validation' ></small>
+        value="{{USER['name']}}" size='10' onkeyup='GetNameValidation()' {{disabled(USER['name'] == GUEST_USER['name'])}} >
+        <small id='name_validation' ></small>
     </p>
     
     %if USER['name'] != GUEST_USER['name']:
@@ -155,7 +155,7 @@ function Permissions(access)
     
     <p>Active:
         <input type='checkbox' name='active' value='1' 
-        onclick='GetUserValidation()' {{checked(USER['active'])}} >
+        onclick='GetNameValidation()' {{checked(USER['active'])}} >
     </p>
     <p>Read:
         <input type='checkbox' name='access' value='read'

@@ -33,7 +33,7 @@ function validate_user(form)
             form.password1.focus();
             return false;
         }
-        else if (user_name_taken == true)
+        else if (name_taken == true)
         {
             alert("This username is taken already!");
             form.username.focus();
@@ -64,15 +64,15 @@ function validate_user(form)
         <legend><h3>Credentials Update</h3></legend>
         %# Action
         <input type='hidden' name='action_method' value='update_user' >
-        %# Index, used by validation
+        %# Index, used by name validation
         <input type='hidden' name='index' value='{{USER_KEY}}' >
         %# Access
         <input type='hidden' name='total_access' value="{{USER['access']}}" >
         
         <p>Username:
             <input type='text' name='username' value="{{USER['name']}}"
-            size='10' onkeyup="GetUserValidation()" {{disabled(USER['name'] == GUEST_USER['name'])}} >
-            <small id='validation' ></small>
+            size='10' onkeyup="GetNameValidation()" {{disabled(USER['name'] == GUEST_USER['name'])}} >
+            <small id='name_validation' ></small>
         </p>
         
         %if USER['name'] != GUEST_USER['name']:

@@ -99,9 +99,6 @@ class Users(DatabaseOrderedDict):
         self._callbacks = callbacks
         self._system_settings = system
 
-        self.validation_string = USER_VALIDATION
-        self.new_defaults = NEW_USER_DEFAULTS
-
         # User Related #
         default_user = copy.deepcopy(DEFAULT_USER)
         default_user.update({'name': system.username, 'password': system.password})
@@ -115,6 +112,10 @@ class Users(DatabaseOrderedDict):
             defaults=default_users
         )
         self._current_user = self[internal_name(GUEST_USER['name'])]
+
+        # Name validation and default User value
+        self.validation_string = USER_VALIDATION
+        self._default_value = NEW_USER_DEFAULTS
 
     ## Cookie Methods ##
     def log_in(self, username, password):
@@ -166,13 +167,6 @@ class Users(DatabaseOrderedDict):
             self._current_user = user
 
         return self._current_user
-
-    def get_user(self, user_key):
-        """ Fetches particular user """
-        if user_key in self.keys():
-            return self[user_key]
-        else:
-            return copy.deepcopy(self.new_defaults)
        
     def load_user(self):
         """ Fetches current username from cookies """
@@ -233,52 +227,3 @@ class Users(DatabaseOrderedDict):
                     self._current_user['access'] = upd_dict['access']
                     self._callbacks['update_user_panel']()
                     self._callbacks['select_user_panel']()
-
-    ## Validation Methods ##
-    def user_name_validation(self, address, username, access, active):
-        """ Validate user ajax request """       
-        json_dict = {}
-        user_name_taken = False
-
-        validate = NAME_FREE
-        if not username:
-            validate = NAME_EMPTY
-        else:
-            user_name_taken = self.name_taken(address, username)
-            if user_name_taken:
-                validate = NAME_TAKEN
-
-        json_dict['form'] = self.validation_string + validate
-        json_dict['user_name_taken'] = int(user_name_taken)
-        json_dict['admin_present'] = int(self.admin_present(address, access, active))
-        
-        return json_dict
-
-    def name_taken(self, current_user_key, prospective_name):
-        """ Checks if username is taken already. Returns True or False """
-        output = False
-
-        for user_key, user in self.items():
-            if user_key != current_user_key:
-                if internal_name(user['name']) == internal_name(prospective_name):
-                    output = True
-                    break
-
-        return output
-
-    def admin_present(self, current_user_key, new_user_access, new_user_active):
-        """ Checks if admin is present in the system. Returns True or False """
-        present = False
-
-        for user_key, user in self.items():
-            access = user['access']
-            active = user['active']
-            if user_key == current_user_key:
-                access = new_user_access
-                active = new_user_active
-
-            if ACCESS[access] >= ACCESS['admin'] and active:
-                present = True
-                break
-
-        return present

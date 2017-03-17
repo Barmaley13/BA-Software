@@ -8,14 +8,14 @@
 %### CONSTANTS ###
 %URL = pages.url()
 %TRAP_KEY = pages.get_cookie()['index']
-%TRAP = snmp_traps.get_by_key(TRAP_KEY)
+%TRAP = snmp_traps[TRAP_KEY]
 
 
 %### JS ###
 <script><!--
 
 %# Initialize agent_name_taken variables
-GetSNMPValidation();
+GetNameValidation();
 
 function validate_traps_form(form)
 {
@@ -27,7 +27,7 @@ function validate_traps_form(form)
             form.snmp_name.focus();
             return false;
         }
-        else if (field_name_taken == true)
+        else if (name_taken == true)
         {
             alert("This SNMP Trap name is taken already!");
             form.snmp_name.focus();
@@ -62,8 +62,8 @@ function validate_traps_form(form)
     
     <p>Name:
         <input type='text' name='snmp_name'
-        value="{{TRAP['name']}}" size='20' onkeyup="GetSNMPValidation()" >
-        <small id='validation' ></small>
+        value="{{TRAP['name']}}" size='20' onkeyup="GetNameValidation()" >
+        <small id='name_validation' ></small>
     </p>
     <p>OID:
         <input type='text' name='oid' value="{{TRAP['oid']}}" size='20' >

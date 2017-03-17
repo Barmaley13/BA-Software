@@ -29,9 +29,7 @@ from gate.conversions import internal_name
 PAGE = "Page "
 
 # Validation #
-GROUP_NAME_FREE = "*Group name is available"
-GROUP_NAME_EMPTY = "*Group name can not be empty!"
-GROUP_NAME_TAKEN = "*Group name is taken already!"
+GROUP_VALIDATION = "*Group"
 
 ## Bottle Templates ##
 _TEMPLATE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -296,6 +294,8 @@ class WebPlatforms(object):
         self._default_group = None
         self._warnings_state = 0
 
+        self.validation_string = GROUP_VALIDATION
+
         ## Overloading Methods ##
         self.select_nodes = self._manager.platforms.select_nodes
         self.delete_node = self._manager.platforms.delete_node
@@ -451,36 +451,6 @@ class WebPlatforms(object):
             target_group = self._default_group
 
         return target_group
-
-    ## Validation Routines ##
-    def group_name_validation(self, address, group_name):
-        """ Validate user ajax request """
-        json_dict = {}
-        group_name_taken = False
-
-        validate = GROUP_NAME_FREE
-        if not group_name:
-            validate = GROUP_NAME_EMPTY
-        else:
-            group_name_taken = self.group_name_taken(address, group_name)
-            if group_name_taken:
-                validate = GROUP_NAME_TAKEN
-
-        json_dict['form'] = validate
-        json_dict['group_name_taken'] = int(group_name_taken)
-
-        return json_dict
-
-    def group_name_taken(self, address, group_name):
-        """ Checks if group_name is taken """
-        group_key = internal_name(group_name)
-
-        if 'group' in address:
-            old_group_key = bool(group_key == address['group'])
-        else:
-            old_group_key = False
-        group_key_taken = bool(group_key in self[address['platform']].groups)
-        return group_key_taken and not old_group_key
 
     ## Web Handler Methods ##
     # Some Generic Handler Methods #

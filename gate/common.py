@@ -55,6 +55,9 @@ MWD = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 IMG_FOLDER = os.path.join(MWD, 'img')
 TPL_FOLDER = os.path.join(MWD, 'tpl')
 
+## SNMP Paths ##
+SNMP_RESPONSES_PATH = os.path.join(DATABASE_FOLDER, 'snmp', '_commands.db')
+
 ## Process Niceness ##
 SIDE_PROCESS_NICENESS = 5         # -20(highest priority) to 20(lowest priority), our main runs at 0
 

@@ -29,7 +29,7 @@ class WebHandler(WebHandlerOrderedDict):
 
         # Validate
         validate &= (len(command_name) > 0)
-        validate &= not(self._object.name_taken(command_key, command_name))
+        validate &= not(self.name_taken(command_key, command_name))
         validate &= validate_oid(command_oid)
 
         if value_type == 'integer' or value_type == 'time ticks':

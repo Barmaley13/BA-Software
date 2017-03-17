@@ -16,10 +16,13 @@ from py_knife.pickle import pickle_file
 from gate.conversions import internal_name, get_net_addresses
 from gate.database import DatabaseEntry, DatabaseDict, ModifiedOrderedDict
 
-from .common import SNMPMixin, SNMP_AGENT, SNMP_RESPONSES_PATH
+from ..common import SNMP_RESPONSES_PATH
 
 
 ### CONSTANTS ###
+## Strings ##
+SNMP_AGENT = '*SNMP Agent'
+
 ## SNMP Constants ##
 SNMP_TIMEOUT = 1.0                  # seconds, has to be multiple of 0.5 due to low timer resolution
 SNMP_RETRIES = 3
@@ -180,19 +183,20 @@ class SNMPAgent(DatabaseDict):
         return _snmp_results(*snmp_results)
 
 
-class SNMPAgents(ModifiedOrderedDict, SNMPMixin):
+class SNMPAgents(ModifiedOrderedDict):
     def __init__(self):
-        self.validation_string = SNMP_AGENT
-
         new_agent_defaults = NEW_AGENT_DEFAULTS
         new_agent_defaults['ip_address'] = get_default_ip()
-        self.new_defaults = new_agent_defaults
 
         super(SNMPAgents, self).__init__(
             'internal_name',
             db_file=os.path.join('snmp', 'agents.db'),
             defaults=DEFAULT_AGENTS
         )
+
+        # Name validation and default SNMP Agent value
+        self.validation_string = SNMP_AGENT
+        self._default_value = new_agent_defaults
 
     def _load_default(self):
         """ Loads main with defaults """

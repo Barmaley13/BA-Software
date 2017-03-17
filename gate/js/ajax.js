@@ -436,75 +436,42 @@ function GetDiagnostics(preserve_old_cookies)
 }
 
 // AJAX USER VALIDATION //
-function GetUserValidation()
+function GetNameValidation()
 {
     var JsonData = new Object();
-    JsonData.url = Path + '/validation';
+    JsonData.url = Path + '/name_validation';
     JsonData.kwargs = new Object();
-    JsonData.kwargs.username = $("input[name='username']").val();
-    JsonData.kwargs.access = $("input[name='total_access']").val();
+
+    if ($("input[name='username']").length)
+        JsonData.kwargs.prospective_name = $("input[name='username']").val();
+    else if ($("input[name='group_name']").length)
+        JsonData.kwargs.prospective_name = $("input[name='group_name']").val();
+    else if ($("input[name='snmp_name']").length)
+        JsonData.kwargs.prospective_name = $("input[name='snmp_name']").val();
+
+    if ($("input[name='total_access']").length)
+        JsonData.kwargs.access = $("input[name='total_access']").val();
+
     if ($("input[name='active']").length)
         JsonData.kwargs.active = $("input[name='active']").prop('checked');
     else
         JsonData.kwargs.active = true;
 
-    RequestForm(JsonData, ParseUserValidation);
+    RequestForm(JsonData, ParseNameValidation);
 }
 
-var user_name_taken = false;
+var name_taken = false;
 var admin_present = false;
-function ParseUserValidation(JsonData)
+function ParseNameValidation(JsonData)
 {
     if (JsonData.buttons !== undefined)
         $("#buttons").html(JsonData.buttons);
     if (JsonData.form !== undefined)
-        $("#validation").html(JsonData.form);
-    if ('user_name_taken' in JsonData)
-        user_name_taken = Boolean(JsonData.user_name_taken);
+        $("#name_validation").html(JsonData.form);
+    if ('name_taken' in JsonData)
+        name_taken = Boolean(JsonData.name_taken);
     if ('admin_present' in JsonData)
         admin_present = Boolean(JsonData.admin_present);
-}
-
-function GetGroupValidation()
-{
-    var JsonData = new Object();
-    JsonData.url = Path + '/validation';
-    JsonData.kwargs = new Object();
-    JsonData.kwargs.group_name = $("input[name='group_name']").val();
-    
-    RequestForm(JsonData, ParseGroupValidation);
-}
-
-var group_name_taken = false;
-function ParseGroupValidation(JsonData)
-{
-    if (JsonData.buttons !== undefined)
-        $("#buttons").html(JsonData.buttons);
-    if (JsonData.form !== undefined)
-        $("#validation").html(JsonData.form);
-    if ('group_name_taken' in JsonData)
-        group_name_taken = Boolean(JsonData.group_name_taken);
-}
-
-function GetSNMPValidation()
-{
-    var JsonData = new Object();
-    JsonData.url = Path + '/validation';
-    JsonData.kwargs = new Object();
-    JsonData.kwargs.prospective_name = $("input[name='snmp_name']").val();
-
-    RequestForm(JsonData, ParseSNMPValidation);
-}
-
-var field_name_taken = false;
-function ParseSNMPValidation(JsonData)
-{
-    if (JsonData.buttons !== undefined)
-        $("#buttons").html(JsonData.buttons);
-    if (JsonData.form !== undefined)
-        $("#validation").html(JsonData.form);
-    if ('field_name_taken' in JsonData)
-        field_name_taken = Boolean(JsonData.field_name_taken);
 }
 
 function UpdateWarningAck(warning_key)

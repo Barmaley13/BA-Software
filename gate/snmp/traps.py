@@ -11,10 +11,11 @@ from py_knife.ordered_dict import OrderedDict
 from ..database import DatabaseOrderedDict
 from ..conversions import internal_name
 
-from .common import SNMPMixin, SNMP_TRAP
-
 
 ### CONSTANTS ###
+## Strings ##
+SNMP_TRAP = '*SNMP Trap'
+
 ## Defaults ##
 # SNMP Traps #
 NEW_TRAP_DEFAULTS = {
@@ -41,12 +42,13 @@ DEFAULT_TRAPS[internal_name(INPUT_2_TRAP['name'])] = copy.deepcopy(INPUT_2_TRAP)
 
 
 ### CLASSES ###
-class SNMPTraps(DatabaseOrderedDict, SNMPMixin):
+class SNMPTraps(DatabaseOrderedDict):
     def __init__(self):
-        self.validation_string = SNMP_TRAP
-        self.new_defaults = NEW_TRAP_DEFAULTS
-
         super(SNMPTraps, self).__init__(
             db_file=os.path.join('snmp', 'traps.db'),
             defaults=DEFAULT_TRAPS
         )
+
+        # Name validation and default SNMP Command value
+        self.validation_string = SNMP_TRAP
+        self._default_value = NEW_TRAP_DEFAULTS

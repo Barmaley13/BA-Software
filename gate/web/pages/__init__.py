@@ -51,47 +51,6 @@ class WebPages(PagesJsonData):
     def __init__(self, **kwargs):
         super(WebPages, self).__init__(**kwargs)
 
-        ## Initialize Forms ##
-        self._forms = [
-            # Page Specific Forms #
-            # Live Data Form
-            {
-                'template': os.path.join(os.path.join(*self.url('live_data').split('/')), 'table'),
-                'get_handler': (self._live_table, 'read')
-            },
-            # Logs Data Form
-            {
-                'template': os.path.join(os.path.join(*self.url('logs_data').split('/')), 'table'),
-                'get_handler': (self._logs_table, 'read')
-            },
-            # Field Unit Update Form
-            {
-                'template': os.path.join(os.path.join(*self.url('nodes_subpage').split('/')), 'field_unit_update'),
-                'get_handler': (None, 'read')
-            },
-            # Sensor Parameters Form
-            {
-                'template': os.path.join(os.path.join(*self.url('nodes_subpage').split('/')), 'sensor_parameters'),
-                'get_handler': (None, 'read')
-            },
-            # Generic Forms(across multiple pages) #
-            # User/Group/Agent/Command Validation Form
-            {
-                'template': 'validation',
-                'get_handler': (self.__validation, 'user')
-            },
-            # Software Form
-            {
-                'template': 'software_update',
-                'get_handler': (None, 'user')
-            },
-            # Ack Update
-            {
-                'template': 'ack_update',
-                'get_handler': (self._ack_update, 'read')
-            },
-        ]
-
         self._data_forms = {'live_data': self._forms[0], 'logs_data': self._forms[1]}
 
         ## Misc ##
@@ -265,30 +224,6 @@ class WebPages(PagesJsonData):
         return output
 
     ## Class-Private Methods ##
-    # Validation Method #
-    # TODO: Might want to combine those subroutines
-    def __validation(self, **kwargs):
-        """ Validate provided username or group name """
-        cookie = self.get_cookie()
-        if type(cookie) is dict and 'index' in cookie:
-            address = cookie['index']
-        else:
-            address = cookie
-
-        validation_routine = self.users.user_name_validation
-
-        _url = self.url()
-        if self.url('nodes_subpage') in _url:
-            validation_routine = self.platforms.group_name_validation
-        elif self.url('snmp_agents') in _url:
-            validation_routine = self.manager.snmp_server.agents.validation
-        elif self.url('snmp_commands') in _url:
-            validation_routine = self.manager.snmp_server.commands.validation
-        elif self.url('snmp_traps') in _url:
-            validation_routine = self.manager.snmp_server.traps.validation
-
-        return validation_routine(address, **kwargs)
-
     # Form Shortcuts Methods #
     def __fetch_form_html(self, form, kwargs):
         get_handler, get_access = form['get_handler']

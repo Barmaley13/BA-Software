@@ -28,7 +28,7 @@
                 form.group_name.focus();
                 return false;
             }
-            else if (group_name_taken == true)
+            else if (name_taken == true)
             {
                 alert("This group name is taken already!");
                 form.group_name.focus();
@@ -67,8 +67,8 @@
             %else:
                 value=""
             %end
-            size='20' onkeyup="GetGroupValidation()" >
-            <small id='validation' ></small>
+            size='20' onkeyup="GetNameValidation()" >
+            <small id='name_validation' ></small>
         </p>
 
         %if GROUP is not None and len(GROUP.nodes):

@@ -27,7 +27,7 @@ class WebHandler(WebHandlerOrderedDict):
         """ Removing user """
         # Last user that we are about to delete?
         # Last admin that we are about to delete?
-        validate = not(len(self._object) <= 1) and self._object.admin_present(user_key, 'no_access', False)
+        validate = not(len(self._object) <= 1) and self.admin_present(user_key, 'no_access', False)
 
         return_dict = {
             'kwargs': {},
@@ -77,7 +77,7 @@ class WebHandler(WebHandlerOrderedDict):
                     validate &= (len(value) > 0)
 
                 # Check if username is already in use
-                validate &= not(self._object.name_taken(user_key, username))
+                validate &= not(self.name_taken(user_key, username))
 
                 # Make sure both password fields match
                 validate &= (password1 == password2)
@@ -87,7 +87,7 @@ class WebHandler(WebHandlerOrderedDict):
                 active = bool(request.forms.active)
 
                 # Check if admin exists already
-                validate &= self._object.admin_present(user_key, access, active)
+                validate &= self.admin_present(user_key, access, active)
 
             if validate:
                 # Create save dictionary
@@ -110,7 +110,8 @@ class WebHandler(WebHandlerOrderedDict):
                     if username:
                         new_user_key = internal_name(username)
                         if user_key != new_user_key:
-                            default_dict = copy.deepcopy(self._object.new_defaults)
+                            # FYI: self._object[new_user_key] will provide default value (since it does not exist yet)
+                            default_dict = copy.deepcopy(self._object[new_user_key])
                             self._object.insert_before(user_key, (new_user_key, default_dict))
                             self._object[new_user_key].update(save_dict)
                             del self._object[user_key]
@@ -123,7 +124,8 @@ class WebHandler(WebHandlerOrderedDict):
 
                 elif username:
                     new_user_key = internal_name(username)
-                    self._object[new_user_key] = copy.deepcopy(self._object.new_defaults)
+                    # FYI: self._object[new_user_key] will provide default value (since it does not exist yet)
+                    self._object[new_user_key] = copy.deepcopy(self._object[new_user_key])
                     self._object[new_user_key].update(save_dict)
 
                 self._object.save()
@@ -151,3 +153,27 @@ class WebHandler(WebHandlerOrderedDict):
             self._manager.system_settings.save()
 
         return return_dict
+
+    def name_validation(self, address, prospective_name, **kwargs):
+        """ Overloading validation for the users """
+        json_dict = super(WebHandler, self).name_validation(address, prospective_name)
+        json_dict['admin_present'] = int(self.admin_present(address, **kwargs))
+
+        return json_dict
+
+    def admin_present(self, current_user_key, access, active):
+        """ Checks if admin is present in the system. Returns True or False """
+        output = False
+
+        for user_key, user in self._object.items():
+            _access = self._object.check_access('admin', user=user)
+            _active = user['active']
+            if user_key == current_user_key:
+                _access = bool(access == 'admin')
+                _active = active
+
+            if _access and _active:
+                output = True
+                break
+
+        return output

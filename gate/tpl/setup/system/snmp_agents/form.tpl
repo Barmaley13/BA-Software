@@ -8,14 +8,15 @@
 %### CONSTANTS ###
 %URL = pages.url()
 %AGENT_KEY = pages.get_cookie()['index']
-%AGENT = snmp_agents.get_by_key(AGENT_KEY)
+%AGENT = snmp_agents[AGENT_KEY]
+
 
 
 %### JS ###
 <script><!--
 
-%# Initialize field_name_taken variables
-GetSNMPValidation();
+%# Initialize name_taken variables
+GetNameValidation();
 
 function validate_agents_form(form)
 {
@@ -27,7 +28,7 @@ function validate_agents_form(form)
             form.snmp_name.focus();
             return false;
         }
-        else if (field_name_taken == true)
+        else if (name_taken == true)
         {
             alert("This SNMP Agent name is taken already!");
             form.snmp_name.focus();
@@ -64,8 +65,8 @@ function validate_agents_form(form)
     
     <p>Name:
         <input type='text' name='snmp_name'
-        value="{{AGENT['name']}}" size='20' onkeyup="GetSNMPValidation()" >
-        <small id='validation' ></small>
+        value="{{AGENT['name']}}" size='20' onkeyup="GetNameValidation()" >
+        <small id='name_validation' ></small>
     </p>
     <p>IP Address:
         %for index in range(4):

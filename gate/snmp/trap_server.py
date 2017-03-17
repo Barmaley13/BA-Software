@@ -21,7 +21,6 @@ from gate.common import DATABASE_FOLDER
 from gate.conversions import get_net_addresses
 from gate.database import DatabaseList
 
-from common import TRAPS_FILE
 from queue import SNMPQueue
 from agents import SNMPAgents
 from commands import SNMPCommands
@@ -29,6 +28,7 @@ from traps import SNMPTraps
 
 
 ### CONSTANTS ###
+TRAPS_FILE = os.path.join('snmp', '_traps.db')
 TRAPS_PATH = os.path.join(DATABASE_FOLDER, TRAPS_FILE)
 
 ## SNMP Server Constants ##

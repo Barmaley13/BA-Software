@@ -30,7 +30,7 @@ class WebHandler(WebHandlerOrderedDict):
 
         # Validate
         validate &= (len(agent_name) > 0)
-        validate &= not(self._object.name_taken(agent_key, agent_name))
+        validate &= not(self.name_taken(agent_key, agent_name))
         validate &= validate_ip_address(ip_address)
 
         return_dict = {

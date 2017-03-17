@@ -11,10 +11,11 @@ from py_knife.ordered_dict import OrderedDict
 from ..database import DatabaseOrderedDict
 from ..conversions import internal_name
 
-from .common import SNMPMixin, SNMP_COMMAND
-
 
 ### CONSTANTS ###
+## Strings ##
+SNMP_COMMAND = '*SNMP Command'
+
 ## Defaults ##
 # SNMP Commands #
 NEW_COMMAND_DEFAULTS = {
@@ -73,12 +74,13 @@ DEFAULT_COMMANDS[internal_name(RELAY_2_OFF['name'])] = copy.deepcopy(RELAY_2_OFF
 
 
 ### CLASSES ###
-class SNMPCommands(DatabaseOrderedDict, SNMPMixin):
+class SNMPCommands(DatabaseOrderedDict):
     def __init__(self):
-        self.validation_string = SNMP_COMMAND
-        self.new_defaults = NEW_COMMAND_DEFAULTS
-
         super(SNMPCommands, self).__init__(
             db_file=os.path.join('snmp', 'commands.db'),
             defaults=DEFAULT_COMMANDS
         )
+
+        # Name validation and default SNMP Command value
+        self.validation_string = SNMP_COMMAND
+        self._default_value = NEW_COMMAND_DEFAULTS
