@@ -4,5 +4,5 @@ Highly flexible & customizable low power Wireless Mesh Network System
 """
 
 __author__ = 'Kirill V. Belyayev'
-__version__ = '03.02.10'
-__license__ = 'Simply Works Electronics LLC'
+__version__ = '03.02.11'
+__license__ = 'GNUv3'

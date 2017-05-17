@@ -29,15 +29,15 @@ To install `gate` package on supported system follow this procedure:
 
     `sydo git clone http://github.com/Barmaley13/BA-Software.git`
 
-3. Unzip distribution::
+3. Unzip distribution:
 
 	`unzip gate-03.01.01.zip`
 
-4. Enter archive directory::
+4. Enter archive directory:
 
 	`cd gate-03.01.01`
 
-5. Modify any install options if needed (*OPTIONAL*)::
+5. Modify any install options if needed (*OPTIONAL*):
 	
 	`dos2unix setup.py`
 	
@@ -53,17 +53,17 @@ To install `gate` package on supported system follow this procedure:
    * ``DEFAULT_CONFIGURE_OPTIONS`` - Modify this python dictionary according to your configure wishes.
      **Internet connection is required.**
 
-6. Install python package using following command::
+6. Install python package using following command:
 
 	`sudo python setup.py install`
 
-7. Clean up(if needed)::
+7. Clean up (if needed):
 
 	`rm gate-03.01.01.zip`
 	
 	`rm -rf gate-03.01.01`
 
-8. Start script by restarting your system or by entering `/root` and running::
+8. Start script by restarting your system or by entering `/root` and running:
 
 	`sudo python run_gate.py`
 
