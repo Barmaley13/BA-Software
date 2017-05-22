@@ -46,7 +46,7 @@
                     
                     %"""
                     %if snmp_dict is not None:
-                        %print 'LOAD: ' + alert_key + " : " + str([snmp_column_name])
+                        %print('LOAD: {} : {}'.format(alert_key, [snmp_column_name]))
                     %end
                     %"""
 
@@ -121,7 +121,7 @@
                     %error_field = alert_key_list[0]
                     %error_code = alert_key_list[1]
                     %snmp_dict = target.error.get_snmp(error_field, error_code)
-                    %# print 'snmp_dict: ' + str(snmp_dict)
+                    %# print('snmp_dict: {}'.format(snmp_dict))
                     %generate_warnings_row(alert_message, '', alert_groups, alert_key, snmp_dict)
                 %end
                 
