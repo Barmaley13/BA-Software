@@ -71,13 +71,13 @@ def update_os(enable_update=True):
     from py_knife.py_install import install_package
 
     if enable_update:
-        print '** Updating operating system **'
+        print('** Updating operating system **')
         __patch_python()
 
         try:
             import pip
         except:
-            print "* Installing setuptools *"
+            print('* Installing setuptools *')
             package_name = 'setuptools-0.6c11'
             zip_path = os.path.join(common.TEMPLATE_FOLDER, package_name + '.zip')
 
@@ -86,14 +86,14 @@ def update_os(enable_update=True):
             if success:
                 install_package(package_name)
 
-                print "* Installing pip *"
+                print('* Installing pip *')
                 os.system('easy_install pip==1.4.1')
 
 
 def configure_ip_utility(enable_configure=True):
     """ Configuring IP utility """
     if enable_configure:
-        print "** Configuring IP Addressing Utility **"
+        print('** Configuring IP Addressing Utility **')
         ip_addr_files = [('issue', '664'), ('passwd', '644')]    # ('group', '664')
         common.copy_files_w_permissions(ip_addr_files, common.ETC_TEMPLATE_FOLDER, common.ETC_FOLDER)
 
@@ -104,24 +104,24 @@ def configure_ip_utility(enable_configure=True):
 def install_ftp(enable_install=True):
     # Installing FTP server (if needed) #
     if enable_install:
-        print '** Installing FTP server **'
+        print('** Installing FTP server **')
         try:
             import pyftpdlib
 
         except:
-            print "** Installing pyftpdlib **"
+            print('** Installing pyftpdlib **')
             os.system('pip install pyftpdlib==0.7')
 
         file_system.copy_file(FTP_TEMPLATE_FILE, FTP_FILE, '755')
 
-        print "** Restarting FTP server **"
+        print('** Restarting FTP server **')
         if os.path.isfile(FTP_FILE):
             os.system(FTP_FILE + ' restart')
 
 
 def update_network(network_settings, template_path=None):
     """ Updates network settings of the Synapse E10 """
-    print "** Updating Network Settings **"
+    print('** Updating Network Settings **')
     if template_path is None:
         template_path = os.path.join('gate', 'tpl', 'network_daemon')
         if not os.path.isfile(template_path):
@@ -131,7 +131,7 @@ def update_network(network_settings, template_path=None):
     ip_content = bottle.template(template_path, settings=network_settings)
     file_system.save_file(NETWORK_SETTINGS_FILE, ip_content, '755')
 
-    # print "** Restarting network **"
+    # print('** Restarting network **')
     if os.path.isfile(NETWORK_SETTINGS_FILE):
         os.system(NETWORK_SETTINGS_FILE + ' restart')
 
@@ -139,20 +139,20 @@ def update_network(network_settings, template_path=None):
 def configure_auto_start(enable_configure=True):
     """ Configuring auto start script """
     if enable_configure:
-        print "** Configuring Automatic start **"
+        print('** Configuring Automatic start **')
         file_system.copy_file(AUTO_START_TEMPLATE_FILE, AUTO_START_FILE, permissions='755')
 
 
 def start_gate(enable_start):
     """ Start Gate Script """
     if enable_start:
-        print "** Starting GATE **"
+        print('** Starting GATE **')
         # TODO: Check if instance is already running!
         if os.path.isfile(AUTO_START_FILE):
             os.system(AUTO_START_FILE + ' restart')
 
         else:
-            print "Can not start GATE because it has not been configured yet!"
+            print('Can not start GATE because it has not been configured yet!')
 
 
 ## Private Functions ##
@@ -162,6 +162,6 @@ def __patch_python():
     patch_path = os.path.join(FILE_SYSTEM_ROOT, 'usr', 'include', python_version)
     patch_file_path = os.path.join(patch_path, 'pyconfig.h')
     if not os.path.isfile(patch_file_path):
-        print "* Patching python *"
+        print('* Patching python *')
         file_system.make_dir(patch_path)
         file_system.make_file(patch_file_path)

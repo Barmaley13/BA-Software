@@ -98,7 +98,7 @@ class Nodes(ModifiedOrderedDict):
         """
         modbus_addresses = self.modbus_addresses()
 
-        # print "modbus_addresses: " + str(modbus_addresses)
+        # print('modbus_addresses: {}'.format(modbus_addresses))
 
         modbus_address = 0
         if len(modbus_addresses) > 0:

@@ -184,7 +184,7 @@ def _alarm_html(header, nodes, alarm_type):
     else:
         LOGGER.error("Alarm type: " + str(alarm_type) + " does not exist!")
 
-    # print "Node Enables: ", str(nodes[0]['enables'])
+    # print('Node Enables: {}'.format(nodes[0]['enables']))
 
     LOGGER.debug('_alarm_html Time: ' + str(time.time() - start_time) + ' seconds')
 

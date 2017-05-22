@@ -456,8 +456,8 @@ class WebHandler(WebHandlerBase):
                                     break
 
                             elif constant_field_name not in ('adc0_area', 'adc0_diameter', 'adc0_length'):
-                                print 'Constant Field Name: ' + str(constant_field_name)
-                                print 'Value: ' + str(value)
+                                print('Constant Field Name: {}'.format(constant_field_name))
+                                print('Value: {}'.format(value))
 
                                 # Do not allow multiple entry if one of the nodes does not have constants fully set
                                 for node in self._object.nodes(address):

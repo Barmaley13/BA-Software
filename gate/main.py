@@ -28,7 +28,7 @@ def main(system_options):
 
     # Set current working directory
     os.chdir(CWD)
-    # print "CWD = ", CWD
+    # print('CWD: {}'.format(CWD))
 
     # Set default logging across all modules
     logging.basicConfig(level=logging.ERROR)
@@ -73,7 +73,7 @@ def reset_aes_settings(reset_complete_callback=None):
 
     # Set current working directory
     os.chdir(CWD)
-    # print "CWD = ", CWD
+    # print('CWD: {}'.format(CWD))
 
     # Set default logging across all modules
     logging.basicConfig(level=logging.ERROR)

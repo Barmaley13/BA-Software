@@ -163,11 +163,11 @@ class SNMPTrapServer(DatabaseList):
 
             # Match loaded traps and existing traps
             for _snmp_trap in iter(self):
-                # print "_snmp_trap: ", str(_snmp_trap)
+                # print('_snmp_trap: {}'.format(_snmp_trap))
                 for snmp_agent_key, snmp_agent in self.agents.items():
                     if snmp_agent['ip_address'] == _snmp_trap['ip_address']:
                         for snmp_trap_key, snmp_trap in self.traps.items():
-                            # print "snmp_trap: ", str(snmp_trap)
+                            # print('snmp_trap: {}'.format(snmp_trap))
                             if snmp_trap['oid'] == _snmp_trap['oid']:
                                 if snmp_trap['value'] == _snmp_trap['value']:
 

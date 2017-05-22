@@ -42,7 +42,7 @@ class UpdateInterfaces(DatabaseList):
 
     def update_in_progress(self, *match_update_types):
         """ Tells web interface if update is in progress as well as type of update """
-        # print 'match_update_types: ' + str(match_update_types)
+        # print('match_update_types: {}'.format(match_update_types))
 
         if len(match_update_types) == 0:
             match_update_types = None
@@ -55,7 +55,7 @@ class UpdateInterfaces(DatabaseList):
                 output = update_type
                 break
 
-        # print 'update_in_progress: ' + str(output)
+        # print('update_in_progress: {}'.format(output))
 
         return output
 

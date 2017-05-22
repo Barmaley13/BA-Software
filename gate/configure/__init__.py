@@ -36,11 +36,11 @@ def upgrade_py_knife():
         import py_knife
 
     except:
-        print "** Installing py_knife **"
+        print('** Installing py_knife **')
         os.system('pip install py_knife')
 
     else:
-        print "** Upgrading py_knife **"
+        print('** Upgrading py_knife **')
         os.system('pip install --upgrade py_knife')
 
 
@@ -52,11 +52,11 @@ def configure_system(configuration_options):
 
     if platforms.PLATFORM in platforms.EMBEDDED_PLATFORMS:
         if platforms.PLATFORM == platforms.RASPBERRY_PI:
-            print '*** Configuring Raspberry Pi ***'
+            print('*** Configuring Raspberry Pi ***')
             import configure_pi as configure_module
 
         else:
-            print '*** Configuring Synapse E10 ***'
+            print('*** Configuring Synapse E10 ***')
             import configure_e10 as configure_module
 
         if 'interactive' in configuration_options:
@@ -97,16 +97,16 @@ def clean_system(remove_database=True, remove_logs=True, overwrite_scripts=False
     if remove_database:
         ## Removing obsolete database data ##
         # Note: Might not work properly on running system
-        print "*** Removing obsolete database ***"
+        print('*** Removing obsolete database ***')
         file_system.remove_dir(DATABASE_FOLDER)
 
     if remove_logs:
         ## Removing obsolete log data ##
         # Note: Might not work properly on running system
-        print "*** Removing obsolete logs ***"
+        print('*** Removing obsolete logs ***')
         file_system.remove_dir(LOGS_FOLDER)
 
-    print "*** Creating folders for user data ***"
+    print('*** Creating folders for user data ***')
     file_system.make_dir(GATE_FOLDER)
     file_system.make_dir(LOGS_FOLDER)
     file_system.make_dir(UPLOADS_FOLDER)
@@ -114,7 +114,7 @@ def clean_system(remove_database=True, remove_logs=True, overwrite_scripts=False
     file_system.make_dir(SYSTEM_FOLDER)
 
     if overwrite_scripts:
-        print "*** Overwriting GATE scripts ***"
+        print('*** Overwriting GATE scripts ***')
         gate_script_files = [('run_gate.py', '755'), ('reset_gate.py', '755'), ('ip_addr_utility.py', '755')]
         copy_files_w_permissions(gate_script_files, '', CWD)
 
@@ -133,7 +133,7 @@ def __install_pip():
 
     except:
         if find_executable('apt-get'):
-            print "** Installing pip **"
+            print('** Installing pip **')
             os.system('apt-get install -y python-pip')
             os.system('apt-get install -y python3-pip')
 
@@ -145,7 +145,7 @@ def __install_pip():
                 patch_path = os.path.join(file_system_root, 'usr', 'include', python_version)
                 patch_file_path = os.path.join(patch_path, 'pyconfig.h')
                 if not os.path.isfile(patch_file_path):
-                    print "** Patching python **"
+                    print('** Patching python **')
                     if not os.path.isdir(patch_path):
                         os.makedirs(patch_path)
 
@@ -153,7 +153,7 @@ def __install_pip():
                         new_file = open(patch_file_path, 'a')
                         new_file.close()
 
-            print "** Installing setuptools **"
+            print('** Installing setuptools **')
             cwd = sys.path[0]
             package_name = 'setuptools-0.6c11'
             zip_path = os.path.join(os.path.dirname(__file__), 'linux', package_name + '.zip')
@@ -166,7 +166,7 @@ def __install_pip():
                 package_path = os.path.join(cwd, package_name)
                 os.chdir(package_path)
 
-                print 'Installing ' + package_name + '...'
+                print('Installing {} ...'.format(package_name))
                 if os.name == 'nt':
                     # This failed on E10 as part of web interface install
                     install_process = subprocess.Popen(['python', 'setup.py', 'install'], shell=True)
@@ -177,11 +177,11 @@ def __install_pip():
                 install_process.wait()
                 os.chdir(cwd)
 
-                print 'Cleaning ' + package_name + ' up...'
+                print('Cleaning {} up ...'.format(package_name))
                 if os.path.isdir(package_path):
                     shutil.rmtree(package_path)
 
-                print "** Installing pip **"
+                print('** Installing pip **')
                 os.system('easy_install pip==1.4.1')
 
             except:
@@ -195,7 +195,13 @@ def __proceed_w_step(user_question, default):
     output = default
 
     if interactive and user_question is not None:
-        response = raw_input(user_question + ' (y/n): ')
+        # Fix Python 2.x.
+        try:
+            input = raw_input
+        except NameError:
+            pass
+
+        response = input(user_question + ' (y/n): ')
         output = bool('y' in response.lower())
 
     return output
@@ -227,7 +233,7 @@ if __name__ == '__main__':
                 # Run Configure Raspberry Pi script
                 configure_system(vars(configure_options))
 
-                print 'Please restart your machine!'
+                print('Please restart your machine!')
 
             else:
                 LOGGER.error('Could not configure OS: Please run script as root!')

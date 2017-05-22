@@ -105,21 +105,21 @@ LOGGER.setLevel(logging.WARNING)
 def update_os(enable_update=True):
     """ Updating OS """
     if enable_update:
-        print '** Updating operating system **'
+        print('** Updating operating system **')
         os.system('apt-get update -y')
         os.system('apt-get dist-upgrade -y')
 
         try:
             import pip
         except:
-            print "* Installing pip *"
+            print('* Installing pip *')
             os.system('apt-get install -y python-pip')
             os.system('apt-get install -y python3-pip')
 
         try:
             import jinja2
         except:
-            print '* Installing jinja2 *'
+            print('* Installing jinja2 *')
             os.system('apt-get install -y python-jinja2')
             os.system('apt-get install -y python3-jinja2')
 
@@ -127,9 +127,9 @@ def update_os(enable_update=True):
 def install_apt_get_packages(enable_install=True):
     """ Install apt_get packages (if needed) """
     if enable_install:
-        print '** Installing apt-get packages **'
+        print('** Installing apt-get packages **')
         for apt_get_package in APT_GET_PACKAGES:
-            print '* Installing ' + str(apt_get_package) + ' packages *'
+            print('* Installing {} packages *'.format(apt_get_package))
             os.system('apt-get install -y ' + str(apt_get_package))
 
 
@@ -137,11 +137,11 @@ def change_password(new_password):
     """ Changing Password (if needed) """
     global password
 
-    print '** Changing passwords **'
+    print('** Changing passwords **')
     users = [DEFAULT_USER, 'root']
     for user in users:
         if common.interactive:
-            print "* Enter password for user '" + str(user) + "' *"
+            print("* Enter password for the user '{}' *".format(user))
         __set_password('passwd ' + user, new_password)
 
     password = new_password
@@ -150,7 +150,7 @@ def change_password(new_password):
 def install_mdns(enable_install=True):
     """ Install mDNS (if needed) """
     if enable_install:
-        print '** Installing mDNS server **'
+        print('** Installing mDNS server **')
         os.system('apt-get install -y avahi-daemon')
         os.system('service avahi-daemon restart')
 
@@ -158,7 +158,7 @@ def install_mdns(enable_install=True):
 def install_ftp(enable_install=True):
     # Installing FTP server (if needed) #
     if enable_install:
-        print '** Installing FTP server **'
+        print('** Installing FTP server **')
         os.system('apt-get install -y pure-ftpd')
         os.system('pure-pwconvert >> ' + FTP_SETTINGS_FILE)
         os.system('service pure-ftpd restart')
@@ -170,10 +170,10 @@ def install_samba(enable_install=True):
     jinja_environment = Environment(loader=FileSystemLoader(common.TEMPLATE_FOLDER))
 
     if enable_install:
-        print '** Installing Samba server **'
+        print('** Installing Samba server **')
         os.system('apt-get install -y samba')
 
-        print '* Configuring Samba autostart *'
+        print('* Configuring Samba autostart *')
         samba_template = jinja_environment.get_template('smb.conf')
         samba_file_content = samba_template.render(
             hostname=common.current_hostname(DEFAULT_HOSTNAME),
@@ -186,7 +186,7 @@ def install_samba(enable_install=True):
         samba_file.close()
 
         if common.interactive:
-            print "* Enter Samba password for user '" + str(DEFAULT_USER) + "' *"
+            print("* Enter Samba password for the user '{}' *".format(DEFAULT_USER))
         __set_password('smbpasswd -a ' + DEFAULT_USER, password)
 
         os.system('service smbd restart')
@@ -198,10 +198,10 @@ def install_vnc(enable_install=True):
     jinja_environment = Environment(loader=FileSystemLoader(common.INITD_TEMPLATE_FOLDER))
 
     if enable_install:
-        print '** Installing VNC server **'
+        print('** Installing VNC server **')
         os.system('apt-get install -y tightvncserver')
 
-        print '* Configuring VNC autostart *'
+        print('* Configuring VNC autostart *')
         # Creating vnc daemon
         vncboot_template = jinja_environment.get_template('vncboot')
         vncboot_file_content = vncboot_template.render(
@@ -228,10 +228,10 @@ def install_vnc(enable_install=True):
         os.system('systemctl daemon-reload')
 
         if common.interactive:
-            print "* Enter VNC server password (if prompted) *"
+            print('* Enter VNC server password (if prompted) *')
         __set_password('vncpasswd -a', password)
 
-        print '* Configuring VNC cursor *'
+        print('* Configuring VNC cursor *')
         if os.path.isfile(XSTARTUP_FILE):
             overwrite = False
             with open(XSTARTUP_FILE) as xstartup_file:
@@ -260,7 +260,7 @@ def install_vnc(enable_install=True):
 def update_network(network_settings):
     """ Updates network settings of the Raspberry Pi """
     if network_settings:
-        print "** Updating Network Settings **"
+        print('** Updating Network Settings **')
 
         # Read network interface file
         if os.path.isfile(NETWORK_INTERFACES_FILE):
@@ -355,7 +355,7 @@ def update_network(network_settings):
 def configure_uart(enable_configure=True):
     """ Configuring UART on RPi3 """
     if enable_configure:
-        print "** Configuring UART **"
+        print('** Configuring UART **')
 
         # Update Firmware
         __update_firmware(enable_configure)
@@ -445,7 +445,7 @@ def configure_uart(enable_configure=True):
 def configure_auto_start(enable_configure=True):
     """ Configuring auto start script """
     if enable_configure:
-        print "** Configuring Automatic start **"
+        print('** Configuring Automatic start **')
 
         file_system.copy_file(AUTO_START_TEMPLATE_FILE, AUTO_START_FILE, permissions='755')
 
@@ -458,13 +458,13 @@ def configure_auto_start(enable_configure=True):
 def start_gate(enable_start=True):
     """ Start Gate Script """
     if enable_start:
-        print "** Starting GATE **"
+        print('** Starting GATE **')
         # TODO: Check if instance is already running!
         if os.path.isfile(AUTO_START_FILE):
             os.system('service gate restart')
 
         else:
-            print "Can not start GATE because it has not been configured yet!"
+            print('Can not start GATE because it has not been configured yet!')
 
 
 ## Private Functions ##
@@ -494,7 +494,7 @@ def __set_password(password_command, new_password):
 def __update_firmware(enable_update=True):
     """ Updating firmware """
     if enable_update:
-        print '** Updating firmware **'
+        print('** Updating firmware **')
 
         if not find_executable('rpi-update'):
             os.system('apt-get install -y rpi-update')

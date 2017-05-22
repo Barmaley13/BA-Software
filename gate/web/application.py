@@ -91,7 +91,7 @@ class WebApplication(object):
         # LOGGER.debug("url 0 = " + str(url))
 
         if url0 in STATIC_FILES:
-            # print 'url = ', url
+            # print('url: {}'.format(url))
             url_list = url.split('/')
             file_name = url_list.pop(-1)
             # LOGGER.debug('file_name = ' + file_name)

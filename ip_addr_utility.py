@@ -22,12 +22,18 @@ LOGGER = logging.getLogger(__name__)
 
 ### FUNCTIONS ###
 def clear_screen():
-    # print chr(27) + "[2J"
+    # print(chr(27) + '[2J')
     os.system('clear')
 
 
 def get_user_input():
-    return raw_input('Your Selection: ').lower()
+    # Fix Python 2.x.
+    try:
+        input = raw_input
+    except NameError:
+        pass
+
+    return input('Your Selection: ').lower()
 
 
 ### CLASSES ###
@@ -40,19 +46,19 @@ class IPUtility(object):
     def print_user_interface(self):
         ip_address, net_mask = get_net_addresses()
         ip_scheme = get_ip_scheme()
-        print '*** IP ADDRESSING UTILITY ***'
-        print 'Current IP Address:{0:>18}'.format(str(ip_address))
-        print 'Current IP NetMask:{0:>18}'.format(str(net_mask))
-        print 'Current IP Scheme: {0:>18}'.format(ip_scheme)
-        print '\nYour Options:'
-        print '1. Type new IP Address and Net Mask(optional), e.g.: 169.254.141.111 (255.255.0.0)'
-        print '2. Set dynamic IP Addressing, e.g.: dynamic'
-        print '3. Refresh this screen by pressing enter'
-        print '4. Exit Utility, e.g.: exit'
+        print('*** IP ADDRESSING UTILITY ***')
+        print('Current IP Address:{0:>18}'.format(str(ip_address)))
+        print('Current IP NetMask:{0:>18}'.format(str(net_mask)))
+        print('Current IP Scheme: {0:>18}'.format(ip_scheme))
+        print('\nYour Options:')
+        print('1. Type new IP Address and Net Mask(optional), e.g.: 169.254.141.111 (255.255.0.0)')
+        print('2. Set dynamic IP Addressing, e.g.: dynamic')
+        print('3. Refresh this screen by pressing enter')
+        print('4. Exit Utility, e.g.: exit')
         if self._invalid_address:
-            print 'ERROR: Invalid IP Address! Try again!\n'
+            print('ERROR: Invalid IP Address! Try again!\n')
         else:
-            print '\n'
+            print('\n')
 
     def process_input(self, user_input):
         self._invalid_address = False

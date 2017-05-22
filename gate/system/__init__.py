@@ -159,15 +159,15 @@ class SystemSettings(DatabaseDict):
         # Print System Report #
         if system_options is not None:
             # TODO: Make sure all the options are functional...
-            print "Version: " + self.version
-            print "System: " + self.name
-            print "Language: " + self.language
-            print "Modbus Enable: " + str(self.modbus_enable)
-            print "SNMP Enable: " + str(self.snmp_enable)
-            print "Virgins Enable: " + str(self.virgins_enable)
-            print "FAQ Enable: " + str(self.faq_enable)
-            print "Manual Log Enable: " + str(self.manual_log)
-            print self.time_settings_str()
+            print('Version: {}'.format(self.version))
+            print('System: {}'.format(self.name))
+            print('Language: {}'.format(self.language))
+            print('Modbus Enable: {}'.format(self.modbus_enable))
+            print('SNMP Enable: {}'.format(self.snmp_enable))
+            print('Virgins Enable: {}'.foramt(self.virgins_enable))
+            print('FAQ Enable: {}'.format(self.faq_enable))
+            print('Manual Log Enable: {}'.format(self.manual_log))
+            print(self.time_settings_str())
 
     ## Title ##
     def title(self):

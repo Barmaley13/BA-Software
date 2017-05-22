@@ -60,7 +60,7 @@ SYSTEM_NAME = 'swe'
 
 ## Internal Constants ##
 CWD = sys.path[0]
-# print "CWD = ", str(CWD)
+# print('CWD: {}'.format(CWD))
 # Set current working directory #
 os.chdir(CWD)
 
@@ -111,24 +111,24 @@ from py_knife import platforms, py_setup, file_system
 ## Dist Functions ##
 def _create_dist_options():
     """ Creates distribution options """
-    print 'Remove Database: ' + str(REMOVE_DATABASE)
+    print('Remove Database: {}'.format(REMOVE_DATABASE))
     if REMOVE_DATABASE:
         file_system.make_dir('database')
         file_system.make_file(os.path.join('database', 'dummy.txt'))
 
-    print 'Remove Logs: ' + str(REMOVE_LOGS)
+    print('Remove Logs: {}'.format(REMOVE_LOGS))
     if REMOVE_LOGS:
         file_system.make_dir('logs')
         file_system.make_file(os.path.join('logs', 'dummy.txt'))
 
-    print 'Include Base Software: ' + str(INCLUDE_BASE)
+    print('Include Base Software: {}'.format(INCLUDE_BASE))
     if INCLUDE_BASE:
         file_system.make_dir('base')
         for base_source in BASE_PATHS:
             base_destination = os.path.join('base', os.path.basename(base_source))
             file_system.copy_file(base_source, base_destination)
 
-    print 'Include Node Software: ' + str(INCLUDE_NODE)
+    print('Include Node Software: {}'.format(INCLUDE_NODE))
     if INCLUDE_NODE:
         file_system.make_dir('node')
         for node_source in NODE_PATHS:
@@ -141,12 +141,12 @@ def _create_dist_options():
 ## Install Functions ##
 def _pre_install():
     """ Pre install procedures """
-    print "*** Installing missing python packages ***"
+    print('*** Installing missing python packages ***')
 
     configure_options = copy.deepcopy(DEFAULT_CONFIGURE_OPTIONS)
     configure.configure_system(configure_options)
 
-    print "*** Removing obsolete gate packages ***"
+    print('*** Removing obsolete gate packages ***')
     _uninstall_obsolete_gate()
 
 
@@ -157,13 +157,13 @@ def _uninstall_obsolete_gate():
     try:
         while True:
             f, gate_path, desc = imp.find_module('gate', sys.path[1:])
-            print 'Removing obsolete gate package located at ' + str(gate_path)
+            print("Removing obsolete gate package located at '{}'".format(gate_path))
             clean_install = file_system.remove_dir(gate_path)
             f.close()
 
     except:
         if clean_install:
-            print 'Nothing to remove - clean install!'
+            print('Nothing to remove - clean install!')
 
 
 def _post_install():
@@ -184,34 +184,34 @@ class MyInstall(install):
     def run(self):
         """ Modified install procedure """
         _pre_install()
-        print "*** Installing gate package ***"
+        print('*** Installing gate package ***')
         install.run(self)
         _post_install()
 
 
 ### SETUP PROCEDURES ###
 packages = py_setup.find_packages(".", "")
-# print "packages = ", str(packages), "\n"
+# print('packages: {}\n'.format(packages))
 
 if len(sys.argv):
     if 'sdist' in sys.argv:
-        print "*** Generating Documentation ***"
+        print('*** Generating Documentation ***')
         py_setup.generate_docs(packages)
 
-        print "*** Creating distribution options ***"
+        print('*** Creating distribution options ***')
         _create_dist_options()
 
         # Change default distribution folder
         sys.argv.append('--dist-dir=' + str(DIST_PATH))
 
-        print "*** Generation Distribution ***"
+        print('*** Generation Distribution ***')
 
     elif 'install' in sys.argv:
         # Enable force to overwrite existing files and create folders
         sys.argv.append('--force')
 
 data_files = (py_setup.non_python_files('gate', ignore_dirs=['obsolete', 'source']))
-# print "data_files = ", str(data_files), "\n"
+# print('data_files: {}\n'.format(data_files))
 
 package_data_content = py_setup.package_data_files('docs')
 if REMOVE_DATABASE:
@@ -220,7 +220,7 @@ if REMOVE_LOGS:
     package_data_content += py_setup.package_data_files('logs')
 
 package_data = {'': package_data_content}
-# print "package_data = ", str(package_data), "\n"
+# print('package_data: {}\n'.format(package_data))
 
 setup(
     name='gate',
@@ -269,7 +269,7 @@ if len(sys.argv):
 
         distro_password = system_data['distro_password']
 
-        print "*** Encrypting Distribution ***"
+        print('*** Encrypting Distribution ***')
         if 'DIST_PATH' not in globals().keys():
             dist_path = 'dist'
 
@@ -278,11 +278,11 @@ if len(sys.argv):
 
         py_dist = os.path.join(CWD, dist_path, 'gate-' + __version__)
 
-        print 'py_dist: ' + str(py_dist)
+        print('py_dist: {}'.format(py_dist))
 
         aes.encrypt(py_dist + '.zip', py_dist + '.pea', distro_password)
 
-        print "*** Cleaning Up ***"
+        print('*** Cleaning Up ***')
         for package_path in packages.values():
             pyc_files = glob.glob(os.path.join(package_path, '*.pyc'))
             for pyc_file in pyc_files:
@@ -303,7 +303,7 @@ if len(sys.argv):
             file_system.remove_dir('node')
 
     elif 'install' in sys.argv:
-        print "*** Cleaning Up ***"
+        print('*** Cleaning Up ***')
         for clean_up_dir in ('build', 'configure'):
             file_system.remove_dir(clean_up_dir)
 

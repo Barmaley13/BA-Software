@@ -228,7 +228,7 @@ class Bridge(object):
                         reference_dict[reference_key] = value
 
                 if self._requests[0]['description'] is not None:
-                    print self._requests[0]['description'] + str(reference_dicts[-1][reference_key])
+                    print('{}{}'.format(self._requests[0]['description'], reference_dicts[-1][reference_key]))
 
             if self._requests[0]['callback'] is not None:
                 # Do not pass args
@@ -344,8 +344,8 @@ class Bridge(object):
                 LOGGER.error("Can not find following field: " + str(field) + " in the provided nv_dict")
 
         # Debugging
-        print "AES Key: " + str(nv_dict['aes_key'])
-        print "AES: " + str(nv_dict['aes_enable'])
+        print('AES Key: {}'.format(nv_dict['aes_key']))
+        print('AES: {}'.format(nv_dict['aes_enable']))
 
     ## SNAP Support Methods (Required for uploader and virgins) ##
     def set_vm_stat_callback(self, callback=None):

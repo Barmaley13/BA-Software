@@ -58,8 +58,8 @@ class Virgins(object):
             virgin_found = False
 
             # Ignore if a response is a blank
-            # print "mac: " + str(mac)
-            # print "type(mac): " + str(type(mac))
+            # print('mac: {}'.format(mac))
+            # print('type(mac): {}'.format(type(mac)))
             if mac is not None and type(mac) in (str, unicode):
                 # Convert binary to hex str
                 mac_str = bin_to_hex(mac)

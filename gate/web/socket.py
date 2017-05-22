@@ -44,16 +44,16 @@ class WebsocketManager(object):
     def send(self, message, message_type='ws_default', progress=None):
         """ Sends message via websocket. Keep buffer updated """
         # Sending String to web client via web sockets
-        print message
+        print(message)
         # Otherwise we get too many messages
         # if progress is None:
-        #     print message
+        #     print(message)
 
         if type(progress) in (int, float):
             progress = '{0:.2f}'.format(progress)
         
         # Long Polling
-        # web.stdin.write(message + "\n")
+        # web.stdin.write(message + '\n')
 
         # Web Socket
         for socket in self.ws_list:

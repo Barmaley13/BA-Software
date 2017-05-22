@@ -71,10 +71,10 @@ class Header(HeaderBase):
                     item_key = item_value['internal_name']
                     getattr(self, group_name)[item_key] = item_value
 
-        # print "name = " + name
-        # print "constants = " + str(len(self.constants))
-        # print "variables = " + str(len(self.variables))
-        # print "unit_list = " + str(len(self.unit_list))
+        # print('name: {}'.format(name))
+        # print('constants: {}'.format(len(self.constants)))
+        # print('variables: {}'.format(len(self.variables)))
+        # print('unit_list: {}'.format(len(self.unit_list)))
 
         # Initialize Defaults
         defaults = {
@@ -108,7 +108,7 @@ class Header(HeaderBase):
             }
         })
 
-        # print "Alert Messages: ", str(self['alert_messages'])
+        # print('Alert Messages: {}'.format(self['alert_messages']))
 
     ## Formula Related ##
     def apply_formulas(self, provider):

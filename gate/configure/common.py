@@ -41,30 +41,30 @@ def install_pip_packages(enable_install=True):
     # from gate.common import CWD
 
     if enable_install:
-        print "** Installing pip packages **"
+        print('** Installing pip packages **')
 
         try:
             import bottle
         except:
-            print "* Installing bottle *"
+            print('* Installing bottle *')
             os.system('pip install bottle==0.11.6')
 
         try:
             import pymodbus
         except:
-            print "* Installing pymodbus *"
+            print('* Installing pymodbus *')
             os.system('pip install --no-deps pymodbus==1.2.0')
 
         try:
             import serial
         except:
-            print "* Installing pyserial *"
+            print('* Installing pyserial *')
             os.system('pip install pyserial==2.7')
 
         try:
             import tornado
         except:
-            print "* Installing tornado *"
+            print('* Installing tornado *')
             # # Old Tornado install (Made for Synapse E10)
             # if platforms.PLATFORM == platforms.SYNAPSE_E10:
             #     os.system('pip install tornado==2.4.1')
@@ -88,25 +88,25 @@ def install_pip_packages(enable_install=True):
         try:
             import pyasn1
         except:
-            print "* Installing pyasn1 *"
+            print('* Installing pyasn1 *')
             os.system('pip install pyasn1==0.1.7')
 
         try:
             import pysnmp
         except:
-            print "* Installing pysnmp *"
+            print('* Installing pysnmp *')
             os.system('pip install --no-deps pysnmp==4.2.5')
 
         try:
             import Crypto
         except:
-            print "* Installing pycrypto *"
+            print('* Installing pycrypto *')
             os.system('pip install pycrypto')
 
         try:
             import snapconnect
         except:
-            print "* Installing Snap Connect *"
+            print('* Installing Snap Connect *')
             # Old Snap Connect install
             # package_name = 'snapconnect-3.1.0'
             # # FIXME: Gate does not work with snapconnect-3.2.0 as of now
@@ -118,7 +118,7 @@ def install_pip_packages(enable_install=True):
             #
             #     if success:
             #         if platforms.PLATFORM != platforms.SYNAPSE_E10:
-            #             print "* Copying Demo License *"
+            #             print('* Copying Demo License *')
             #             _license_path = os.path.join(package_name, 'license.dat')
             #             license_path = os.path.join(package_name, 'License.dat')
             #             # Rename if needed (thanks Synapse for all the inconsistencies! Love you guys!)
@@ -164,7 +164,7 @@ def change_hostname(new_hostname):
     """ Change hostname (if needed) """
     _current_hostname = current_hostname()
 
-    print '** Changing hostname **'
+    print('** Changing hostname **')
     # Read file
     hosts_file = open(HOSTS_FILE, 'r')
     hosts_file_content = hosts_file.read()
@@ -172,7 +172,13 @@ def change_hostname(new_hostname):
 
     if _current_hostname in hosts_file_content:
         if interactive:
-            new_hostname = raw_input('Enter new hostname: ')
+            # Fix Python 2.x.
+            try:
+                input = raw_input
+            except NameError:
+                pass
+            
+            new_hostname = input('Enter new hostname: ')
 
         if valid_hostname(new_hostname):
             os.system('hostname ' + new_hostname)
@@ -188,7 +194,7 @@ def change_hostname(new_hostname):
             hostname_file.write(new_hostname)
             hostname_file.close()
 
-            print "Hostname changed to '" + str(new_hostname) + "'!"
+            print("Hostname changed to '{}''!".format(new_hostname))
 
         else:
             LOGGER.error("Provided hostname '" + str(new_hostname) + "' is invalid!")

@@ -317,7 +317,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
                         if self.update_in_progress():
                             self.uploader.check_upload('_node')
 
-                    print SLEEP
+                    print(SLEEP)
 
             if not self.update_in_progress():
                 if self.system_settings.virgins_enable:
