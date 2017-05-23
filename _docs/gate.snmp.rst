@@ -20,14 +20,6 @@ gate.snmp.commands module
     :undoc-members:
     :show-inheritance:
 
-gate.snmp.common module
------------------------
-
-.. automodule:: gate.snmp.common
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 gate.snmp.queue module
 ----------------------
 
