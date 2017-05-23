@@ -26,14 +26,14 @@ REMOVE_LOGS = False
 ## Default Configure Options ##
 DEFAULT_CONFIGURE_OPTIONS = {
     'interactive': False,
-    'update_os': True,
+    'update_os': False,
     'install_pip_packages': True,
     'change_hostname': 'gate',
     'change_password': None,
-    'configure_ip_utility': True,       # Works only on E10 #
+    'configure_ip_utility': False,      # Works only on E10 #
     'update_network': False,
-    'install_mdns': True,               # Works only on RPi3 #
-    'install_ftp': True,
+    'install_mdns': False,              # Works only on RPi3 #
+    'install_ftp': False,
     'install_samba': False,             # Works only on RPi3 #
     'install_vnc': False,               # Works only on RPi3 #
     'configure_auto_start': True,
