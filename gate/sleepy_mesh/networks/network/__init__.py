@@ -8,7 +8,7 @@ Author: `Kirill V. Belyayev <http://kbelyayev.com>`_
 import copy
 import logging
 
-from gate import strings
+from gate import strings, conversions
 from gate.sleepy_mesh import common
 
 from base import NETWORK_DEFAULTS, NETWORK_UPDATE_TYPES
@@ -201,3 +201,16 @@ class WebNetwork(NetworkCallbacks):
                     if not self.update_in_progress():
                         self._manager.websocket.send(strings.SYNC_WAITING, 'ws_init')
                         self._start_update(update_type, nodes)
+
+        # Patch for now
+        update_type = self.update_in_progress()
+        # LOGGER.debug("update_type: " + str(update_type))
+        if update_type == 'node_update':
+            for node in self._update_nodes.values():
+                if node['type'] != 'base':
+                    # Send update request directly to base node
+                    update_args = ['smn__node_update', conversions.hex_to_bin(node['net_addr'])]
+                    update_args += self._update_args(node)
+
+                    self._manager.bridge.base_node_ucast(*update_args)
+                    # LOGGER.debug("Node Update Args: " + str(update_args))

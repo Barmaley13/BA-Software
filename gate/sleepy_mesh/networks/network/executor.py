@@ -123,21 +123,25 @@ class NetworkExecutor(NetworkBase):
         """ Function sends RPC to update particular node """
         update_args = ['smn__net_update']
         update_type = self.update_in_progress()
-        if update_type == 'node_update':
-            update_args = ['smn__node_update']
 
-        update_args += self.__update_args(node)
+        # Patch for now
+        if update_type != 'node_update':
+            # Old functionality
+            # if update_type == 'node_update':
+            #     update_args = ['smn__node_update']
 
-        if node['type'] == 'base':
-            self._manager.bridge.base_node_ucast(*update_args)
-            LOGGER.debug("Base Update Args: " + str(update_args))
+            update_args += self._update_args(node)
 
-        elif node['type'] == 'node':
-            update_args = [node['net_addr']] + update_args
-            self._manager.bridge.network_ucast(*update_args)
-            LOGGER.debug("Node Update Args: " + str(update_args))
+            if node['type'] == 'base':
+                self._manager.bridge.base_node_ucast(*update_args)
+                LOGGER.debug("Base Update Args: " + str(update_args))
 
-    def __update_args(self, node):
+            elif node['type'] == 'node':
+                update_args = [node['net_addr']] + update_args
+                self._manager.bridge.network_ucast(*update_args)
+                LOGGER.debug("Node Update Args: " + str(update_args))
+
+    def _update_args(self, node):
         """
         Creates network update arguments that are passed to rpc function and send to particular node/nodes
 

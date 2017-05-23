@@ -262,6 +262,11 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
             self._sync_type = callback_type
             SleepyMeshBase._update_last_sync(self)
 
+            # Patch for now
+            update_type = self.update_in_progress()
+            if update_type == 'node_update':
+                self._verify_updates()
+
         else:
             if not self._pause:
                 if self._mesh_awake:
@@ -272,9 +277,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
                     self._update_last_sync(callback_type)
 
                     # Check if we need to execute any network updates
-                    network_ready = bool(self._sync_type != 'timeout')
-                    network_ready |= bool(len(self.platforms.select_nodes('active')) == 0)
-                    self.networks[0].verify_update(network_ready)
+                    self._verify_updates()
 
                     # Send mcast to the network
                     self._mcast_sync()
@@ -360,6 +363,12 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
         # Do not reschedule
         return False
+
+    def _verify_updates(self):
+        """ Check if we need to execute any network updates """
+        network_ready = bool(self._sync_type != 'timeout')
+        network_ready |= bool(len(self.platforms.select_nodes('active')) == 0)
+        self.networks[0].verify_update(network_ready)
 
     def __reset_flags(self):
         """ Resets flags across other instances """

@@ -468,7 +468,6 @@ class Bridge(object):
             # Convert net_addr
             args = list(args)
             args[0] = hex_to_bin(args[0])
-            args = tuple(args)
 
         # LOGGER.debug("base ucast args = " + str(args))
         return self.base_node_ucast('rpc', *args)

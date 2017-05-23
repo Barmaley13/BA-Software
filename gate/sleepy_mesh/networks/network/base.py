@@ -83,7 +83,10 @@ class NetworkBase(DatabaseDict):
     ## Public Methods ##
     def _start_update(self, update_type, nodes=None):
         """ Starts network update """
-        self._manager.autopilot(False)
+        # Patch for now
+        if update_type != 'node_update':
+            self._manager.autopilot(False)
+
         self._update_interface.start_update(update_type)
         self._update_nodes = self.__generate_update_nodes(nodes)
 

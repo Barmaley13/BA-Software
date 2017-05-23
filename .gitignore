@@ -25,6 +25,9 @@ gen/
 *.pyc
 *.pyo
 
+# Synapse generated files
+nvparams.dat
+
 # folder and files generated during distribuition generation
 docs/
 docs/images/
