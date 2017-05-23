@@ -164,7 +164,7 @@ class SystemSettings(DatabaseDict):
             print('Language: {}'.format(self.language))
             print('Modbus Enable: {}'.format(self.modbus_enable))
             print('SNMP Enable: {}'.format(self.snmp_enable))
-            print('Virgins Enable: {}'.foramt(self.virgins_enable))
+            print('Virgins Enable: {}'.format(self.virgins_enable))
             print('FAQ Enable: {}'.format(self.faq_enable))
             print('Manual Log Enable: {}'.format(self.manual_log))
             print(self.time_settings_str())
