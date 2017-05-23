@@ -87,9 +87,9 @@ class SleepyMeshManager(SleepyMeshScheduler):
                 'brg__statistics': self._bridge_statistics,
                 # 'brg__stop_scheduler': self._gate_resume_scheduler,
 
-                # Obsolete network calls (Here to detect old software) #
-                'SMN_longLog': self._old_long_callback,
-                'SMN_shortLog': self._old_short_callback
+                # # Obsolete network calls (Here to detect old software) #
+                # 'SMN_longLog': self._old_long_callback,
+                # 'SMN_shortLog': self._old_short_callback
 
             },
             # Handlers #
@@ -329,18 +329,18 @@ class SleepyMeshManager(SleepyMeshScheduler):
         """
         self._callback('short', *args)
 
-    def _old_long_callback(self, *args):
-        """ Strictly to warn user about required software upgrade """
-        self.bridge.base.error.set_error('generic', OLD_SOFTWARE_DETECTED)
-        self._long_callback(*args)
-
-        # Parse data but don't do anything else
-        self.networks[0].callback('long', *args)
-
-    def _old_short_callback(self, *args):
-        """ Strictly to warn user about required software upgrade """
-        self.bridge.base.error.set_error('generic', OLD_SOFTWARE_DETECTED)
-        self._short_callback(*args)
-
-        # Parse data but don't do anything else
-        self.networks[0].callback('short', *args)
+    # def _old_long_callback(self, *args):
+    #     """ Strictly to warn user about required software upgrade """
+    #     self.bridge.base.error.set_error('generic', OLD_SOFTWARE_DETECTED)
+    #     self._long_callback(*args)
+    #
+    #     # Parse data but don't do anything else
+    #     self.networks[0].callback('long', *args)
+    #
+    # def _old_short_callback(self, *args):
+    #     """ Strictly to warn user about required software upgrade """
+    #     self.bridge.base.error.set_error('generic', OLD_SOFTWARE_DETECTED)
+    #     self._short_callback(*args)
+    #
+    #     # Parse data but don't do anything else
+    #     self.networks[0].callback('short', *args)
