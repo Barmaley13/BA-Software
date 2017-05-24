@@ -22,7 +22,7 @@ NOT_VERIFIED_MESSAGE_MAP = {
 
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
+# LOGGER.setLevel(logging.DEBUG)
 
 
 ### CLASSES ###
@@ -32,6 +32,8 @@ class NetworkExecutor(NetworkBase):
         """ Checks if network update has been verified """
         update_type = self.update_in_progress()
         if update_type:
+            LOGGER.debug("Update Type: {}".format(update_type))
+
             if update_type in ('network_update', 'preset_update'):
                 # Trigger base node update
                 base_node = self._manager.bridge.base
@@ -61,6 +63,7 @@ class NetworkExecutor(NetworkBase):
     def execute_update(self, node):
         """ Checks if network update failed on particular node """
         update_type = self.update_in_progress()
+
         update_node = bool(node['net_verify'] == self._cancel_update)
         if update_node:
             update_node &= bool(node['net_addr'] in self._update_nodes.keys())
@@ -75,9 +78,6 @@ class NetworkExecutor(NetworkBase):
                 update_node &= common.network_preset_needed(node)
 
         if update_node:
-            if update_type != 'node_update':
-                node['off_sync'] = True
-
             update_message = self._update_message(node)
             if update_message is not None:
                 if not self._cancel_update:
@@ -111,30 +111,31 @@ class NetworkExecutor(NetworkBase):
     def _execute_update(self, node=None):
         """ Function sends RPC to update network or particular node """
         update_type = self.update_in_progress()
-        LOGGER.debug("Update Type: {}".format(update_type))
-        if update_type == 'node_update':
-            nodes = self._update_nodes.values()
-            if node is not None:
-                nodes = [node]
+        if update_type:
+            LOGGER.debug("Update Type: {}".format(update_type))
+            if update_type == 'node_update':
+                nodes = self._update_nodes.values()
+                if node is not None:
+                    nodes = [node]
 
-            for node in nodes:
-                if node['type'] != 'base':
-                    # Send update request directly to base node
-                    update_args = ['smn__node_update', conversions.hex_to_bin(node['net_addr'])]
-                    update_args += self.__update_args(node)
+                for node in nodes:
+                    if node['type'] != 'base':
+                        # Send update request directly to base node
+                        update_args = ['smn__node_update', conversions.hex_to_bin(node['net_addr'])]
+                        update_args += self.__update_args(node)
 
-                    self._manager.bridge.base_node_ucast(*update_args)
-                    LOGGER.debug("Node Update Args: {}".format(update_args))
+                        self._manager.bridge.base_node_ucast(*update_args)
+                        LOGGER.debug("Node Update Args: {}".format(update_args))
 
-        elif update_type:
-            node_str = ''.join(map(conversions.hex_to_bin, self._update_nodes.keys()))
-            update_args = ['smn__net_update', node_str]
+            else:
+                node_str = ''.join(map(conversions.hex_to_bin, self._update_nodes.keys()))
+                update_args = ['smn__net_update', node_str]
 
-            base_node = self._manager.bridge.base
-            update_args += self.__update_args(base_node)
+                base_node = self._manager.bridge.base
+                update_args += self.__update_args(base_node)
 
-            self._manager.bridge.base_node_ucast(*update_args)
-            LOGGER.debug("Network Update Args: {}".format(update_args))
+                self._manager.bridge.base_node_ucast(*update_args)
+                LOGGER.debug("Network Update Args: {}".format(update_args))
 
     def __update_args(self, node):
         """

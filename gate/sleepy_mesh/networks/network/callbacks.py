@@ -76,6 +76,9 @@ class NetworkCallbacks(NetworkExecutor):
                             # LOGGER.debug('Verifying node_update')
                             self._node_verify(node, input_dict)
 
+                        # Execute update if initial attempt failed
+                        self.execute_update(node)
+
             # Create if not found #
             if node is None:
                 if callback_type == 'long':
@@ -83,9 +86,7 @@ class NetworkCallbacks(NetworkExecutor):
                     node['off_sync'] = False
 
                 else:
-                    LOGGER.debug("Sending 'smn__long_ack' request to '" + str(input_dict['net_addr']) + "'")
-                    raw_net_addr = conversions.hex_to_bin(input_dict['net_addr'])
-                    self._manager.bridge.base_node_ucast('smn__request_long_ack', raw_net_addr)
+                    self._request_long_ack(input_dict['net_addr'])
 
             else:
                 if callback_type == 'long':
@@ -128,10 +129,6 @@ class NetworkCallbacks(NetworkExecutor):
                 if update_type in ('network_update', 'inactive_update', 'preset_update'):
                     # Verify that updates were properly executed
                     self._node_verify(node, input_dict)
-
-                    if node['type'] != 'base':
-                        node['off_sync'] = False
-                        self._manager.bridge.network_ucast(node['net_addr'], 'smn__short_ack')
 
             else:
                 # This node will be ignored during network update

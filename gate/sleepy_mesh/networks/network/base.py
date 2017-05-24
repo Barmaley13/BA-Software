@@ -219,8 +219,11 @@ class NetworkBase(DatabaseDict):
                 node['net_verify'] = False
 
                 if update_type == 'preset_update':
-                    node['off_sync'] = False
                     node['network_preset'] = True
+
+        # Request long acks from all nodes (just in case)
+        for net_addr in self._update_nodes.keys():
+            self._request_long_ack(net_addr)
 
         # Prompt about our success or failure
         update_complete_message = None
@@ -241,6 +244,12 @@ class NetworkBase(DatabaseDict):
         if self._update_complete_callback is not None:
             self._update_complete_callback()
             self._update_complete_callback = None
+
+    def _request_long_ack(self, net_addr):
+        """ Requests base to forward long ack from particular node """
+        raw_net_addr = conversions.hex_to_bin(net_addr)
+        self._manager.bridge.base_node_ucast('smn__request_long_ack', raw_net_addr)
+        LOGGER.debug("Sending 'smn__long_ack' request to '{}'".format(net_addr))
 
     ## Class-Private Methods ##
     def __generate_update_nodes(self, nodes=None):

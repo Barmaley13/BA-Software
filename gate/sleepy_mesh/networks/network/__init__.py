@@ -177,6 +177,9 @@ class WebNetwork(NetworkCallbacks):
                         self._start_update('preset_update', nodes)
                         break
 
+        # Execute update
+        self._execute_update()
+
     ## Class-Private Methods ##
     def __request_update(self, update_type, update_dict, update_message, nodes):
         if update_type in ('node_update', ):
@@ -196,6 +199,3 @@ class WebNetwork(NetworkCallbacks):
                     if not self.update_in_progress():
                         self._manager.websocket.send(strings.SYNC_WAITING, 'ws_init')
                         self._start_update(update_type, nodes)
-
-        # Execute update
-        self._execute_update()
