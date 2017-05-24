@@ -148,7 +148,7 @@ class WebNetwork(NetworkCallbacks):
         else:
             super(WebNetwork, self)._print_progress(node, append_message)
 
-    def _request_update(self, nodes, update_types=None):
+    def _request_update(self, nodes):
         """ Updates fields and performs particular network update (if needed) """
         if nodes is None:
             update_type = 'network_update'
@@ -158,29 +158,26 @@ class WebNetwork(NetworkCallbacks):
             self.__request_update(update_type, update_dict, update_message, nodes)
 
         else:
-            if update_types is None:
-                update_types = ('node_update', 'inactive_update', 'preset_update')
-
             for node in nodes:
                 update_message = strings.UPDATING_NODE + node['net_addr']
 
-                for update_type in update_types:
-                    if update_type in ('node_update', 'inactive_update'):
-                        update_dict = dict()
-                        if update_type == 'node_update':
-                            update_dict = node.update_dict.compare(node)
+                for update_type in ('node_update', 'inactive_update'):
+                    # Node Update
+                    if update_type == 'node_update':
+                        update_dict = node.update_dict.compare(node)
 
-                        elif update_type == 'inactive_update':
-                            update_dict = node.update_dict.compare(self)
+                    # Inactive Update
+                    else:
+                        update_dict = node.update_dict.compare(self)
 
-                        self.__request_update(update_type, update_dict, update_message, nodes)
+                    self.__request_update(update_type, update_dict, update_message, nodes)
 
             if not self.update_in_progress():
-                if 'preset_update' in update_types:
-                    for node in nodes:
-                        if common.network_preset_needed(node):
-                            self._start_update('preset_update', nodes)
-                            break
+                # Preset Update
+                for node in nodes:
+                    if common.network_preset_needed(node):
+                        self._start_update('preset_update', nodes)
+                        break
 
     ## Class-Private Methods ##
     def __request_update(self, update_type, update_dict, update_message, nodes):

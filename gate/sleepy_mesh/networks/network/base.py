@@ -145,7 +145,7 @@ class NetworkBase(DatabaseDict):
                 else:
                     output[field] = _update_dict[field]
 
-                    if update_type == 'network_update' and field in common.PRIMARY_NETWORK_FIELDS:
+                    if update_type == 'network_update' and field in common.NETWORK_FIELDS:
                         self._bridge_reboot_required = True
                         if field == 'aes_enable':
                             self._aes_update_required = True

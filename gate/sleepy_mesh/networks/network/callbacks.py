@@ -91,13 +91,12 @@ class NetworkCallbacks(NetworkExecutor):
                     node['off_sync'] = False
 
                 else:
+                    LOGGER.debug("Sending 'smn__long_ack' request to '" + str(input_dict['net_addr']) + "'")
                     if self._manager.autopilot():
-                        LOGGER.debug("Sending delete_node '" + str(input_dict['net_addr']) + "'")
                         raw_net_addr = conversions.hex_to_bin(input_dict['net_addr'])
                         self._manager.bridge.base_node_ucast('smn__request_long_ack', raw_net_addr)
 
                     else:
-                        LOGGER.debug("Sending 'smn__long_ack' request to '" + str(input_dict['net_addr']) + "'")
                         self._manager.bridge.network_ucast(input_dict['net_addr'], 'smn__long_ack')
 
             else:
@@ -168,7 +167,7 @@ class NetworkCallbacks(NetworkExecutor):
         self._update_completed()
 
     ## Overwrite Methods ##
-    def _request_update(self, nodes, update_types=None):
+    def _request_update(self, nodes):
         """ Blank method should be overwritten by a parent class """
         LOGGER.error("Method _request_update is not implemented!")
         raise NotImplementedError

@@ -304,9 +304,7 @@ class SleepyMeshManager(SleepyMeshScheduler):
         self.refresh_bridge_info()
 
     def _network_update_callback(self, *args):
-        """
-        Called by nodes after network update call as a confirmation
-        """
+        """ Called by nodes after network update call as a confirmation """
         self.networks[0].callback('network', *args)
 
         if network_preset_needed(self.bridge.base):
