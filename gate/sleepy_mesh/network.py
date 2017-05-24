@@ -76,7 +76,7 @@ class SleepyMeshNetwork(SleepyMeshStatistics):
             start = self._ct_ls()
             self._log_sync_start_time(start)
 
-            node, mcast_sync = self.networks[0].callback(callback_type, *args)
+            node = self.networks[0].callback(callback_type, *args)
 
             if node is not None:
                 off_sync_node = self.__check_off_sync(node)

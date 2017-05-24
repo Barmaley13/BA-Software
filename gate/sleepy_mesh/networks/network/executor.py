@@ -60,8 +60,6 @@ class NetworkExecutor(NetworkBase):
 
     def execute_update(self, node):
         """ Checks if network update failed on particular node """
-        mcast_sync = True
-
         update_type = self.update_in_progress()
         update_node = bool(node['net_verify'] == self._cancel_update)
         if update_node:
@@ -78,7 +76,6 @@ class NetworkExecutor(NetworkBase):
 
         if update_node:
             if update_type != 'node_update':
-                mcast_sync &= False
                 node['off_sync'] = True
 
             update_message = self._update_message(node)
@@ -91,8 +88,6 @@ class NetworkExecutor(NetworkBase):
                 self._print_progress(node, update_message)
 
             self.__update_node(node)
-
-        return mcast_sync
 
     ## Private Methods ##
     def execute_software_update(self, node):

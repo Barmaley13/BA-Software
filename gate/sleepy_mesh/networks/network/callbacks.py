@@ -46,7 +46,6 @@ class NetworkCallbacks(NetworkExecutor):
     def _node_callback(self, callback_type, *args):
         """ Called by nodes """
         node = None
-        mcast_sync = True
 
         input_dict = common.get_input_dict(callback_type, *args)
         if input_dict is not None:
@@ -66,7 +65,7 @@ class NetworkCallbacks(NetworkExecutor):
 
                     # Perform updates (if needed)
                     if not self.update_in_progress():
-                        mcast_sync &= self.execute_software_update(node)
+                        self.execute_software_update(node)
 
                     if not self.update_in_progress():
                         self._request_update([node])
@@ -78,11 +77,7 @@ class NetworkCallbacks(NetworkExecutor):
                             self._node_verify(node, input_dict)
 
                         # LOGGER.debug('Executing updates')
-                        mcast_sync &= self.execute_update(node)
-
-                elif not _node['presence']:
-                    if _node['mcast_presence']:
-                        mcast_sync &= False
+                        self.execute_update(node)
 
             # Create if not found #
             if node is None:
@@ -114,7 +109,7 @@ class NetworkCallbacks(NetworkExecutor):
 
                         node = self._manager.platforms.create_node(input_dict)
 
-        return node, mcast_sync
+        return node
 
     def _network_update_callback(self, callback_type, *args):
         """

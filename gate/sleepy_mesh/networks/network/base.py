@@ -261,7 +261,7 @@ class NetworkBase(DatabaseDict):
                     node['off_sync'] = False
                     node['network_preset'] = True
 
-                # Finalise network preset
+                # Finalize network preset
                 if update_type in ('network_update', 'preset_update'):
                     if node['type'] == 'node':
                         self._manager.bridge.network_ucast(node['net_addr'], 'smn__short_ack')
