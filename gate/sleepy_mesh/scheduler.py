@@ -5,10 +5,7 @@ Sleepy Mesh Scheduler Portion
 ### INCLUDES ###
 import logging
 
-from distutils.version import StrictVersion
-
 from gate.strings import AWAKE, SLEEP
-from gate.conversions import find_version
 
 from bridge import SNAP_POLL_DEVIATION
 from network import SleepyMeshNetwork
@@ -17,8 +14,6 @@ from node import DIAGNOSTIC_FIELDS
 
 
 ### CONSTANTS ###
-AUTOPILOT_BASE_VERSION = 'BASE_1.27'
-
 ## Strings ##
 LOG_DUMP = "Automatic Log Dump was executed!"
 LOG_DUMP_FAIL = "Automatic Log Dump failed!"
@@ -62,9 +57,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         super(SleepyMeshScheduler, self).__init__(**kwargs)
 
         # Internal Members #
-        self._pause = True
-
-        self._autopilot_present = False
+        self.__save_complete_callback = None
 
     ## Public Methods ##
     def init_scheduler(self):
@@ -97,159 +90,57 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
             self._calculate_current_draw(offline_awake_time)
 
-        # Determine auto pilot presence
-        base_software = self.bridge.base['software']
-        current_base_version = StrictVersion(find_version(base_software))
-        autopilot_base_version = StrictVersion(find_version(AUTOPILOT_BASE_VERSION))
-        self._autopilot_present = bool(current_base_version >= autopilot_base_version)
-
         # Start Scheduler
-        autopilot_state = not self.networks[0].update_in_progress()
-        self.resume_scheduler(autopilot_state)
+        self.resume_scheduler()
 
-    def autopilot(self, autopilot_state=None):
-        """
-        Turn "autopilot" mode on base node on/off.
-        Mode where base node is responsible for generating sleepy mesh cycles
-        """
-        if self._autopilot_present:
-            if autopilot_state is not None:
-                self._autopilot_state = autopilot_state
-
-                LOGGER.debug('Autopilot: ' + str(autopilot_state))
-                if autopilot_state:
-                    self._pause_scheduler()
-
-                    self.bridge.base_node_ucast('smn__autopilot', autopilot_state)
-                    self.bridge.base_node_ucast('smn__autopilot_notify', autopilot_state)
-
-                else:
-                    self.bridge.base_node_ucast('smn__autopilot', autopilot_state)
-                    # self.bridge.base_node_ucast(
-                    #     'callback', 'brg__stop_scheduler', 'smn__autopilot_notify', autopilot_state)
-
-                    self.bridge.base_node_ucast('smn__autopilot_notify', autopilot_state)
-                    self._resume_scheduler()
-
-                    self._complete_callback()
-
-        return self._autopilot_state
-
-    def resume_scheduler(self, autopilot_state=None, complete_callback=None):
+    def resume_scheduler(self, complete_callback=None):
         """ Resume scheduler either after stopping (or silencing) """
         LOGGER.debug('Resuming Scheduler!')
 
-        self._save_complete_callback = complete_callback
+        self.__save_complete_callback = complete_callback
+        self.bridge.base_node_ucast('smn__autopilot', True)
+        self.bridge.base_node_ucast('smn__autopilot_notify', True)
+        self.bridge.set_polling_mode('sleep')
 
-        if self._autopilot_present:
-            if autopilot_state is None:
-                autopilot_state = self._autopilot_state
-
-            self.autopilot(autopilot_state)
-
-        else:
-            self._resume_scheduler()
-
-            self._complete_callback()
+        if not self._save_in_progress:
+            self.__complete_callback()
 
     def silence_scheduler(self, complete_callback=None):
         """ Silences base scheduler """
         LOGGER.debug('Silencing Scheduler!')
 
-        self._save_complete_callback = complete_callback
-
-        if self._autopilot_present:
-            if self._autopilot_state:
-                self.bridge.base_node_ucast('smn__autopilot_notify', False)
-
-            else:
-                self._pause_scheduler()
-
-        else:
-            self._pause_scheduler()
+        self.__save_complete_callback = complete_callback
+        self.bridge.base_node_ucast('smn__autopilot_notify', False)
+        self.bridge.set_polling_mode('sleep')
 
         if not self._save_in_progress:
-            self._complete_callback()
+            self.__complete_callback()
 
     def stop_scheduler(self, complete_callback=None):
         """ Stops Scheduler completely """
         LOGGER.debug('Stopping Scheduler!')
 
-        self._save_complete_callback = complete_callback
-
-        if self._autopilot_present:
-            if self._autopilot_state:
-                self.bridge.base_node_ucast('smn__autopilot', False)
-                self.bridge.base_node_ucast('smn__autopilot_notify', False)
-
-            else:
-                self._pause_scheduler()
-
-        else:
-            self._pause_scheduler()
+        self.__save_complete_callback = complete_callback
+        self.bridge.base_node_ucast('smn__autopilot', False)
+        self.bridge.base_node_ucast('smn__autopilot_notify', False)
+        self.bridge.set_polling_mode('sleep')
 
         if not self._save_in_progress:
-            self._complete_callback()
+            self.__complete_callback()
 
     ## Private Methods ##
     # Sleepy Mesh Network States #
-    def _sleep(self):
-        """
-        Periodic Sleep function
-        Triggered after mcast sync has been performed (aka _sync method)
-        Ucast Mode:
-        _sync -> _sync_complete_handler -> _sleep
-        Mcast Mode:
-        _sync -> _mcast_sync -> _sync_complete_handler -> _sleep
-        """
-        if not self._autopilot_state:
-            if not self._pause:
-                # Calculated period minus sync processing timing
-                calculated_period = self.sleep_period() - self.wake_period() / 2 - self._ct_ls()
-                # LOGGER.debug('Awake Scheduled to ' + str(self._ct_ls() + calculated_period) + ' CT-LS')
-
-                # Set scheduler to trigger _awake
-                self.bridge.schedule(calculated_period, self._awake)
-
-                # Change bridge polling mode
-                self.bridge.set_polling_mode('sleep')
-
-        return False
-
     def _awake(self):
         """
         Periodic Awake function
         Triggered by scheduler, scheduler set by _sleep function
         """
-        if self._autopilot_state:
-            self._mesh_awake = True
-            self.__reset_flags()
-            self.websocket.send(AWAKE, 'ws_awake')
+        self._mesh_awake = True
 
-        else:
-            if not self._pause:
-                self._mesh_awake = True
+        self.__reset_flags()
+        self.websocket.send(AWAKE, 'ws_awake')
 
-                self.__reset_flags()
-                self._clear_sync_times()
-
-                # Calculated period minus processing/error timing
-                calculated_period = self.sleep_period() + self.wake_period() / 2 - self._ct_ls()
-                # LOGGER.debug('Timeout Scheduled to ' + str(self._ct_ls() + calculated_period) + ' CT-LS')
-
-                # Set scheduler to trigger timeout _sync
-                # (alternatively _sync is triggered after all nodes checked in with the gate)
-                self.bridge.schedule(calculated_period, self._sync)
-
-                self.websocket.send(AWAKE, 'ws_awake')
-
-                # Change bridge polling mode
-                if self['data_in']['node_average'] is None:
-                    self.bridge.set_polling_mode('awake')
-                else:
-                    self.bridge.set_polling_mode('awake', self['data_in']['node_average'] + SNAP_POLL_DEVIATION)
-
-        return False
+        self.bridge.set_polling_mode('awake')
 
     # Sync Related Methods #
     def _sync(self, callback_type=None):
@@ -257,32 +148,14 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         if callback_type is None:
             callback_type = 'timeout'
 
-        if self._autopilot_state:
-            self._mesh_awake = False
-            self._sync_type = callback_type
-            SleepyMeshBase._update_last_sync(self)
+        self._mesh_awake = False
+        self._sync_type = callback_type
+        SleepyMeshBase._update_last_sync(self)
 
-            # Patch for now
-            update_type = self.update_in_progress()
-            if update_type == 'node_update':
-                self._verify_updates()
-
-        else:
-            if not self._pause:
-                if self._mesh_awake:
-                    # Lock
-                    self._mesh_awake = False
-
-                    # Update last sync timing/statistics
-                    self._update_last_sync(callback_type)
-
-                    # Check if we need to execute any network updates
-                    self._verify_updates()
-
-                    # Send mcast to the network
-                    self._mcast_sync()
-
-        return False
+        # Check if we need to execute any network updates
+        network_ready = bool(self._sync_type != 'timeout')
+        network_ready |= bool(len(self.platforms.select_nodes('active')) == 0)
+        self.networks[0].verify_update(network_ready)
 
     def _sync_complete_handler(self, *args):
         """ Callback for sync complete """
@@ -293,34 +166,30 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         # LOGGER.debug('self._mcast_sync_id = ' + str(self._mcast_sync_id))
 
         if self._mcast_sync_id == packet_id:
-            # Put network to sleep state
-            self._sleep()
+            # Put bridge polling to sleep state
+            self.bridge.set_polling_mode('sleep')
 
             self._update_statistics_data()
             self.__update_nodes_data()
             self.__update_system_data()
 
             self.save()
+            self.__complete_callback()
 
-            if not self._autopilot_state:
-                # Do not refresh current web page if update is in progress
-                if self.update_in_progress():
-                    if self.update_in_progress('network_update'):
-                        if self.bridge.check_base_node_reboot():
-                            self.websocket.send(REBOOT_REQUEST, 'ws_init')
+            # Do not refresh current web page if update is in progress
+            if self.update_in_progress():
+                if self.update_in_progress('virgin'):
+                    self.uploader.check_upload('virgin')
 
-                    elif self.update_in_progress('virgin'):
-                        self.uploader.check_upload('virgin')
+                elif self.update_in_progress('base', 'node', 'gate'):
+                    if self.update_in_progress('base', 'gate'):
+                        self.networks[0].execute_software_update(self.bridge.base)
+                        self.bridge.check_base_node_reboot()
 
-                    elif self.update_in_progress('base', 'node', 'gate'):
-                        if self.update_in_progress('base', 'gate'):
-                            self.networks[0].execute_software_update(self.bridge.base)
-                            self.bridge.check_base_node_reboot()
+                    if self.update_in_progress():
+                        self.uploader.check_upload('_node')
 
-                        if self.update_in_progress():
-                            self.uploader.check_upload('_node')
-
-                    print(SLEEP)
+                print(SLEEP)
 
             if not self.update_in_progress():
                 if self.system_settings.virgins_enable:
@@ -336,40 +205,6 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         self.websocket.send(SLEEP, 'ws_sleep')
 
     ## Class-Private Methods ##
-    def _resume_scheduler(self):
-        """ Restart Scheduler after software update """
-        if self._pause:
-            self._pause = False
-
-            # LOGGER.debug("self._mesh_awake = " + str(self._mesh_awake))
-
-            if self._mesh_awake:
-                self._sync()
-            else:
-                self._awake()
-
-        # Do not reschedule
-        return False
-
-    def _pause_scheduler(self):
-        """ Pause Scheduler before software update """
-        if not self._pause:
-            self._pause = True
-
-            self._clear_sync_times()
-
-            # Just in case
-            self.bridge.set_polling_mode('sleep')
-
-        # Do not reschedule
-        return False
-
-    def _verify_updates(self):
-        """ Check if we need to execute any network updates """
-        network_ready = bool(self._sync_type != 'timeout')
-        network_ready |= bool(len(self.platforms.select_nodes('active')) == 0)
-        self.networks[0].verify_update(network_ready)
-
     def __reset_flags(self):
         """ Resets flags across other instances """
         self.nodes.reset_flags()
@@ -463,3 +298,9 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
                 if len(update_dict):
                     # Request node enables update
                     self.networks[0].request_update(update_dict, [node])
+
+    def __complete_callback(self):
+        """ Executes save complete callback (if needed) """
+        if self.__save_complete_callback is not None:
+            self.__save_complete_callback()
+            self.__save_complete_callback = None

@@ -312,7 +312,7 @@ class ComplexUploader(SimpleUploader):
             self.print_progress(install_message, strings.UPLOAD_PROGRESS)
             py_install.install_package(package_name, package_path)
 
-            self._manager.resume_scheduler(True)
+            self._manager.resume_scheduler()
 
             # Clean up
             if not self._clean_up('gate'):
@@ -452,14 +452,11 @@ class ComplexUploader(SimpleUploader):
     ## Upload Triggers ##
     def check_upload(self, check_type):
         """ Overloading method so we can implement cancel gate upload functionality """
-        software_upload_in_progress = False
-
         if self.update_in_progress('gate') and self.cancel_complex_upload:
             self.complex_upload()
-        else:
-            software_upload_in_progress = super(ComplexUploader, self).check_upload(check_type)
 
-        return software_upload_in_progress
+        else:
+            super(ComplexUploader, self).check_upload(check_type)
 
     ## Callback Methods ##
     def snap_upload_callback(self, status_code):

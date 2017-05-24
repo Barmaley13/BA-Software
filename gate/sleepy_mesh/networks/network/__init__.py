@@ -136,8 +136,6 @@ class WebNetwork(NetworkCallbacks):
             progress_percentage = None
             if not self._manager.update_in_progress('gate', 'database_import'):
                 node_progress_total_percentage = 95.0
-                if self._bridge_reboot_required:
-                    node_progress_total_percentage = 85.0
 
                 progress_percentage = (float(current_node) / float(total_nodes)) * node_progress_total_percentage
 
@@ -199,15 +197,5 @@ class WebNetwork(NetworkCallbacks):
                         self._manager.websocket.send(strings.SYNC_WAITING, 'ws_init')
                         self._start_update(update_type, nodes)
 
-        # Patch for now
-        update_type = self.update_in_progress()
-        # LOGGER.debug("update_type: " + str(update_type))
-        if update_type == 'node_update':
-            for node in self._update_nodes.values():
-                if node['type'] != 'base':
-                    # Send update request directly to base node
-                    update_args = ['smn__node_update', conversions.hex_to_bin(node['net_addr'])]
-                    update_args += self._update_args(node)
-
-                    self._manager.bridge.base_node_ucast(*update_args)
-                    # LOGGER.debug("Node Update Args: " + str(update_args))
+        # Execute update
+        self._execute_update()

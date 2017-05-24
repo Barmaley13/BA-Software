@@ -57,7 +57,6 @@ class SleepyMeshBase(DatabaseDict):
         self._sync_type = 'timeout'
 
         self._save_in_progress = False
-        self._save_complete_callback = None
 
         self._sync_average = None
         self._delay_average = None
@@ -135,8 +134,6 @@ class SleepyMeshBase(DatabaseDict):
 
         self._save_in_progress = False
 
-        self._complete_callback()
-
     ## Private Methods ##
     # Last Sync Related Methods #
     def _update_last_sync(self):
@@ -162,9 +159,3 @@ class SleepyMeshBase(DatabaseDict):
         output = CT_LS + "{0:.3f}".format(ct_ls)
 
         return output
-
-    def _complete_callback(self):
-        """ Executes save complete callback (if needed) """
-        if self._save_complete_callback is not None:
-            self._save_complete_callback()
-            self._save_complete_callback = None

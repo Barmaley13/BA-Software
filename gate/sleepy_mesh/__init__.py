@@ -84,13 +84,7 @@ class SleepyMeshManager(SleepyMeshScheduler):
 
                 'brg__notify': self._bridge_notify,
                 'brg__data': self._bridge_data,
-                'brg__statistics': self._bridge_statistics,
-                # 'brg__stop_scheduler': self._gate_resume_scheduler,
-
-                # # Obsolete network calls (Here to detect old software) #
-                # 'SMN_longLog': self._old_long_callback,
-                # 'SMN_shortLog': self._old_short_callback
-
+                'brg__statistics': self._bridge_statistics
             },
             # Handlers #
             'init_complete_handler': self._bridge_init_complete,
@@ -279,14 +273,6 @@ class SleepyMeshManager(SleepyMeshScheduler):
 
         self._sync_complete_handler(self._mcast_sync_id)
 
-    # def _gate_resume_scheduler(self, *args):
-    #     """ Resumes Gate Scheduler """
-    #     if self._autopilot_present:
-    #         if not self._autopilot_state:
-    #             self._resume_scheduler()
-    #
-    #             self._complete_callback()
-
     # Various Callbacks #
     def _base_reboot_callback(self, *args):
         """ Modified base reboot callback """
@@ -326,19 +312,3 @@ class SleepyMeshManager(SleepyMeshScheduler):
         Files network address and optionally ADC values
         """
         self._callback('short', *args)
-
-    # def _old_long_callback(self, *args):
-    #     """ Strictly to warn user about required software upgrade """
-    #     self.bridge.base.error.set_error('generic', OLD_SOFTWARE_DETECTED)
-    #     self._long_callback(*args)
-    #
-    #     # Parse data but don't do anything else
-    #     self.networks[0].callback('long', *args)
-    #
-    # def _old_short_callback(self, *args):
-    #     """ Strictly to warn user about required software upgrade """
-    #     self.bridge.base.error.set_error('generic', OLD_SOFTWARE_DETECTED)
-    #     self._short_callback(*args)
-    #
-    #     # Parse data but don't do anything else
-    #     self.networks[0].callback('short', *args)

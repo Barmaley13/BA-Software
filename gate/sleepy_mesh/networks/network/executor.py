@@ -22,7 +22,7 @@ NOT_VERIFIED_MESSAGE_MAP = {
 
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
-# LOGGER.setLevel(logging.DEBUG)
+LOGGER.setLevel(logging.DEBUG)
 
 
 ### CLASSES ###
@@ -56,7 +56,7 @@ class NetworkExecutor(NetworkBase):
                     self._manager.websocket.send(not_verified_message, 'ws_init')
 
             elif update_type == 'node_update' or network_ready or self._cancel_update:
-                self._finalize_update()
+                self._update_completed()
 
     def execute_update(self, node):
         """ Checks if network update failed on particular node """
@@ -87,17 +87,13 @@ class NetworkExecutor(NetworkBase):
 
                 self._print_progress(node, update_message)
 
-            self.__update_node(node)
+            self._execute_update(node)
 
     ## Private Methods ##
     def execute_software_update(self, node):
         """ Execute software updates on a node """
-        mcast_sync = True
-
         if node['software_update']:
-            # Do not sync if software update in progress!
-            software_upload_in_progress = self._manager.uploader.check_upload(node['type'])
-            mcast_sync &= not software_upload_in_progress
+            self._manager.uploader.check_upload(node['type'])
 
         elif node['post_software_update']:
             # Perform post software update procedures
@@ -111,32 +107,36 @@ class NetworkExecutor(NetworkBase):
 
             node['post_software_update'] = False
 
-        return mcast_sync
-
     ## Class-Private Methods ##
-    def __update_node(self, node):
-        """ Function sends RPC to update particular node """
-        update_args = ['smn__net_update']
+    def _execute_update(self, node=None):
+        """ Function sends RPC to update network or particular node """
         update_type = self.update_in_progress()
+        LOGGER.debug("Update Type: {}".format(update_type))
+        if update_type == 'node_update':
+            nodes = self._update_nodes.values()
+            if node is not None:
+                nodes = [node]
 
-        # Patch for now
-        if update_type != 'node_update':
-            # Old functionality
-            # if update_type == 'node_update':
-            #     update_args = ['smn__node_update']
+            for node in nodes:
+                if node['type'] != 'base':
+                    # Send update request directly to base node
+                    update_args = ['smn__node_update', conversions.hex_to_bin(node['net_addr'])]
+                    update_args += self.__update_args(node)
 
-            update_args += self._update_args(node)
+                    self._manager.bridge.base_node_ucast(*update_args)
+                    LOGGER.debug("Node Update Args: {}".format(update_args))
 
-            if node['type'] == 'base':
-                self._manager.bridge.base_node_ucast(*update_args)
-                LOGGER.debug("Base Update Args: " + str(update_args))
+        elif update_type:
+            node_str = ''.join(map(conversions.hex_to_bin, self._update_nodes.keys()))
+            update_args = ['smn__net_update', node_str]
 
-            elif node['type'] == 'node':
-                update_args = [node['net_addr']] + update_args
-                self._manager.bridge.network_ucast(*update_args)
-                LOGGER.debug("Node Update Args: " + str(update_args))
+            base_node = self._manager.bridge.base
+            update_args += self.__update_args(base_node)
 
-    def _update_args(self, node):
+            self._manager.bridge.base_node_ucast(*update_args)
+            LOGGER.debug("Network Update Args: {}".format(update_args))
+
+    def __update_args(self, node):
         """
         Creates network update arguments that are passed to rpc function and send to particular node/nodes
 

@@ -69,12 +69,11 @@ class SimpleUploader(SnapUploader):
                     target['_path'] = file_path
 
         # Restart scheduler (if needed)
-        self._manager.resume_scheduler(False, complete_callback=self.__start_simple_upload)
+        self._manager.resume_scheduler(complete_callback=self.__start_simple_upload)
 
     ## Upload Triggers ##
     def check_upload(self, check_type):
         """ Start software upload of particular type if target queue is not empty """
-        software_upload_in_progress = False
         # LOGGER.debug('check_type: ' + str(check_type))
         # LOGGER.debug('len(self._targets): ' + str(len(self._targets)))
         # LOGGER.debug('len(self._post_targets): ' + str(len(self._post_targets)))
@@ -90,7 +89,6 @@ class SimpleUploader(SnapUploader):
                         self.print_progress()
                         self.start_snap_upload(self._targets[0])
 
-                        software_upload_in_progress = True
                     else:
                         self.finish_upload(strings.UNKNOWN_ERROR, False)
 
@@ -109,7 +107,6 @@ class SimpleUploader(SnapUploader):
             elif check_type in ('node', '_node', 'base'):
                 self.snap_upload_callback(SUCCESS)
 
-        return software_upload_in_progress
 
     ## Callback Methods ##
     def base_reboot_callback(self, *args):
@@ -151,7 +148,7 @@ class SimpleUploader(SnapUploader):
             if target['type'] in ('node', 'base', 'virgin'):
                 if target['type'] in ('node', 'base'):
                     target['software_update'] = False
-                    self._manager.resume_scheduler(False)
+                    self._manager.resume_scheduler()
 
                     if target['type'] == 'base':
                         self._manager.bridge.request_base_node_reboot()
@@ -181,7 +178,7 @@ class SimpleUploader(SnapUploader):
         self._update_interface.finish_update(finish_message)
 
         # Restart scheduler
-        self._manager.resume_scheduler(True)
+        self._manager.resume_scheduler()
         # self._manager.bridge.schedule(RESUME_DELAY, self._manager.resume_scheduler)
 
     ## Class-Private Methods ##

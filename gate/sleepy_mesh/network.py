@@ -27,8 +27,6 @@ class SleepyMeshNetwork(SleepyMeshStatistics):
         super(SleepyMeshNetwork, self).__init__(**kwargs)
 
         # Internal Members #
-        self._pause = False
-
         self._mcast_sync_id = None
         self._ucast_sync_id = None
 
@@ -71,26 +69,25 @@ class SleepyMeshNetwork(SleepyMeshStatistics):
     # Bridge to Gate Methods #
     def _callback(self, callback_type, *args):
         """ Called by nodes """
-        if not self._pause:
-            # Note start time for the metrics
-            start = self._ct_ls()
-            self._log_sync_start_time(start)
+        # Note start time for the metrics
+        start = self._ct_ls()
+        self._log_sync_start_time(start)
 
-            node = self.networks[0].callback(callback_type, *args)
+        node = self.networks[0].callback(callback_type, *args)
 
-            if node is not None:
-                off_sync_node = self.__check_off_sync(node)
+        if node is not None:
+            off_sync_node = self.__check_off_sync(node)
 
-                # Note end time for the metrics
-                stop = self._ct_ls()
-                self._log_node_processing_time(node, start, stop)
+            # Note end time for the metrics
+            stop = self._ct_ls()
+            self._log_node_processing_time(node, start, stop)
 
-                # Perform Syncing Procedures
-                if not off_sync_node:
-                    self._sync(callback_type)
+            # Perform Syncing Procedures
+            if not off_sync_node:
+                self._sync(callback_type)
 
-            # Check for the next incoming message
-            self.bridge.poll_snap()
+        # Check for the next incoming message
+        self.bridge.poll_snap()
 
     ## Class-Private Methods ##
     def __check_off_sync(self, node):

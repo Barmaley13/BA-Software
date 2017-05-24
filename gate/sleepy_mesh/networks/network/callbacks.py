@@ -76,9 +76,6 @@ class NetworkCallbacks(NetworkExecutor):
                             # LOGGER.debug('Verifying node_update')
                             self._node_verify(node, input_dict)
 
-                        # LOGGER.debug('Executing updates')
-                        self.execute_update(node)
-
             # Create if not found #
             if node is None:
                 if callback_type == 'long':
@@ -87,12 +84,8 @@ class NetworkCallbacks(NetworkExecutor):
 
                 else:
                     LOGGER.debug("Sending 'smn__long_ack' request to '" + str(input_dict['net_addr']) + "'")
-                    if self._manager.autopilot():
-                        raw_net_addr = conversions.hex_to_bin(input_dict['net_addr'])
-                        self._manager.bridge.base_node_ucast('smn__request_long_ack', raw_net_addr)
-
-                    else:
-                        self._manager.bridge.network_ucast(input_dict['net_addr'], 'smn__long_ack')
+                    raw_net_addr = conversions.hex_to_bin(input_dict['net_addr'])
+                    self._manager.bridge.base_node_ucast('smn__request_long_ack', raw_net_addr)
 
             else:
                 if callback_type == 'long':
@@ -136,8 +129,9 @@ class NetworkCallbacks(NetworkExecutor):
                     # Verify that updates were properly executed
                     self._node_verify(node, input_dict)
 
-                    node['off_sync'] = False
-                    self._manager.bridge.network_ucast(node['net_addr'], 'smn__short_ack')
+                    if node['type'] != 'base':
+                        node['off_sync'] = False
+                        self._manager.bridge.network_ucast(node['net_addr'], 'smn__short_ack')
 
             else:
                 # This node will be ignored during network update
@@ -151,15 +145,11 @@ class NetworkCallbacks(NetworkExecutor):
 
     def _base_reboot_callback(self, callback_type, *args):
         """ Reboot confirmation triggered by Base node """
-        self._bridge_reboot_required = False
-
         self._manager.websocket.send(strings.BASE_REBOOT_COMPLETED, 'ws_init')
 
         if self._aes_update_required:
             self._aes_update_required = False
             self._manager.bridge.set_aes_nv_parameters(self.update_dict)
-
-        self._update_completed()
 
     ## Overwrite Methods ##
     def _request_update(self, nodes):

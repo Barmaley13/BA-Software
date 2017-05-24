@@ -74,7 +74,6 @@ class NetworkBase(DatabaseDict):
         self._update_interface = self._manager.update_interfaces.create(NETWORK_UPDATE_TYPES)
         self.update_in_progress = self._update_interface.update_type
 
-        self._bridge_reboot_required = False
         self._aes_update_required = False
         self._cancel_update = False
 
@@ -83,16 +82,11 @@ class NetworkBase(DatabaseDict):
     ## Public Methods ##
     def _start_update(self, update_type, nodes=None):
         """ Starts network update """
-        # Patch for now
-        if update_type != 'node_update':
-            self._manager.autopilot(False)
-
         self._update_interface.start_update(update_type)
         self._update_nodes = self.__generate_update_nodes(nodes)
 
     def _finish_update(self, finish_message=None):
         """ Finishes update """
-
         if self.update_in_progress():
             if not self._manager.update_in_progress('gate', 'database_import'):
                 self._update_interface.finish_update(finish_message)
@@ -103,8 +97,6 @@ class NetworkBase(DatabaseDict):
 
         self._cancel_update = False
         self._update_nodes = self.__generate_update_nodes()
-
-        self._manager.autopilot(True)
 
     ## Private Methods ##
     def _update_dict(self, node):
@@ -119,13 +111,10 @@ class NetworkBase(DatabaseDict):
         # Select dictionary
         _update_dict = self
         _current_dict = self
+        update_fields = common.NETWORK_UPDATE_FIELDS
 
         update_type = self.update_in_progress()
         # Format dictionary
-        update_fields = common.NODE_NETWORK_FIELDS
-        if node['type'] == 'base':
-            update_fields = common.BASE_NETWORK_FIELDS
-
         if update_type == 'node_update':
             _update_dict = node.update_dict
             _current_dict = node
@@ -146,7 +135,6 @@ class NetworkBase(DatabaseDict):
                     output[field] = _update_dict[field]
 
                     if update_type == 'network_update' and field in common.NETWORK_FIELDS:
-                        self._bridge_reboot_required = True
                         if field == 'aes_enable':
                             self._aes_update_required = True
             else:
@@ -204,33 +192,6 @@ class NetworkBase(DatabaseDict):
         """ Displays appropriate progress message depending on upload type """
         self._manager.websocket.send(append_message)
 
-    def _finalize_update(self):
-        """ Very last step of the network update procedure """
-        update_type = self.update_in_progress()
-        if update_type != 'node_update' and not self._cancel_update:
-            # Finalize network update
-            for node in self._update_nodes.values():
-                if node['net_verify']:
-                    update_args = [node['net_addr'], 'smn__net_reboot']
-                    self._manager.bridge.network_ucast(*update_args)
-
-                    if node['type'] == 'base':
-                        LOGGER.debug("Base Update Args: " + str(update_args))
-                    else:
-                        LOGGER.debug("Node Update Args: " + str(update_args))
-
-            # bridge_reboot_required Set?
-            # LOGGER.debug("Bridge Reboot Required = " + str(self._bridge_reboot_required))
-            if self._bridge_reboot_required:
-                # Yes => Reboot bridge node
-                self._manager.bridge.request_base_node_reboot()
-
-            else:
-                self._update_completed()
-
-        else:
-            self._update_completed()
-
     def _update_completed(self):
         """ Perform update complete procedures """
         # Perform specific network procedures
@@ -260,11 +221,6 @@ class NetworkBase(DatabaseDict):
                 if update_type == 'preset_update':
                     node['off_sync'] = False
                     node['network_preset'] = True
-
-                # Finalize network preset
-                if update_type in ('network_update', 'preset_update'):
-                    if node['type'] == 'node':
-                        self._manager.bridge.network_ucast(node['net_addr'], 'smn__short_ack')
 
         # Prompt about our success or failure
         update_complete_message = None

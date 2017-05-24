@@ -77,8 +77,6 @@ class SleepyMeshStatistics(SleepyMeshBase):
         self.__sync_processing_times = list()
         self.__delay_times = list()
 
-        self._autopilot_state = False
-
         # Create Headers
         self.headers = Headers(**HEADERS)
 
@@ -171,24 +169,8 @@ class SleepyMeshStatistics(SleepyMeshBase):
             self['data_in']['recent_sync_rate'] = self.__calculate_sync_rate('recent_sync_rate')
             self['data_in']['life_sync_rate'] = self.__calculate_sync_rate('life_sync_rate')
 
-            if not self._autopilot_state:
-                self['data_in']['node_average'] = self.__calculate_node_average()
-                LOGGER.debug('Average Node Processing Time: ' + str(self['data_in']['node_average']))
-
-                sync_start, sync_stop = self.__calculate_sync_times()
-
-                self['data_in']['sync_current'] = sync_stop - sync_start
-                self['data_in']['delay_current'] = self.__calculate_delay_current(sync_start, sync_stop)
-
-                self._sync_average = self.__calculate_sync_average(self.__sync_processing_times)
-                self._delay_average = self.__calculate_delay_average(self.__delay_times)
-
-                self['data_in']['sync_average'] = self._sync_average
-                self['data_in']['delay_average'] = self._delay_average
-
-            else:
-                self['data_in']['sync_average'] = self.__calculate_sync_average(self._sync_processing_times)
-                self['data_in']['delay_average'] = self.__calculate_delay_average(self._delay_times)
+            self['data_in']['sync_average'] = self.__calculate_sync_average(self._sync_processing_times)
+            self['data_in']['delay_average'] = self.__calculate_delay_average(self._delay_times)
 
             LOGGER.debug('Current Sync Processing Time: ' + str(self['data_in']['sync_current']))
             LOGGER.debug('Current Sync Delay: ' + str(self['data_in']['delay_current']))
@@ -248,39 +230,6 @@ class SleepyMeshStatistics(SleepyMeshBase):
                     sync_rate_sum += node_sync_rate
 
             output = int(sync_rate_sum / float(nodes_number))
-
-        return output
-
-    def __calculate_node_average(self):
-        """ Calculating node processing time averages """
-        output = None
-
-        if len(self._node_processing_times):
-            output = _rolling_average(self._node_processing_times)
-
-        return output
-
-    def __calculate_sync_times(self):
-        """ Calculating sync start and sync stop times """
-        if self._sync_start is None:
-            sync_start = self.sleep_period() - self._wake_period() / 2
-        else:
-            sync_start = self._sync_start
-
-        if self._sync_stop is None:
-            sync_stop = self.sleep_period() + self._wake_period() / 2
-        else:
-            sync_stop = self._sync_stop
-
-        return sync_start, sync_stop
-
-    def __calculate_delay_current(self, sync_start, sync_stop):
-        """ Calculating current delay time """
-        output = None
-        if self._sync_type != 'timeout':
-            output = (sync_start + sync_stop) / 2 - self.sleep_period()
-            if self._delay_average is not None:
-                output += self._delay_average
 
         return output
 
