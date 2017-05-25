@@ -205,7 +205,6 @@ class SleepyMeshManager(SleepyMeshScheduler):
         base_node = self.bridge.base
         if network_preset_needed(base_node):
             self.networks[0].request_update(nodes=[base_node])
-            self.networks[0].execute_update(base_node)
 
         else:
             self.init_scheduler()

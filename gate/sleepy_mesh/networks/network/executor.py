@@ -114,18 +114,13 @@ class NetworkExecutor(NetworkBase):
         if update_type:
             LOGGER.debug("Update Type: {}".format(update_type))
             if update_type == 'node_update':
-                nodes = self._update_nodes.values()
-                if node is not None:
-                    nodes = [node]
+                if node is not None and node['type'] != 'base':
+                    # Send update request directly to base node
+                    update_args = ['smn__node_update']
+                    update_args += self.__update_args(node)
 
-                for node in nodes:
-                    if node['type'] != 'base':
-                        # Send update request directly to base node
-                        update_args = ['smn__node_update', conversions.hex_to_bin(node['net_addr'])]
-                        update_args += self.__update_args(node)
-
-                        self._manager.bridge.base_node_ucast(*update_args)
-                        LOGGER.debug("Node Update Args: {}".format(update_args))
+                    self._manager.bridge.network_ucast(node['net_addr'], *update_args)
+                    LOGGER.debug("Node Update Args: {}".format(update_args))
 
             else:
                 node_str = ''.join(map(conversions.hex_to_bin, self._update_nodes.keys()))
