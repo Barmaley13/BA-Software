@@ -57,8 +57,6 @@ class SleepyMeshManager(SleepyMeshScheduler):
         # External Members #
         self.reboot_flag = False
 
-        self._read_statistics = False
-
     ## Public Methods ##
     def start(self):
         """ Procedure that starts Manager and the whole Sleepy Mesh Network """
@@ -211,11 +209,7 @@ class SleepyMeshManager(SleepyMeshScheduler):
 
     def _bridge_notify(self, bridge_state, bridge_message):
         """ Notify gate when one of the bridge states have changed """
-        if bridge_state in ('sleep', 'off_sync'):
-            self._read_statistics = bool(bridge_state == 'sleep')
-            self.bridge.base_node_ucast('smn__get_node_data')
-
-        elif bridge_state == 'awake':
+        if bridge_state == 'awake':
             self._awake()
 
         elif bridge_state == 'sync':
@@ -229,7 +223,7 @@ class SleepyMeshManager(SleepyMeshScheduler):
         if bridge_state in ('sync', 'off_sync'):
             self.websocket.send(bridge_message)
 
-    def _bridge_data(self, raw_data, last_packet):
+    def _bridge_data(self, raw_data):
         """ Bridge returning data to the gate """
         if raw_data is not None and len(raw_data):
             while len(raw_data):
@@ -255,9 +249,6 @@ class SleepyMeshManager(SleepyMeshScheduler):
                         # LOGGER.debug("raw_node_args length: " + str(len(raw_node_args)))
 
                         self.networks[0].callback(callback_type, *raw_node_args)
-
-        if self._read_statistics and last_packet:
-            self.bridge.base_node_ucast('smn__get_statistics')
 
     def _bridge_statistics(self, sync_current, delay_current):
         """ Bridge returning statistics data """
