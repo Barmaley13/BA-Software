@@ -220,7 +220,7 @@ class SleepyMeshManager(SleepyMeshScheduler):
 
             self._sync(callback_type)
 
-        if bridge_state in ('sync', 'off_sync'):
+        if bridge_state not in ('awake', 'sleep'):
             self.websocket.send(bridge_message)
 
     def _bridge_data(self, raw_data):

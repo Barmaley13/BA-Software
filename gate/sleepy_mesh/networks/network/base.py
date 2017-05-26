@@ -106,27 +106,26 @@ class NetworkBase(DatabaseDict):
         :param node: Provide node
         :return: Network update dictionary
         """
-        output = OrderedDict()
+        update_type = self.update_in_progress()
 
-        # Select dictionary
+        # Select dictionaries and update fields
         _update_dict = self
         _current_dict = self
         update_fields = common.NETWORK_UPDATE_FIELDS
-
-        update_type = self.update_in_progress()
-        # Format dictionary
         if update_type == 'node_update':
-            _update_dict = node.update_dict
             _current_dict = node
             update_fields = common.NODE_UPDATE_FIELDS
 
-        elif update_type in ('network_update', 'inactive_update') and not self._cancel_update:
+        # Format dictionary
+        if update_type and update_type != 'preset_update' and not self._cancel_update:
             if update_type == 'network_update':
                 _update_dict = self.update_dict
 
-            elif update_type == 'inactive_update':
+            elif update_type in ('node_update', 'inactive_update'):
                 _update_dict = node.update_dict
 
+        # Format output
+        output = OrderedDict()
         for field in update_fields:
             if field in _update_dict.keys():
                 if _update_dict[field] is None:
@@ -134,9 +133,13 @@ class NetworkBase(DatabaseDict):
                 else:
                     output[field] = _update_dict[field]
 
-                    if update_type == 'network_update' and field in common.NETWORK_FIELDS:
-                        if field == 'aes_enable':
-                            self._aes_update_required = True
+                    if self._cancel_update:
+                        self._aes_update_required = False
+
+                    else:
+                        if update_type == 'network_update' and field in common.NETWORK_FIELDS:
+                            if field == 'aes_enable':
+                                self._aes_update_required = True
             else:
                 output[field] = _current_dict[field]
 

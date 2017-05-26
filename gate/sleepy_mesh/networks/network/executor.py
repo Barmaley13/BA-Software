@@ -113,25 +113,27 @@ class NetworkExecutor(NetworkBase):
         update_type = self.update_in_progress()
         if update_type:
             LOGGER.debug("Update Type: {}".format(update_type))
-            if update_type == 'node_update':
-                if node is not None and node['type'] != 'base':
-                    # Send update request directly to base node
-                    raw_net_addr = conversions.hex_to_bin(node['net_addr'])
-                    update_args = ['smn__node_update', raw_net_addr]
+            if update_type == 'network_update':
+                node = self._manager.bridge.base
+
+            if node is not None:
+                if update_type == 'node_update':
+                    if node['type'] != 'base':
+                        # Send update request directly to base node
+                        raw_net_addr = conversions.hex_to_bin(node['net_addr'])
+                        update_args = ['smn__node_update', raw_net_addr]
+                        update_args += self.__update_args(node)
+
+                        self._manager.bridge.base_node_ucast(*update_args)
+                        LOGGER.debug("Node Update Args: {}".format(update_args))
+
+                else:
+                    node_str = ''.join(map(conversions.hex_to_bin, self._update_nodes.keys()))
+                    update_args = ['smn__net_update', node_str]
                     update_args += self.__update_args(node)
 
                     self._manager.bridge.base_node_ucast(*update_args)
-                    LOGGER.debug("Node Update Args: {}".format(update_args))
-
-            else:
-                node_str = ''.join(map(conversions.hex_to_bin, self._update_nodes.keys()))
-                update_args = ['smn__net_update', node_str]
-
-                base_node = self._manager.bridge.base
-                update_args += self.__update_args(base_node)
-
-                self._manager.bridge.base_node_ucast(*update_args)
-                LOGGER.debug("Network Update Args: {}".format(update_args))
+                    LOGGER.debug("Network Update Args: {}".format(update_args))
 
     def __update_args(self, node):
         """

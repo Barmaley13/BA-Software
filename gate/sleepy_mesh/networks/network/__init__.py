@@ -155,6 +155,9 @@ class WebNetwork(NetworkCallbacks):
 
             self.__request_update(update_type, update_dict, update_message, nodes)
 
+            # Execute update
+            self._execute_update()
+
         else:
             for node in nodes:
                 update_message = strings.UPDATING_NODE + node['net_addr']
@@ -177,15 +180,14 @@ class WebNetwork(NetworkCallbacks):
                         self._start_update('preset_update', nodes)
                         break
 
-        # Execute update
-        self._execute_update()
+            # Execute update
+            self._execute_update(nodes[0])
 
     ## Class-Private Methods ##
     def __request_update(self, update_type, update_dict, update_message, nodes):
-        if update_type in ('node_update', ):
+        update_fields = common.NETWORK_UPDATE_FIELDS
+        if update_type == 'node_update':
             update_fields = common.NODE_UPDATE_FIELDS
-        else:
-            update_fields = common.NETWORK_UPDATE_FIELDS
 
         for field in update_fields:
             if field in update_dict.keys():
