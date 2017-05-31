@@ -68,8 +68,7 @@ LOGGER = logging.getLogger(__name__)
 ### FUNCTIONS ###
 def network_preset_needed(node):
     """ Determines if the node needs network preset performed """
-    output = not node['network_preset'] and node['type'] == 'base'
-    output |= not node['network_preset'] and not node['inactive']
+    output = not node['network_preset'] and not node['inactive'] and node['type'] == 'node'
     return output
 
 

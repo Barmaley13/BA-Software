@@ -211,7 +211,7 @@ class Bridge(object):
 
         if len(self._requests):
             if self._requests[0]['post_processing'] is not None:
-                value = self._requests[0]['post_processing'](value)
+                value = self._requests[0]['post_processing'](*args)
 
             if self._requests[0]['reference'] is not None:
                 reference_dicts = self._requests[0]['reference']

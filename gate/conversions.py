@@ -315,7 +315,7 @@ def get_base_int_rem(float_value):
     return integer, remainder
 
 
-def get_base_float(int_value, remainder_value):
+def get_base_float(int_value, remainder_value=None):
     """ Convert integer and remainder portions(ints) to float """
     output = float(int_value) * BASE_COUNTER_PRECISION / 1000
     LOGGER.debug('get_base_float: ' + str(output))

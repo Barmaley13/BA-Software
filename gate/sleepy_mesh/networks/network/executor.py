@@ -34,11 +34,6 @@ class NetworkExecutor(NetworkBase):
         if update_type:
             LOGGER.debug("Update Type: {}".format(update_type))
 
-            if update_type in ('network_update', 'preset_update'):
-                # Trigger base node update
-                base_node = self._manager.bridge.base
-                self.execute_update(base_node)
-
             # Check if we can finalize network updates #
             all_verified = True
             for node in self._update_nodes.values():

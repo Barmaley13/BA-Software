@@ -30,27 +30,35 @@ from networks import NETWORK_UPDATE_TYPES
 from scheduler import SleepyMeshScheduler
 from statistics import SYSTEM_STATISTICS_FILE
 
-
 ### CONSTANTS ###
 # Automatic Refresh Info after bridge reboot
-BRIDGE_REFRESH_INFO_DELAY = 1.5     # seconds
+BRIDGE_REFRESH_INFO_DELAY = 1.5  # seconds
 
 ## Strings ##
 GATE_ADDR = "Gate Network Address: "
 BASE_ADDR = "Base Network Address: "
 BASE_FIRMWARE = "Base Firmware: "
 BASE_SOFTWARE = "Base Software: "
-BASE_CHANNEL = "Base Channel: "
-BASE_DATA_RATE = "Data Rate: "
+BASE_CHANNEL = "Network Channel: "
+BASE_DATA_RATE = "Network Data Rate: "
+BASE_WAKE = "Network Wake Period: "
+BASE_SLEEP = "Network Sleep Period: "
 
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
 
 
+### FUNCTIONS ###
+def _round_base_float(int_value, remainder_value=None):
+    output = round(get_base_float(int_value, remainder_value), 1)
+    return output
+
+
 ### CLASSES ###
 class SleepyMeshManager(SleepyMeshScheduler):
     """ Class managing sleepy mesh network (Sleep/Wake cycles) """
+
     def __init__(self, **kwargs):
         super(SleepyMeshManager, self).__init__(**kwargs)
 
@@ -130,6 +138,20 @@ class SleepyMeshManager(SleepyMeshScheduler):
                     'reference': (self.networks[0], self.bridge.base),
                     'reference_key': 'software',
                     'description': BASE_SOFTWARE
+                },
+                {
+                    'request': 'nv__get_wake_integer',
+                    'reference': self.networks[0],
+                    'reference_key': 'wake',
+                    'description': BASE_WAKE,
+                    'post_processing': _round_base_float
+                },
+                {
+                    'request': 'nv__get_sleep_integer',
+                    'reference': self.networks[0],
+                    'reference_key': 'sleep',
+                    'description': BASE_SLEEP,
+                    'post_processing': _round_base_float
                 }
             ]
         }
@@ -201,11 +223,7 @@ class SleepyMeshManager(SleepyMeshScheduler):
         """ Perform various procedures before starting scheduler """
         # Overwrite Base Wake and Sleep values
         base_node = self.bridge.base
-        if network_preset_needed(base_node):
-            self.networks[0].request_update(nodes=[base_node])
-
-        else:
-            self.init_scheduler()
+        self.init_scheduler()
 
     def _bridge_notify(self, bridge_state, bridge_message):
         """ Notify gate when one of the bridge states have changed """
@@ -258,7 +276,7 @@ class SleepyMeshManager(SleepyMeshScheduler):
 
         for statistics_key, statistics_value in statistics_map.items():
             if statistics_value is not None:
-                statistics_value = get_base_float(statistics_value, 0)
+                statistics_value = get_base_float(statistics_value)
             self['data_in'][statistics_key] = statistics_value
 
         self._sync_complete_handler(self._mcast_sync_id)
@@ -282,10 +300,6 @@ class SleepyMeshManager(SleepyMeshScheduler):
     def _network_update_callback(self, *args):
         """ Called by nodes after network update call as a confirmation """
         self.networks[0].callback('network', *args)
-
-        if network_preset_needed(self.bridge.base):
-            self.networks[0].verify_update(True)
-            self.init_scheduler()
 
     def _long_callback(self, *args):
         """
