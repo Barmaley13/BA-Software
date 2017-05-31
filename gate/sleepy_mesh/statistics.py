@@ -14,7 +14,6 @@ from platforms.headers.system import HEADERS
 
 ### CONSTANTS ###
 # Rolling Average Constants
-NODE_AVERAGE_LENGTH = 50
 SYNC_AVERAGE_LENGTH = 10
 
 ## Sleepy Mesh Statistics Defaults ##
@@ -23,7 +22,6 @@ STATISTICS_DEFAULTS['name'] = 'System'
 STATISTICS_DEFAULTS['data_in'] = dict()
 STATISTICS_DEFAULTS['data_in']['recent_sync_rate'] = None
 STATISTICS_DEFAULTS['data_in']['life_sync_rate'] = None
-STATISTICS_DEFAULTS['data_in']['node_average'] = None                      # Average Node Processing Time
 STATISTICS_DEFAULTS['data_in']['sync_current'] = None                      # Current Sync Processing Time
 STATISTICS_DEFAULTS['data_in']['sync_average'] = None                      # Average Sync Processing Time
 STATISTICS_DEFAULTS['data_in']['delay_current'] = None                     # Current Sync Delay
@@ -148,11 +146,7 @@ class SleepyMeshStatistics(SleepyMeshBase):
             if stop > start:
                 node_processing_time = stop - start
 
-                if self._mesh_awake:
-                    node['data_in']['node_current'] = node_processing_time
-                    _log_processing_time(self._node_processing_times, node_processing_time, NODE_AVERAGE_LENGTH)
-
-                else:
+                if not self._mesh_awake:
                     if node['off_sync_time'] is None:
                         node['off_sync_time'] = node_processing_time
 

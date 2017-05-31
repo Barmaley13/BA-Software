@@ -218,12 +218,6 @@ LIFE_SYNC_RATE = {
     }
 }
 
-NODE_PROCESSING_TIME = {
-    'name': 'Current Node Processing Time',
-    'data_field': 'node_current',
-    'groups': {'unit_list': [MILLISECONDS]}
-}
-
 TOTAL_DRAW = {
     'name': 'Estimated Battery',
     'data_field': 'total_draw',
@@ -241,6 +235,6 @@ SWE_BATT = {'name': 'Battery', 'data_field': 'batt', 'groups': {'unit_list': [BM
 SWE_LQ = {'name': 'Link Quality', 'data_field': 'lq', 'groups': {'unit_list': [PERCENT]}}
 SWE_MCU_TEMP = {'name': 'Temperature', 'data_field': 'temp', 'groups': {'unit_list': [MCU_CELSIUS, FAHRENHEIT]}}
 
-GLOBAL_DIAGNOSTIC_HEADERS = (LIFE_TIME, RECENT_SYNC_RATE, LIFE_SYNC_RATE, NODE_PROCESSING_TIME, TOTAL_DRAW)
+GLOBAL_DIAGNOSTIC_HEADERS = (LIFE_TIME, RECENT_SYNC_RATE, LIFE_SYNC_RATE, TOTAL_DRAW)
 JOWA_DIAGNOSTIC_HEADERS = (JOWA_LQ, JOWA_MCU_TEMP)
 SWE_DIAGNOSTIC_HEADERS = (SWE_BATT, SWE_LQ)

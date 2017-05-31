@@ -12,8 +12,8 @@ from .base import NodeBase
 RECENT_SYNCS_NUMBER = 10
 
 ## Diagnostics Constants ##
-DIAGNOSTIC_FIELDS = ('life_time', 'recent_sync_rate', 'life_sync_rate', 'node_current', 'total_draw')
-DIAGNOSTIC_VALUES = (0.0, 100.0, 100.0, None, 0.0)
+DIAGNOSTIC_FIELDS = ('life_time', 'recent_sync_rate', 'life_sync_rate', 'total_draw')
+DIAGNOSTIC_VALUES = (0.0, 100.0, 100.0, 0.0)
 
 ## Node Capacity Draw ##
 DEFAULT_CURRENT_DRAW_TEMP = 25.0
@@ -109,11 +109,6 @@ class NodeDiagnostics(NodeBase):
             self['constants']['life_sync_rate']['successful_syncs'] += 1
 
         self['constants']['life_sync_rate']['total_syncs'] += 1
-
-        if not self['presence']:
-            self['data_in']['node_current'] = None
-
-        LOGGER.debug("self['data_in']['node_current']: " + str(self['data_in']['node_current']))
 
     def _reset_current_draw(self):
         """ Resets current draw """

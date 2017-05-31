@@ -33,12 +33,6 @@ LIFE_SYNC_RATE = {
     'groups': {'unit_list': [PERCENT]}
 }
 
-NODE_AVERAGE = {
-    'name': 'Average Node Processing Time',
-    'data_field': 'node_average',
-    'groups': {'unit_list': [MILLISECONDS]}
-}
-
 SYNC_CURRENT = {
     'name': 'Current Wake Time',
     'data_field': 'sync_current',
@@ -72,7 +66,6 @@ HEADERS = {
         LIFE_TIME,
         RECENT_SYNC_RATE,
         LIFE_SYNC_RATE,
-        NODE_AVERAGE,
         SYNC_CURRENT,
         SYNC_AVERAGE,
         DELAY_CURRENT,
