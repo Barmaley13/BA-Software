@@ -90,9 +90,6 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
             self._calculate_current_draw(offline_awake_time)
 
-        # Start Snap Polling
-        self.bridge.set_polling_mode('sleep')
-
         # Start Scheduler
         self.resume_scheduler()
 
@@ -103,7 +100,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         self.__save_complete_callback = complete_callback
         self.bridge.base_node_ucast('smn__autopilot', True)
         self.bridge.base_node_ucast('smn__autopilot_notify', True)
-        # self.bridge.set_polling_mode('sleep')
+        self.bridge.set_polling_mode('sleep')
 
         if not self._save_in_progress:
             self.__complete_callback()
@@ -114,7 +111,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
         self.__save_complete_callback = complete_callback
         self.bridge.base_node_ucast('smn__autopilot_notify', False)
-        # self.bridge.set_polling_mode('sleep')
+        self.bridge.set_polling_mode('sleep')
 
         if not self._save_in_progress:
             self.__complete_callback()
@@ -126,7 +123,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         self.__save_complete_callback = complete_callback
         self.bridge.base_node_ucast('smn__autopilot', False)
         self.bridge.base_node_ucast('smn__autopilot_notify', False)
-        # self.bridge.set_polling_mode('sleep')
+        self.bridge.set_polling_mode('sleep')
 
         if not self._save_in_progress:
             self.__complete_callback()
@@ -143,7 +140,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         self.__reset_flags()
         self.websocket.send(AWAKE, 'ws_awake')
 
-        # self.bridge.set_polling_mode('awake')
+        self.bridge.set_polling_mode('awake')
 
     # Sync Related Methods #
     def _sync(self, callback_type=None):
@@ -165,7 +162,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
     def _sync_complete(self):
         """ Callback for sync complete """
         # Put bridge polling to sleep state
-        # self.bridge.set_polling_mode('sleep')
+        self.bridge.set_polling_mode('sleep')
 
         self._update_statistics_data()
         self.__update_nodes_data()
