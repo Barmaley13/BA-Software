@@ -35,14 +35,14 @@ JOWA_MAX = {
     'default_value': JOWA_ADC_MAX
 }
 
-SWE_MAX = {
-    'name': 'adc_max',
-    'default_value': SWE_ADC_MAX
-}
-
 JOWA_REF = {
     'name': 'adc_ref',
     'default_value': JOWA_ADC_REF
+}
+
+SWE_MAX = {
+    'name': 'adc_max',
+    'default_value': SWE_ADC_MAX
 }
 
 ## Global Header Constants, Variables and Units ##
@@ -228,13 +228,40 @@ TOTAL_DRAW = {
 
 # Platform Specific Diagnostics Headers #
 # Note: It is actually Link Quality but Per requested to rename to Signal Strength
-JOWA_LQ = {'name': 'Signal Strength', 'data_field': 'lq', 'groups': {'unit_list': [PERCENT]}}
-JOWA_MCU_TEMP = {'name': 'MCU Temperature', 'data_field': 'temp', 'groups': {'unit_list': [MCU_CELSIUS, FAHRENHEIT]}}
+JOWA_LQ = {
+    'name': 'Signal Strength',
+    'data_field': 'lq',
+    'groups': {'unit_list': [PERCENT]}
+}
+JOWA_MCU_TEMP = {
+    'name': 'MCU Temperature',
+    'data_field': 'temp',
+    'groups': {'unit_list': [MCU_CELSIUS, FAHRENHEIT]}
+}
 
-SWE_BATT = {'name': 'Battery', 'data_field': 'batt', 'groups': {'unit_list': [BM_VOLTAGE]}}
-SWE_LQ = {'name': 'Link Quality', 'data_field': 'lq', 'groups': {'unit_list': [PERCENT]}}
-SWE_MCU_TEMP = {'name': 'Temperature', 'data_field': 'temp', 'groups': {'unit_list': [MCU_CELSIUS, FAHRENHEIT]}}
+SWE_BATT = {
+    'name': 'Battery',
+    'data_field': 'batt',
+    'groups': {'unit_list': [BM_VOLTAGE]}
+}
+SWE_LQ = {
+    'name': 'Link Quality',
+    'data_field': 'lq',
+    'groups': {'unit_list': [PERCENT]}
+}
+SWE_MCU_TEMP = {
+    'name': 'Temperature',
+    'data_field': 'temp',
+    'groups': {'unit_list': [MCU_CELSIUS, FAHRENHEIT]}
+}
 
-GLOBAL_DIAGNOSTIC_HEADERS = (LIFE_TIME, RECENT_SYNC_RATE, LIFE_SYNC_RATE, TOTAL_DRAW)
+## Platform Specific Dynamic Imports ##
+JOWA_CONSTANTS = (JOWA_MAX, JOWA_REF)
+SWE_CONSTANTS = (SWE_MAX, )
+
+DISPLAY_HEADERS = ()
+SWE_DISPLAY_HEADERS = (SWE_MCU_TEMP, )
+
+DIAGNOSTIC_HEADERS = (LIFE_TIME, RECENT_SYNC_RATE, LIFE_SYNC_RATE, TOTAL_DRAW)
 JOWA_DIAGNOSTIC_HEADERS = (JOWA_LQ, JOWA_MCU_TEMP)
 SWE_DIAGNOSTIC_HEADERS = (SWE_BATT, SWE_LQ)

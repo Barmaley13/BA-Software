@@ -152,10 +152,12 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         self._sync_type = callback_type
         SleepyMeshBase._update_last_sync(self)
 
-        # Check if we need to execute any network updates
+        # This check is obsolete but we keep it for now in case
+        # Gate misses complete message from Base node
         network_ready = bool(self._sync_type != 'timeout')
         network_ready |= bool(len(self.platforms.select_nodes('active')) == 0)
-        self.networks[0].verify_update(network_ready)
+        # Verify update (if update is in progress)
+        self.networks[0].verify_update(network_ready=network_ready)
 
     def _sync_complete_handler(self, *args):
         """ Callback for sync complete """

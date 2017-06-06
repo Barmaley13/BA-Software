@@ -93,15 +93,15 @@ def yellow():
     __drive_led(RED_LED, True)
 
 
-def button():
+def button_pressed():
     """ Returns state of the E10 button. True - pressed, False - released """
-    button_state = False
+    output = False
 
     if platforms.PLATFORM == platforms.SYNAPSE_E10:
-        button_state = not bool(os.system("/usr/bin/" + BUTTON + " ?PB10"))
+        output = not bool(os.system("/usr/bin/" + BUTTON + " ?PB10"))
 
     if platforms.PLATFORM == platforms.RASPBERRY_PI:
         __init_rpi3_leds()
-        button_state = not GPIO.input(BUTTON)
+        output = not GPIO.input(BUTTON)
 
-    return button_state
+    return output

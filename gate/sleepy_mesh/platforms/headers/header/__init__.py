@@ -142,10 +142,10 @@ class Header(HeaderBase):
                             # Check/Clear Alarms
                             self._check_alarms(provider, group_variable, calculated_value, alarm_type)
 
-    # TODO: Combine similarities in _check_alarms and _clear_alarms
     def _check_alarms(self, provider, group_variable, calculated_value, alarm_type):
         """
         Checks if any alarms or sensor circuitry faults has been triggered
+        Alternatively clear alarms
         :return: NA
         """
         # Determine Register

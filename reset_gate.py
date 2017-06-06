@@ -8,7 +8,7 @@ For more detailed information refer to documentation under ~/gate_data/docs
 import time
 
 from gate.main import reset_aes_settings
-from gate.leds import off, green, red, yellow, button
+from gate.leds import off, green, red, yellow, button_pressed
 from gate.system import SYSTEM_DEFAULTS
 from gate.configure import configure_system, clean_system
 
@@ -20,7 +20,7 @@ PULSE_DURATION = 0.25       # seconds
 ### MAIN ###
 if __name__ == '__main__':
     # Do fancy LED flashing while button is pressed
-    while button():
+    while button_pressed():
         for color in (green, red, yellow):
             color()
             time.sleep(PULSE_DURATION)

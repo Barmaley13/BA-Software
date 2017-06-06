@@ -9,8 +9,7 @@ import logging
 from gate.sleepy_mesh.node import ADC_FIELDS
 
 from base import NodeHeaders
-from common import JOWA_MAX, JOWA_REF, SWE_MAX, FLOATING_SWITCH
-from common import GLOBAL_DIAGNOSTIC_HEADERS, JOWA_DIAGNOSTIC_HEADERS, SWE_DIAGNOSTIC_HEADERS, SWE_MCU_TEMP
+import common
 
 
 ### CONSTANTS ###
@@ -34,8 +33,8 @@ def generate_node_headers(platform):
 
         headers_kwargs = {
             'platform': platform,
-            'display_headers': (),
-            'diagnostics_headers': GLOBAL_DIAGNOSTIC_HEADERS
+            'display_headers': common.DISPLAY_HEADERS,
+            'diagnostics_headers': common.DIAGNOSTIC_HEADERS
         }
 
         # Total count of repeating sensor indexes
@@ -82,25 +81,29 @@ def generate_node_headers(platform):
                             if header_index == 0:
                                 if 'constants' not in sensor_headers[kwarg][header_index]['groups']:
                                     sensor_headers[kwarg][header_index]['groups']['constants'] = list()
-                                if platform_company == 'jowa':
-                                    sensor_headers[kwarg][header_index]['groups']['constants'].append(JOWA_MAX)
-                                    sensor_headers[kwarg][header_index]['groups']['constants'].append(JOWA_REF)
-                                elif platform_company == 'swe':
-                                    sensor_headers[kwarg][header_index]['groups']['constants'].append(SWE_MAX)
+
+                                constants_name = platform_company.upper() + '_CONSTANTS'
+                                if hasattr(common, constants_name):
+                                    constants = getattr(common, constants_name)
+                                    sensor_headers[kwarg][header_index]['groups']['constants'].extend(constants)
 
                             # Add floating switch variable (if needed)
                             if 'unit_list' not in sensor_headers[kwarg][header_index]['groups']:
                                 sensor_headers[kwarg][header_index]['groups']['unit_list'] = list()
-                            # sensor_headers[kwarg][header_index]['groups']['unit_list'].append(FLOATING_SWITCH)
+                            # sensor_headers[kwarg][header_index]['groups']['unit_list'].append(common.FLOATING_SWITCH)
 
                         headers_kwargs[kwarg] += sensor_headers[kwarg]
 
         # Add some global/common data to header kwargs
-        if platform_company == 'jowa':
-            headers_kwargs['diagnostics_headers'] += JOWA_DIAGNOSTIC_HEADERS
-        elif platform_company == 'swe':
-            headers_kwargs['display_headers'] += (SWE_MCU_TEMP, )
-            headers_kwargs['diagnostics_headers'] += SWE_DIAGNOSTIC_HEADERS
+        display_headers_name = platform_company.upper() + '_DISPLAY_HEADERS'
+        if hasattr(common, display_headers_name):
+            display_headers = getattr(common, display_headers_name)
+            headers_kwargs['display_headers'] += display_headers
+
+        diagnostic_headers_name = platform_company.upper() + '_DIAGNOSTIC_HEADERS'
+        if hasattr(common, diagnostic_headers_name):
+            diagnostic_headers = getattr(common, diagnostic_headers_name)
+            headers_kwargs['diagnostics_headers'] += diagnostic_headers
 
         # Create headers with newly generated kwargs
         output = NodeHeaders(**headers_kwargs)

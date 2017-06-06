@@ -28,8 +28,8 @@ LOGGER = logging.getLogger(__name__)
 ### CLASSES ###
 class NetworkExecutor(NetworkBase):
     ## Public Methods ##
-    def verify_update(self, network_ready):
-        """ Checks if network update has been verified """
+    def verify_update(self, network_ready=False):
+        """ Checks if update in progress has been verified """
         update_type = self.update_in_progress()
         if update_type:
             LOGGER.debug("Update Type: {}".format(update_type))
