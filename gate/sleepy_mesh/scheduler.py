@@ -90,6 +90,9 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
             self._calculate_current_draw(offline_awake_time)
 
+        # Start Snap Polling
+        self.bridge.set_polling_mode('sleep')
+
         # Start Scheduler
         self.resume_scheduler()
 
@@ -100,7 +103,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         self.__save_complete_callback = complete_callback
         self.bridge.base_node_ucast('smn__autopilot', True)
         self.bridge.base_node_ucast('smn__autopilot_notify', True)
-        self.bridge.set_polling_mode('sleep')
+        # self.bridge.set_polling_mode('sleep')
 
         if not self._save_in_progress:
             self.__complete_callback()
@@ -111,7 +114,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
         self.__save_complete_callback = complete_callback
         self.bridge.base_node_ucast('smn__autopilot_notify', False)
-        self.bridge.set_polling_mode('sleep')
+        # self.bridge.set_polling_mode('sleep')
 
         if not self._save_in_progress:
             self.__complete_callback()
@@ -123,7 +126,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         self.__save_complete_callback = complete_callback
         self.bridge.base_node_ucast('smn__autopilot', False)
         self.bridge.base_node_ucast('smn__autopilot_notify', False)
-        self.bridge.set_polling_mode('sleep')
+        # self.bridge.set_polling_mode('sleep')
 
         if not self._save_in_progress:
             self.__complete_callback()
@@ -140,7 +143,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         self.__reset_flags()
         self.websocket.send(AWAKE, 'ws_awake')
 
-        self.bridge.set_polling_mode('awake')
+        # self.bridge.set_polling_mode('awake')
 
     # Sync Related Methods #
     def _sync(self, callback_type=None):
@@ -159,48 +162,41 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
         # Verify update (if update is in progress)
         self.networks[0].verify_update(network_ready=network_ready)
 
-    def _sync_complete_handler(self, *args):
+    def _sync_complete(self):
         """ Callback for sync complete """
-        # Find out type of sync
-        packet_id = args[0]
+        # Put bridge polling to sleep state
+        # self.bridge.set_polling_mode('sleep')
 
-        # LOGGER.debug('packet_id = ' + str(packet_id))
-        # LOGGER.debug('self._mcast_sync_id = ' + str(self._mcast_sync_id))
+        self._update_statistics_data()
+        self.__update_nodes_data()
+        self.__update_system_data()
 
-        if self._mcast_sync_id == packet_id:
-            # Put bridge polling to sleep state
-            self.bridge.set_polling_mode('sleep')
+        self.save()
+        self.__complete_callback()
 
-            self._update_statistics_data()
-            self.__update_nodes_data()
-            self.__update_system_data()
+        # Do not refresh current web page if update is in progress
+        if self.update_in_progress():
+            if self.update_in_progress('virgin'):
+                self.uploader.check_upload('virgin')
 
-            self.save()
-            self.__complete_callback()
+            elif self.update_in_progress('base', 'node', 'gate'):
+                if self.update_in_progress('base', 'gate'):
+                    self.networks[0].execute_software_update(self.bridge.base)
+                    self.bridge.check_base_node_reboot()
 
-            # Do not refresh current web page if update is in progress
-            if self.update_in_progress():
-                if self.update_in_progress('virgin'):
-                    self.uploader.check_upload('virgin')
+                if self.update_in_progress():
+                    self.uploader.check_upload('_node')
 
-                elif self.update_in_progress('base', 'node', 'gate'):
-                    if self.update_in_progress('base', 'gate'):
-                        self.networks[0].execute_software_update(self.bridge.base)
-                        self.bridge.check_base_node_reboot()
+            print(SLEEP)
 
-                    if self.update_in_progress():
-                        self.uploader.check_upload('_node')
+        if not self.update_in_progress():
+            if self.system_settings.virgins_enable:
+                # Else search for virgins and current refresh web page
+                self.networks[0].virgins.search(self._refresh_current_web_page)
 
-                print(SLEEP)
-
-            if not self.update_in_progress():
-                if self.system_settings.virgins_enable:
-                    # Else search for virgins and current refresh web page
-                    self.networks[0].virgins.search(self._refresh_current_web_page)
-
-                else:
-                    # Refresh Web Interface with new data
-                    self._refresh_current_web_page()
+            else:
+                # Refresh Web Interface with new data
+                self._refresh_current_web_page()
 
     def _refresh_current_web_page(self):
         """ Trigger web server to update all the information right after sync """

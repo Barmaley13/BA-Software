@@ -94,7 +94,6 @@ class SleepyMeshManager(SleepyMeshScheduler):
             },
             # Handlers #
             'init_complete_handler': self._bridge_init_complete,
-            'sync_complete_handler': self._sync_complete_handler,
             # Initial NV Parameters #
             'init_nv_param': {
                 'aes_key': self.networks[0]['aes_key'],
@@ -282,7 +281,7 @@ class SleepyMeshManager(SleepyMeshScheduler):
                 statistics_value = get_base_float(statistics_value)
             self['data_in'][statistics_key] = statistics_value
 
-        self._sync_complete_handler(self._mcast_sync_id)
+        self._sync_complete()
 
     # Various Callbacks #
     def _base_reboot_callback(self, *args):

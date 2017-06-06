@@ -149,9 +149,6 @@ class Bridge(object):
         self._set_default_nv_parameters()
         self.set_aes_nv_parameters(self._bridge_init_info['init_nv_param'])
 
-        # Note: Initialized here for proper initializing moment
-        self.com.set_hook(snap.hooks.HOOK_RPC_SENT, self._bridge_init_info['sync_complete_handler'])
-
         # Set GATE Address (for Dynamic Addressing)
         self.base_node_ucast('smn__set_gate_addr')
 
