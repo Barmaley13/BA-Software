@@ -47,12 +47,12 @@ class NetworkExecutor(NetworkBase):
 
             LOGGER.debug("All Verified: " + str(all_verified))
 
-            if not all_verified:
+            if not all_verified and not self._cancel_update:
                 if self._cancel_update in NOT_VERIFIED_MESSAGE_MAP:
                     not_verified_message = NOT_VERIFIED_MESSAGE_MAP[self._cancel_update]
                     self._manager.websocket.send(not_verified_message, 'ws_init')
 
-            elif update_type == 'node_update' or network_ready or self._cancel_update:
+            else:
                 self._update_completed()
 
     def execute_update(self, node):

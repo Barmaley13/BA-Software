@@ -238,7 +238,7 @@ class SleepyMeshManager(SleepyMeshScheduler):
             self._sync(callback_type)
 
         elif bridge_state == 'net_complete':
-            self.networks[0].verify_update(network_ready=True)
+            self.networks[0].verify_update()
 
         if bridge_state not in ('awake', 'sleep'):
             self.websocket.send(bridge_message)
