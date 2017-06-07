@@ -233,11 +233,6 @@ JOWA_LQ = {
     'data_field': 'lq',
     'groups': {'unit_list': [PERCENT]}
 }
-JOWA_MCU_TEMP = {
-    'name': 'MCU Temperature',
-    'data_field': 'temp',
-    'groups': {'unit_list': [MCU_CELSIUS, FAHRENHEIT]}
-}
 
 SWE_BATT = {
     'name': 'Battery',
@@ -249,8 +244,9 @@ SWE_LQ = {
     'data_field': 'lq',
     'groups': {'unit_list': [PERCENT]}
 }
-SWE_MCU_TEMP = {
-    'name': 'Temperature',
+
+MCU_TEMP = {
+    'name': 'MCU Temperature',
     'data_field': 'temp',
     'groups': {'unit_list': [MCU_CELSIUS, FAHRENHEIT]}
 }
@@ -260,8 +256,8 @@ JOWA_CONSTANTS = (JOWA_MAX, JOWA_REF)
 SWE_CONSTANTS = (SWE_MAX, )
 
 DISPLAY_HEADERS = ()
-SWE_DISPLAY_HEADERS = (SWE_MCU_TEMP, )
+SWE_DISPLAY_HEADERS = ()
 
 DIAGNOSTIC_HEADERS = (LIFE_TIME, RECENT_SYNC_RATE, LIFE_SYNC_RATE, TOTAL_DRAW)
-JOWA_DIAGNOSTIC_HEADERS = (JOWA_LQ, JOWA_MCU_TEMP)
-SWE_DIAGNOSTIC_HEADERS = (SWE_BATT, SWE_LQ)
+JOWA_DIAGNOSTIC_HEADERS = (JOWA_LQ, MCU_TEMP)
+SWE_DIAGNOSTIC_HEADERS = (SWE_BATT, SWE_LQ, MCU_TEMP)

@@ -11,7 +11,7 @@ from gate.database import DatabaseDict
 
 ### CONSTANTS ###
 ## Error Register Length ##
-LENGTH = 16
+LENGTH = 16             # len(ADC_FIELDS) * 2
 
 ## Default SNMP Dictionary ##
 # Working with lists and indexes just to test code!!!

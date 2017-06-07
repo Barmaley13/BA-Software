@@ -192,8 +192,6 @@ class Header(HeaderBase):
                 # Extend Message (if needed)
                 if _alarm_triggered:
                     # LOGGER.debug("Alarm Type: " + str(alarm_type))
-                    # LOGGER.debug("Generic Alarm Enable: " + str(generic_alarm_enabled))
-                    # LOGGER.debug("User Alarm Enable: " + str(user_alarm_enabled))
                     # LOGGER.debug("Error Register: " + str(error_register))
                     # LOGGER.debug("Error Code: " + str(error_code))
 
