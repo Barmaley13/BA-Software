@@ -11,7 +11,9 @@ from gate.database import DatabaseDict
 
 ### CONSTANTS ###
 ## Error Register Length ##
-LENGTH = 16             # len(ADC_FIELDS) * 2
+# Should be at least len(ADC_FIELDS)*2
+# Dynamic value would be len(headers) (either display or diagnostics, whatever is bigger) * 2
+LENGTH = 24
 
 ## Default SNMP Dictionary ##
 # Working with lists and indexes just to test code!!!

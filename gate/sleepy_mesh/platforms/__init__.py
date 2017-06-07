@@ -34,7 +34,7 @@ class Platforms(ModifiedOrderedDict):
 
         default_platforms = OrderedDict()
         default_platforms['jowa-1203'] = Platform('jowa-1203', self._nodes)
-        default_platforms['swe-11111111'] = Platform('swe-11111111', self._nodes)
+        default_platforms['swe-1111'] = Platform('swe-1111', self._nodes)
         default_platforms['virgins'] = Platform('virgins', self._nodes)
 
         super(Platforms, self).__init__(

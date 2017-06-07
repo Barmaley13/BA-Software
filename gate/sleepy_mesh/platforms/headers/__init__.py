@@ -98,7 +98,7 @@ def generate_node_headers(platform):
         display_headers_name = platform_company.upper() + '_DISPLAY_HEADERS'
         if hasattr(common, display_headers_name):
             display_headers = getattr(common, display_headers_name)
-            headers_kwargs['display_headers'] += display_headers
+            headers_kwargs['display_headers'] = display_headers + headers_kwargs['display_headers']
 
         diagnostic_headers_name = platform_company.upper() + '_DIAGNOSTIC_HEADERS'
         if hasattr(common, diagnostic_headers_name):
