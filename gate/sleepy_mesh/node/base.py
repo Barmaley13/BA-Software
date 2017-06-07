@@ -147,9 +147,8 @@ class NodeBase(DatabaseDict):
     ## Public Methods ##
     def reset_flags(self):
         """
-        Sets presence and off_sync flags to False
-        As well as mcast presence.
-        System won't wait on the node that is not mcast present and will sync nodes without that particular node.
+        Sets presence and off_sync flags to False. As well as mcast presence.
+        Bridge fulfils networking function. This is just for user reference.
         :return: NA
         """
         # Update active & timeout flags #

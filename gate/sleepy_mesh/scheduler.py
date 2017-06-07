@@ -268,27 +268,23 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
     def __validate_node_enables(self, node):
         """ Check node enables against header enables. Fix any inconsistencies. """
-        if node['presence'] and not self.update_in_progress():
-            if node['inactive']:
-                for enable_type in ('live', 'log'):
-                    if node.headers is not None:
-                        # Overwrite headers
-                        node.headers.node_enables(enable_type, node, overwrite_headers=True)
-            else:
-                # Update headers (if needed)
-                update_dict = dict()
+        if node.headers is not None:
+            if node['presence'] and not self.update_in_progress():
+                if not node['inactive']:
+                    # Update headers (if needed)
+                    update_dict = dict()
 
-                for enable_type in ('live', 'log'):
-                    header_enable = node.headers.node_enables(enable_type, node)
-                    if node[enable_type + '_enable'] != header_enable:
-                        LOGGER.warning('Node and header ' + enable_type + '_enables do not match!')
-                        LOGGER.debug('Node ' + enable_type + '_enable: ' + str(node[enable_type + '_enable']))
-                        LOGGER.debug('Header ' + enable_type + '_enable: ' + str(header_enable))
-                        update_dict[enable_type + '_enable'] = header_enable
+                    for enable_type in ('live', 'log'):
+                        header_enable = node.headers.node_enables(enable_type, node)
+                        if node[enable_type + '_enable'] != header_enable:
+                            LOGGER.warning('Node and header ' + enable_type + '_enables do not match!')
+                            LOGGER.debug('Node ' + enable_type + '_enable: ' + str(node[enable_type + '_enable']))
+                            LOGGER.debug('Header ' + enable_type + '_enable: ' + str(header_enable))
+                            update_dict[enable_type + '_enable'] = header_enable
 
-                if len(update_dict):
-                    # Request node enables update
-                    self.networks[0].request_update(update_dict, [node])
+                    if len(update_dict):
+                        # Request node enables update
+                        self.networks[0].request_update(update_dict, [node])
 
     def __complete_callback(self):
         """ Executes save complete callback (if needed) """
