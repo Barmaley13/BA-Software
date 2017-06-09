@@ -115,8 +115,8 @@
                 %generate_warnings_row(alert_group_name, alert_groups[-1], all_groups)
                 
                 %# Generate Alerts in a group
-                %alert_messages = target.headers.alert_messages(alert_group_key)            
-                %for alert_key, alert_message in alert_messages.items():
+                %alarm_messages = target.headers.alarm_messages(alert_group_key)
+                %for alert_key, alert_message in alarm_messages.items():
                     %alert_key_list = alert_key.split('-')
                     %error_field = alert_key_list[0]
                     %error_code = alert_key_list[1]

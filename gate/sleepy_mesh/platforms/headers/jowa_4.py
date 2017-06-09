@@ -4,6 +4,10 @@ Jowa Header, Code #4
 4-20 Input
 """
 
+### IMPORTS ###
+from common import SHORT_CIRCUIT, OPEN_CIRCUIT
+
+
 ### CONSTANTS ###
 ## 4-20 Constants ##
 M4 = {
@@ -71,8 +75,10 @@ LFO = {
 I420 = {
     'name': 'Current',
     'formula': '(((self/adc_max)*adc_ref)/r420)',
-    'min_alarm': 0.002,     # short circuit
-    'max_alarm': 0.040      # open circuit
+    'min_alarm': 0.002,
+    'min_alarm_message': SHORT_CIRCUIT,
+    'max_alarm': 0.040,
+    'max_alarm_message': OPEN_CIRCUIT
 }
 MEASUREMENT = {
     'name': 'measurement',

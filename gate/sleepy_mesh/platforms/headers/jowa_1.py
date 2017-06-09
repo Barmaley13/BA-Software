@@ -4,6 +4,10 @@ Jowa Header, Code #1
 Level/Volume Pair
 """
 
+### IMPORTS ###
+from common import SHORT_CIRCUIT, OPEN_CIRCUIT
+
+
 ### CONSTANTS ###
 ## Level Constants ##
 TH = {
@@ -166,8 +170,10 @@ LEVEL_K2 = {
 LEVEL_RST = {
     'name': 'Level Resistance',
     'formula': '(rpl*self/adc_max)/(1-self/adc_max)',
-    'min_alarm': 25,        # short circuit
-    'max_alarm': 20000      # open circuit
+    'min_alarm': 25,
+    'min_alarm_message': SHORT_CIRCUIT,
+    'max_alarm': 20000,
+    'max_alarm_message': OPEN_CIRCUIT
 }
 _METERS = {
     'name': '_meters',

@@ -51,8 +51,8 @@ class WebHandler(WebHandlerBase):
             else:
                 target = active_platforms.values()[0]
 
-            alert_messages = target.headers.alert_messages('all')
-            for alert_key in alert_messages.keys():
+            alarm_messages = target.headers.alarm_messages('all')
+            for alert_key in alarm_messages.keys():
                 # Get Error field and error code
                 alert_key_list = alert_key.split('-')
                 error_field = alert_key_list[0]

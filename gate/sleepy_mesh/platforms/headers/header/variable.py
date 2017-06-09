@@ -9,7 +9,6 @@ import parser
 import logging
 
 from base import HeaderBase
-from common import OPEN_CIRCUIT, SHORT_CIRCUIT
 
 
 ### CONSTANTS ###
@@ -75,10 +74,10 @@ class HeaderVariable(HeaderBase):
             '_external': False,
             # Short Circuit
             'min_alarm': None,
-            'min_alarm_message': SHORT_CIRCUIT,
+            'min_alarm_message': None,
             # Open Circuit
             'max_alarm': None,
-            'max_alarm_message': OPEN_CIRCUIT
+            'max_alarm_message': None
 
         }
         defaults.update(kwargs)

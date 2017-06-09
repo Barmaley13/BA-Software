@@ -246,7 +246,7 @@ class PagesJsonData(StatusIcons):
                         if live_units['internal_name'] == 'floating_switch':
                             _switch_state = bool(live_units.get_float(node))
                             switch_state = FLOATING_SWITCH_STATES[_switch_state]
-                        sensor_fault = live_header.sensor_fault(node)
+                        sensor_fault = node.error.sensor_fault(live_header)
 
                         for potential_warning in (switch_state, sensor_fault):
                             if potential_warning is not None:
@@ -273,7 +273,7 @@ class PagesJsonData(StatusIcons):
                         if not node['presence']:
                             json_dict['nodes'][-1]['series'][-1]['color'] = 'yellow'
                         else:
-                            alarm_triggered = live_header.alarm_triggered(node)
+                            alarm_triggered = node.error.alarm_triggered(live_header)
                             # LOGGER.debug("alarm_triggered = " + str(alarm_triggered))
 
                             if alarm_triggered:

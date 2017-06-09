@@ -11,6 +11,10 @@ from gate.conversions import time_str
 
 
 ### CONSTANTS ###
+## Strings ##
+OPEN_CIRCUIT = ' indicate that sensor circuit is open!'
+SHORT_CIRCUIT = ' indicate that sensor circuit is shorted!'
+
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
@@ -47,13 +51,15 @@ SWE_MAX = {
 
 ## Global Header Constants, Variables and Units ##
 FLOATING_SWITCH = {
-    'name': 'floating_switch',
+    'name': 'Floating Switch',
     'formula': '1-round(self/adc_max)',         # Opposite polarity
     'measuring_units': 'on/off',
     'min_value': 0,
     'max_value': 1.0,
     'min_alarm': 0.5,
+    'min_alarm_message': SHORT_CIRCUIT,
     'max_alarm': 0.5,
+    'max_alarm_message': OPEN_CIRCUIT
 }
 
 # Percent Units #

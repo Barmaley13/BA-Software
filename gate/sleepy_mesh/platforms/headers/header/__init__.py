@@ -15,9 +15,7 @@ import logging
 
 from py_knife.ordered_dict import OrderedDict
 
-from gate.strings import FIELD_UNIT
-
-from common import OPEN_CIRCUIT, SHORT_CIRCUIT, fetch_item
+from common import fetch_item
 from base import HeaderBase
 from constant import HeaderConstant
 from variable import HeaderVariable
@@ -25,10 +23,6 @@ from unit import HeaderUnit
 
 
 ### CONSTANTS ###
-## Strings ##
-OF_NODE1 = FIELD_UNIT + " '"
-OF_NODE2 = "' "
-
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
@@ -37,7 +31,7 @@ LOGGER = logging.getLogger(__name__)
 ### CLASSES ###
 class Header(HeaderBase):
     """ Header class holding constants, variables, units and modbus units as well as number of methods """
-    def __init__(self, data_field, platform, header_type, header_position, groups, **kwargs):
+    def __init__(self, name, data_field, platform, header_type, header_position, groups, **kwargs):
         """
         Initializes header
 
@@ -63,6 +57,7 @@ class Header(HeaderBase):
                     new_group_kwargs = {
                         'data_field': data_field,
                         'platform': platform,
+                        'header_name': name,
                         'header_type': header_type,
                         'header_position': header_position
                     }
@@ -79,10 +74,14 @@ class Header(HeaderBase):
         # Initialize Defaults
         defaults = {
             # Global Must Haves
+            'name': name,
             'data_field': data_field,
             'platform': platform,
+            'header_name': name,
             'header_type': header_type,
             'header_position': header_position,
+            '_external': True,
+
             # Default Cookies
             'live_cookie': {'units': 0, 'table_units': [0]},
             'log_cookie': {'units': 0, 'table_units': [0]},
@@ -93,22 +92,6 @@ class Header(HeaderBase):
 
         defaults.update(kwargs)
         super(Header, self).__init__(**defaults)
-
-        self.update({
-            # Alarm Messages
-            'alert_messages': {
-                'sensor_fault': {
-                    'min_alarm': self._alert_message('sensor_fault', 'min_alarm'),
-                    'max_alarm': self._alert_message('sensor_fault', 'max_alarm')
-                },
-                'alarms': {
-                    'min_alarm': self._alert_message('alarms', 'min_alarm'),
-                    'max_alarm': self._alert_message('alarms', 'max_alarm')
-                }
-            }
-        })
-
-        # print('Alert Messages: {}'.format(self['alert_messages']))
 
     ## Formula Related ##
     def apply_formulas(self, provider):
@@ -127,113 +110,39 @@ class Header(HeaderBase):
                     calculated_value = group_variable.apply_formula(provider)
 
                     # We need to filter proper group_variables that apply for checking/clearing alarms
-                    for alarm_type in ('min_alarm', 'max_alarm'):
-                        check_alarm_enable = False
-                        if group_variable['_external']:
-                            _alarm_name = self.alarm_units(provider)['internal_name']
-                            check_alarm_enable |= bool(group_variable['internal_name'] == _alarm_name)
-                        else:
-                            check_alarm_enable |= bool(group_variable[alarm_type] is not None)
+                    check_alarm_enable = True
+                    if group_variable['_external']:
+                        _alarm_name = self.alarm_units(provider)['internal_name']
+                        check_alarm_enable = bool(_alarm_name == group_variable['internal_name'])
 
-                        if check_alarm_enable:
-                            LOGGER.debug("\nGroup Variable: " + str(group_variable['name']) +
-                                         ' Field: ' + str(field) +
-                                         ' Header: ' + str(self['internal_name']))
-                            # Check/Clear Alarms
-                            self._check_alarms(provider, group_variable, calculated_value, alarm_type)
+                    if check_alarm_enable:
+                        LOGGER.debug('Group Variable: {} Field: {} Header: {}'.format(
+                            group_variable['name'], field, self['internal_name']))
 
-    def _check_alarms(self, provider, group_variable, calculated_value, alarm_type):
-        """
-        Checks if any alarms or sensor circuitry faults has been triggered
-        Alternatively clear alarms
-        :return: NA
-        """
-        # Determine Register
-        if group_variable['_external']:
-            error_register = 'alarms'
-            alarm_mask_key = 'header_position'
-            error_message = self['name']
-            alarm_enable = self.alarm_enable(provider, alarm_type)
-        else:
-            error_register = 'sensor_fault'
-            alarm_mask_key = 'data_field_position'
-            error_message = group_variable['name']
-            alarm_enable = bool(group_variable[alarm_type] is not None)
-
-        if 'net_addr' in provider and provider['net_addr'] is not None:
-            error_message = OF_NODE1 + provider['name'] + OF_NODE2 + error_message
-        else:
-            error_message = provider['name'] + ' ' + error_message
-
-        # Check for Error/Alarm/Fault
-        _alarm_triggered = False
-        if alarm_enable:
-            # Fetch Alarm Threshold
-            if group_variable['_external']:
-                alarm_value = self.alarm_value(provider, alarm_type)
-            else:
-                alarm_value = group_variable[alarm_type]
-
-            # LOGGER.debug("Alarm Value: " + str(alarm_value) + " Type: " + str(type(alarm_value)))
-            # LOGGER.debug("Alarm Units: " + str(self.alarm_units(provider)['internal_name']))
-            # LOGGER.debug("Calculated Value: " + str(calculated_value) +
-            #              " Type: " + str(type(calculated_value)))
-            # LOGGER.debug("Calculated Value Units: " + str(group_variable['internal_name']))
-
-            # Check and Set Alarm
-            if type(alarm_value) in (float, int) and type(calculated_value) in (float, int):
-                if alarm_type == 'min_alarm':
-                    # Min Alarm Check
-                    _alarm_triggered = bool(calculated_value < alarm_value)
-                elif alarm_type == 'max_alarm':
-                    # Max Alarm Check
-                    _alarm_triggered = bool(calculated_value > alarm_value)
-
-                # Extend Message (if needed)
-                if _alarm_triggered:
-                    # LOGGER.debug("Alarm Type: " + str(alarm_type))
-                    # LOGGER.debug("Error Register: " + str(error_register))
-                    # LOGGER.debug("Error Code: " + str(error_code))
-
-                    # Report Error/Alarm/Fault (if any)
-                    if group_variable[alarm_type + '_message']:
-                        error_message += group_variable[alarm_type + '_message']
-
-        # Set/Clear Alarm Error Code
-        error_field = error_register + '_' + self['header_type']
-        error_code = group_variable[alarm_mask_key] * 2 + ('min_alarm', 'max_alarm').index(alarm_type)
-
-        if _alarm_triggered and self.enables(provider, 'live_enable'):
-            provider.error.set_error(error_field, error_code, error_message)
-            LOGGER.debug("*** " + alarm_type + " Set! ***")
-        else:
-            provider.error.clear_error(error_field, error_code)
-            LOGGER.debug("*** " + alarm_type + " Clear! ***")
+                        # Check/Clear Alarms
+                        group_variable.check_alarms(provider, calculated_value)
 
     ## Alarm Message ##
-    def _alert_message(self, error_register, alarm_type):
+    def alarm_messages(self, error_register, alarm_type):
         """ Fetch alarm messages for this particular header """
-        alarm_message = None
+        output = None
 
-        field_types = {'sensor_fault': 'variables', 'alarms': 'unit_list'}
+        field_types = {'alarms': 'unit_list', 'sensor_fault': 'variables'}
         if error_register in field_types.keys():
             if alarm_type in ('min_alarm', 'max_alarm'):
 
                 for group_variable in getattr(self, field_types[error_register]).values():
-                    alarm_message = None
-                    if group_variable[alarm_type] is not None or \
-                            (error_register == 'alarms' and group_variable['header_type'] == 'display'):
-                        if error_register == 'sensor_fault':
-                            alarm_message = group_variable['name']
-                        else:
-                            alarm_message = self['name']
+                    if error_register == 'alarms':
+                        check_alarm_message = group_variable['header_type'] == 'display'
+                    else:
+                        check_alarm_message = group_variable.alarm_enable(None, alarm_type)
 
-                        if alarm_message is not None:
-                            if group_variable[alarm_type + '_message']:
-                                alarm_message += group_variable[alarm_type + '_message']
-                                break
+                    if check_alarm_message:
+                        output = group_variable.alarm_message(alarm_type)
+                        if output is not None:
+                            break
 
-        return alarm_message
+        return output
 
     ## Default Cookie ##
     def default_cookie(self, page_type):
@@ -361,40 +270,34 @@ class Header(HeaderBase):
 
         return output
 
-    def alarm_triggered(self, provider):
+    def alarm_mask(self):
         """
-        :return: True or False depending if alarm was triggered or not
+        :return: Alarm Mask
         """
-        alarm_mask = 1 << self['header_position'] * 2
-        alarm_mask |= 1 << (self['header_position'] * 2 + 1)
-        # LOGGER.debug("alarm_mask = " + str(alarm_mask))
+        output = 1 << self['header_position'] * 2
+        output |= 1 << (self['header_position'] * 2 + 1)
+        # LOGGER.debug("alarm_mask = " + str(output))
 
-        error_field = 'alarms_' + self['header_type']
-        alarm_values = provider.error.get_error_alarm_register(error_field)
-        # LOGGER.debug("alarm_values = " + str(alarm_values))
+        return output
 
-        _alarm_triggered = bool(alarm_values & alarm_mask > 0)
-        # LOGGER.debug("_alarm_triggered = " + str(_alarm_triggered))
-
-        return _alarm_triggered
-
-    ## Sensor Fault Related ##
-    def sensor_fault(self, provider):
+    def short_circuit_mask(self):
         """
-        :param provider:
-        :return: either None or message that should be displayed
+        :return: Short Circuit Mask
         """
-        output = None
+        output = 0
 
         if self['data_field_position'] is not None:
-            error_field = 'sensor_fault_' + self['header_type']
-            short_circuit_mask = 1 << self['data_field_position'] * 2
-            open_circuit_mask = 1 << (self['data_field_position'] * 2 + 1)
+            output = 1 << self['data_field_position'] * 2
 
-            alarm_values = provider.error.get_error_alarm_register(error_field)
-            if alarm_values & short_circuit_mask:
-                output = str(self['name']) + SHORT_CIRCUIT
-            elif alarm_values & open_circuit_mask:
-                output = str(self['name']) + OPEN_CIRCUIT
+        return output
+
+    def open_circuit_mask(self):
+        """
+        :return: Open Circuit Mask
+        """
+        output = 0
+
+        if self['data_field_position'] is not None:
+            output = 1 << (self['data_field_position'] * 2 + 1)
 
         return output

@@ -15,10 +15,6 @@ from gate.database import DatabaseDict
 # Dynamic value would be len(headers) (either display or diagnostics, whatever is bigger) * 2
 LENGTH = 24
 
-## Default SNMP Dictionary ##
-# Working with lists and indexes just to test code!!!
-DEFAULT_SNMP_DICT = {'agent': None, 'set': None, 'clear': None, 'trap': None}
-
 ## Error Register Structure ##
 # Default Error Dictionary - Dynamic Generation #
 DEFAULT_ERROR_DATA_TYPES = {
@@ -99,11 +95,12 @@ class BaseError(DatabaseDict):
         """ Set error using single error code bit and error message """
         error_code = int(error_code)
 
-        # LOGGER.debug('Set error code')
-        # LOGGER.debug("error_field: " + str(error_field) + " error_code: " + str(error_code))
-
         error_mask = 1 << error_code
         self['error']['_alarms'][error_field] |= error_mask
+
+        # LOGGER.debug('Set error code')
+        # LOGGER.debug("error_field: " + str(error_field) + " error_code: " + str(error_code))
+        # LOGGER.debug("error_register: " + str(self['error']['_alarms'][error_field]))
 
         self._change_error_ack(error_field, error_code)
         self.__set_error_message(error_field, error_code, error_message)
@@ -112,21 +109,15 @@ class BaseError(DatabaseDict):
         """ Clears error using single error code bit """
         error_code = int(error_code)
 
-        # LOGGER.debug('Clear error code')
-        # LOGGER.debug("error_field: " + str(error_field) + " error_code: " + str(error_code))
-
         error_mask = 1 << error_code
         self['error']['_alarms'][error_field] &= ~error_mask
 
+        # LOGGER.debug('Clear error code')
+        # LOGGER.debug("error_field: " + str(error_field) + " error_code: " + str(error_code))
+        # LOGGER.debug("error_register: " + str(self['error']['_alarms'][error_field]))
+
         self._change_error_ack(error_field, error_code)
         self.__set_error_message(error_field, error_code, None)
-
-    # Alarms #
-    def get_error_alarm_register(self, error_field):
-        """ Fetches error register """
-        error_code = self['error']['_alarms'][error_field]
-
-        return error_code
 
     # Error Codes, Warnings #
     # FIXME: Duplicate method? (Do we really need this?)
@@ -175,6 +166,49 @@ class BaseError(DatabaseDict):
                     #     return error_dict
 
         return error_dict
+
+    # Alarm, Sensor Faults #
+    def alarm_triggered(self, header):
+        """
+        :param header: Header that we are investigating
+        :return: True or False depending if alarm was triggered or not
+        """
+        error_field = 'alarms_' + header['header_type']
+        alarm_values = self.__get_error_alarm_register(error_field)
+
+        output = bool(alarm_values & header.alarm_mask())
+        # LOGGER.debug("alarm_triggered = " + str(output))
+
+        return output
+
+    def sensor_fault(self, header):
+        """
+        :param header: Header that we are investigating
+        :return: either None or message that should be displayed
+        """
+        output = None
+
+        error_register = 'sensor_fault'
+        error_field = error_register + '_' + header['header_type']
+        alarm_values = self.__get_error_alarm_register(error_field)
+        short_circuit_mask = header.short_circuit_mask()
+        open_circuit_mask = header.open_circuit_mask()
+
+        if alarm_values & short_circuit_mask:
+            error_code = header['data_field_position'] * 2
+            output = self['error']['_messages'][error_field][error_code]
+
+        elif alarm_values & open_circuit_mask:
+            error_code = header['data_field_position'] * 2 + 1
+            output = self['error']['_messages'][error_field][error_code]
+
+        # if alarm_values:
+        #     LOGGER.debug('alarm_values: ' + str(alarm_values))
+        #     LOGGER.debug('short circuit mask: ' + str(short_circuit_mask))
+        #     LOGGER.debug('open circuit mask: ' + str(open_circuit_mask))
+        #     LOGGER.debug('output: ' + str(output))
+
+        return output
 
     # Acks #
     def change_ack_state(self, error_field, error_code, ack_value):
@@ -250,6 +284,12 @@ class BaseError(DatabaseDict):
         self['_error_alarms'] = copy.deepcopy(self['error']['_alarms'])
 
     ## Class-Private Methods ##
+    def __get_error_alarm_register(self, error_field):
+        """ Fetches error register """
+        error_code = self['error']['_alarms'][error_field]
+
+        return error_code
+
     def __set_error_message(self, error_field, error_code, error_message):
         """ Sets error message """
         self['error']['_messages'][error_field][error_code] = error_message

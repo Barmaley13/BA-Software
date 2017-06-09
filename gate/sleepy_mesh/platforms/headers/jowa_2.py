@@ -5,7 +5,7 @@ Temperature
 """
 
 ### INCLUDES ###
-from .common import FAHRENHEIT
+from common import FAHRENHEIT, OPEN_CIRCUIT, SHORT_CIRCUIT
 
 
 ### CONSTANTS ###
@@ -71,8 +71,10 @@ RPT = {
 TEMP_RST = {
     'name': 'Temperature Resistance',
     'formula': '(rpt*self)/(adc_max-self) - dtl*0.63',
-    'min_alarm': 800,       # short circuit
-    'max_alarm': 1600       # open circuit
+    'min_alarm': 800,
+    'min_alarm_message': SHORT_CIRCUIT,
+    'max_alarm': 1600,
+    'max_alarm_message': OPEN_CIRCUIT
 }
 CELSIUS = {
     'name': 'celsius',

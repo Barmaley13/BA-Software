@@ -257,8 +257,8 @@ class Headers(DatabaseDict):
 
         return output
 
-    # Alert Messages #
-    def alert_messages(self, alert_group):
+    # Alarm Messages #
+    def alarm_messages(self, alert_group):
         """ Fetch messages specified by group """
         output = OrderedDict()
 
@@ -287,7 +287,7 @@ class Headers(DatabaseDict):
                 for header in headers:
                     error_field = error_register + '_' + header['header_type']
                     for alarm_type_index, alarm_type in enumerate(('min_alarm', 'max_alarm')):
-                        warning_description = header['alert_messages'][error_register][alarm_type]
+                        warning_description = header.alarm_messages(error_register, alarm_type)
                         if error_register in ALARM_HEADER_KEY_MAP:
                             header_key = ALARM_HEADER_KEY_MAP[error_register]
                             if header[header_key] is not None:

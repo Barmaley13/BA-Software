@@ -8,9 +8,6 @@ import logging
 
 ### CONSTANTS ###
 ## Strings ##
-OPEN_CIRCUIT = ' indicate that sensor circuit is open!'
-SHORT_CIRCUIT = ' indicate that sensor circuit is shorted!'
-
 MIN_ALARM = ' Min Alarm has been triggered!'
 MAX_ALARM = ' Max Alarm has been triggered!'
 
