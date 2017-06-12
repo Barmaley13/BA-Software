@@ -90,15 +90,13 @@ MEASUREMENT = {
 
 
 ## Headers Instance ##
-HEADERS = {
-    'headers': (
-        {
-            'name': '4-20 Input',
-            'groups': {
-                'constants': [M4, M20, MU, R420],
-                'variables': [LFSF, LFO, I420],
-                'unit_list': [MEASUREMENT]
-            }
-        },
-    )
-}
+HEADERS = [
+    {
+        'name': '4-20 Input',
+        'groups': {
+            'constants': [M4, M20, MU, R420],
+            'variables': [LFSF, LFO, I420],
+            'unit_list': [MEASUREMENT]
+        }
+    }
+]

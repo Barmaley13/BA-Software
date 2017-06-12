@@ -255,25 +255,23 @@ KILO_GALLONS = {
 }
 
 ## Headers Instance ##
-HEADERS = {
-    'headers': (
-        {
-            'name': 'Level',
-            'groups': {
-                'constants': [TH, DTB, N, DTH, AD, SG, ZL, RS, RG, RPL],
-                'variables': [LEVEL_K1, LEVEL_K2, LEVEL_RST, _METERS, TH_FEET],
-                'unit_list': [LEVEL_PERCENT, METERS, FEET]
-            },
-            'live_cookie': {'units': 0, 'table_units': [1]},
-            'log_cookie': {'units': 1, 'table_units': [1]},
+HEADERS = [
+    {
+        'name': 'Level',
+        'groups': {
+            'constants': [TH, DTB, N, DTH, AD, SG, ZL, RS, RG, RPL],
+            'variables': [LEVEL_K1, LEVEL_K2, LEVEL_RST, _METERS, TH_FEET],
+            'unit_list': [LEVEL_PERCENT, METERS, FEET]
         },
-        {
-            'name': 'Volume',
-            'groups': {
-                'constants': [TANK_TYPE, AREA, DIAMETER, LENGTH],
-                'variables': [LITERS_MAX, KILO_LITERS_MAX, GALLONS_MAX, KILO_GALLONS_MAX],
-                'unit_list': [LITERS, KILO_LITERS, GALLONS, KILO_GALLONS]
-            }
+        'live_cookie': {'units': 0, 'table_units': [1]},
+        'log_cookie': {'units': 1, 'table_units': [1]},
+    },
+    {
+        'name': 'Volume',
+        'groups': {
+            'constants': [TANK_TYPE, AREA, DIAMETER, LENGTH],
+            'variables': [LITERS_MAX, KILO_LITERS_MAX, GALLONS_MAX, KILO_GALLONS_MAX],
+            'unit_list': [LITERS, KILO_LITERS, GALLONS, KILO_GALLONS]
         }
-    )
-}
+    }
+]

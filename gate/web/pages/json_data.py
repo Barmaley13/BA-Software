@@ -232,23 +232,23 @@ class PagesJsonData(StatusIcons):
                     # Warning #
                     warning = ''
                     bar_graph_enable = True
-                    error_message = node.error.get_error_message('node_fault')
+
                     if not live_header.enables(node, 'const_set'):
                         warning += PLEASE_SET + node['name'] + ' ' + CONSTANTS
                         warning += TO_DISPLAY1 + live_header['name'] + ' ' + TO_DISPLAY2
                     elif not live_header.enables(node, 'live_enable'):
                         warning += PLEASE_SET + live_header['name'] + ' ' + DISPLAY_ENABLES
                         warning += TO_DISPLAY1 + live_header['name'] + ' ' + TO_DISPLAY2
-                    elif len(error_message):
-                        warning += error_message
                     else:
                         switch_state = None
                         if live_units['internal_name'] == 'floating_switch':
                             _switch_state = bool(live_units.get_float(node))
                             switch_state = FLOATING_SWITCH_STATES[_switch_state]
+
+                        node_fault = node.error.node_fault()
                         sensor_fault = node.error.sensor_fault(live_header)
 
-                        for potential_warning in (switch_state, sensor_fault):
+                        for potential_warning in (switch_state, node_fault, sensor_fault):
                             if potential_warning is not None:
                                 bar_graph_enable = False
                                 warning += potential_warning

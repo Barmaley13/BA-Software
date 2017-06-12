@@ -66,6 +66,7 @@ class Headers(DatabaseDict):
             db_file=db_file,
             defaults=defaults
         )
+
         self._headers = OrderedDict()
         for header_position, header_kwargs in enumerate(headers):
             new_header_kwargs = {
@@ -129,8 +130,9 @@ class Headers(DatabaseDict):
                         if header_enable:
                             for unit_name, unit_value in header.unit_list.items():
                                 if alarm_type in unit_value and unit_value[alarm_type] is not None:
-                                    LOGGER.debug('alarm_units: ' + str(unit_name))
-                                    LOGGER.debug('alarm_value: ' + str(unit_value[alarm_type]))
+                                    # LOGGER.debug('alarm_units: ' + str(unit_name))
+                                    # LOGGER.debug('alarm_value: ' + str(unit_value[alarm_type]))
+
                                     header.alarm_enable(output, alarm_type, True)
                                     header.alarm_value(output, alarm_type, unit_value[alarm_type])
                                     # Assumes same alarm units for min_alarm and max_alarm
@@ -284,7 +286,7 @@ class Headers(DatabaseDict):
 
 class NodeHeaders(Headers):
     def update_enables(self, page_type, node, enable_dict):
-        """ Updates header enables """
+        """ Updates header enables using enable_dict. AKA User update. """
         enable_value = 0
 
         if page_type in ('live', 'log'):

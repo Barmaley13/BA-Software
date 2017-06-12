@@ -257,16 +257,19 @@ SWE_LQ = {
     'groups': {'unit_list': [PERCENT]}
 }
 
-MCU_TEMP = {
+SWE_MCU_TEMP = {
     'name': 'MCU Temperature',
     'data_field': 'temp',
     'groups': {'unit_list': [MCU_CELSIUS, FAHRENHEIT]}
 }
 
-## Platform Specific Dynamic Imports ##
-JOWA_CONSTANTS = (JOWA_MAX, JOWA_REF)
-SWE_CONSTANTS = (SWE_MAX, )
+JOWA_MCU_TEMP = copy.deepcopy(SWE_MCU_TEMP)
+JOWA_MCU_TEMP.update({'diagnostics': True})
 
-HEADERS = (LIFE_TIME, RECENT_SYNC_RATE, LIFE_SYNC_RATE, TOTAL_DRAW)
-JOWA_HEADERS = (JOWA_LQ, MCU_TEMP.update({'diagnostics': True}))
-SWE_HEADERS = (SWE_BATT, SWE_LQ, MCU_TEMP)
+## Platform Specific Dynamic Imports ##
+JOWA_CONSTANTS = [JOWA_MAX, JOWA_REF]
+SWE_CONSTANTS = [SWE_MAX, ]
+
+HEADERS = [LIFE_TIME, RECENT_SYNC_RATE, LIFE_SYNC_RATE, TOTAL_DRAW]
+JOWA_HEADERS = [JOWA_LQ, JOWA_MCU_TEMP]
+SWE_HEADERS = [SWE_BATT, SWE_LQ, SWE_MCU_TEMP]

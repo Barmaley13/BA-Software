@@ -16,13 +16,11 @@ ADC_PERCENT = {
 
 
 ## Headers Instance ##
-HEADERS = {
-    'headers': (
-        {
-            'name': 'ADC',
-            'groups': {
-                'unit_list': [ADC_PERCENT]
-            }
-        },
-    )
-}
+HEADERS = [
+    {
+        'name': 'ADC',
+        'groups': {
+            'unit_list': [ADC_PERCENT]
+        }
+    }
+]

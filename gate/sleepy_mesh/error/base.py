@@ -120,30 +120,13 @@ class BaseError(DatabaseDict):
         self.__set_error_message(error_field, error_code, None)
 
     # Error Codes, Warnings #
-    # FIXME: Duplicate method? (Do we really need this?)
-    def get_error_message(self, error_field):
-        """ Fetches single error message """
-        _error_list = self['error']['_messages'][error_field]
-        # LOGGER.debug('Error list of ' + error_field + ': ' + str(_error_list))
-
-        error_list = copy.deepcopy(_error_list)
-        error_list = [error_value for error_value in error_list if error_value is not None]
-
-        error_message = ''
-        if len(error_list):
-            error_message = error_list[0]
-
-        return error_message
-
     def get_error_messages(self, provider_id):
         """ Fetches error messages """
         error_dict = dict()
 
-        for error_field in self['error']['_messages'].keys():
-            error_messages = self['error']['_messages'][error_field]
+        for error_field, error_messages in self['error']['_messages'].items():
             error_acks = self['error']['_acks'][error_field]
-            for error_code in range(len(error_messages)):
-                error_message = error_messages[error_code]
+            for error_code, error_message in enumerate(error_messages):
                 error_time = self['error']['_time'][error_field][error_code]
                 new_error = self['error']['_new_error'][error_field][error_code]
                 error_mask = 1 << error_code

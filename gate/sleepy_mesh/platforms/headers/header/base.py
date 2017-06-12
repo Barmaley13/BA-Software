@@ -39,10 +39,11 @@ class HeaderBase(DatabaseDict):
         :return: Initialized base class
         """
         _internal_name = internal_name(name)
+
+        data_field_position = None
         if data_field in DISPLAY_FIELDS:
             data_field_position = DISPLAY_FIELDS.index(data_field)
-        else:
-            data_field_position = None
+
         db_file = os.path.join('headers', platform, _internal_name + '.db')
 
         defaults = {

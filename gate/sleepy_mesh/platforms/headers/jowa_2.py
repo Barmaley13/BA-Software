@@ -87,15 +87,13 @@ CELSIUS = {
 
 
 ## Headers Instance ##
-HEADERS = {
-    'headers': (
-        {
-            'name': 'Temperature',
-            'groups': {
-                'constants': [DTL, ZT, RPT],
-                'variables': [TEMP_RST],
-                'unit_list': [CELSIUS, FAHRENHEIT]
-            }
-        },
-    )
-}
+HEADERS = [
+    {
+        'name': 'Temperature',
+        'groups': {
+            'constants': [DTL, ZT, RPT],
+            'variables': [TEMP_RST],
+            'unit_list': [CELSIUS, FAHRENHEIT]
+        }
+    }
+]

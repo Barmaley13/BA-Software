@@ -57,7 +57,6 @@
             %if not defined('group'):
                 <th scope='col'>Last Sync</th>
                 <th scope='col'>Created</th>
-                %#<th scope='col'>Error</th>
             %end
         </tr></thead>
         
@@ -92,7 +91,6 @@
                 %if not defined('group'):
                     <td>{{node.last_sync()}}</td>
                     <td>{{node.created()}}</td>
-                    %#<td>{{node.error.get_error_message('node_fault')}}</td>
                 %end
             </tr>
         %end

@@ -67,7 +67,7 @@ DELAY_AVERAGE = {
 ## Headers Instance ##
 HEADERS = {
     'platform': 'system',
-    'headers': (
+    'headers': [
         LIFE_TIME,
         RECENT_SYNC_RATE,
         LIFE_SYNC_RATE,
@@ -75,5 +75,5 @@ HEADERS = {
         SYNC_AVERAGE,
         DELAY_CURRENT,
         DELAY_AVERAGE
-    )
+    ]
 }

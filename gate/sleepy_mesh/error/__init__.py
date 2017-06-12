@@ -23,17 +23,6 @@ DEFAULT_NODE_ERROR_REGISTERS = {
     'node_fault': None
 }
 
-# TODO: Get rid of this dependency!
-default_error_data_types = copy.deepcopy(DEFAULT_ERROR_DATA_TYPES)
-default_snmp_error_data_types = copy.deepcopy(DEFAULT_SNMP_ERROR_DATA_TYPES)
-default_error_data_types.update(default_snmp_error_data_types)
-
-default_error_registers = copy.deepcopy(DEFAULT_ERROR_REGISTERS)
-default_node_error_registers = copy.deepcopy(DEFAULT_NODE_ERROR_REGISTERS)
-default_error_registers.update(default_node_error_registers)
-
-DEFAULT_ERROR_DICT = generate_default_error_dict(default_error_data_types, default_error_registers)
-
 # Generic Error Codes #
 HW_ERROR = 0
 ABSENT_NODE = 1
@@ -42,13 +31,13 @@ OLD_SOFTWARE = 3
 OLD_SOFTWARE_DETECTED = 4
 
 # Generic Error Messages #
-GENERIC_MESSAGES = {
-    HW_ERROR: ' experiencing hardware error!',
-    ABSENT_NODE: ' is not present on the network!',
-    OLD_FIRMWARE: ' firmware is out of date! Please upgrade firmware!',
-    OLD_SOFTWARE: ' software is out of date! Please upgrade software!',
-    OLD_SOFTWARE_DETECTED: ' detected obsolete network packet! Some of the field units may require software upgrade!',
-}
+GENERIC_MESSAGES = OrderedDict()
+GENERIC_MESSAGES[HW_ERROR] = ' experiencing hardware error!',
+GENERIC_MESSAGES[ABSENT_NODE] = ' is not present on the network!'
+GENERIC_MESSAGES[OLD_FIRMWARE] = ' firmware is out of date! Please upgrade firmware!'
+GENERIC_MESSAGES[OLD_SOFTWARE] = ' software is out of date! Please upgrade software!'
+GENERIC_MESSAGES[OLD_SOFTWARE_DETECTED] = ' detected obsolete network packet! ' \
+                                          'Some of the field units may require software upgrade!'
 
 # NODE ERROR CODES (!!!HAVE TO MATCH NODE&BASE CODE ERROR CODES!!!)#
 # Satellite Modem Errors
@@ -115,3 +104,14 @@ class NodeError(SnmpError, ModbusError):
         self._default_error_registers.update(DEFAULT_NODE_ERROR_REGISTERS)
 
         self.load()
+
+    def node_fault(self):
+        """ Fetches node_fault error messages (if any) """
+        output = None
+
+        error_list = copy.deepcopy(self['error']['_messages']['node_fault'])
+        error_list = [error_value for error_value in error_list if error_value is not None]
+        if len(error_list):
+            output = error_list[0]
+
+        return output

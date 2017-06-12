@@ -15,7 +15,6 @@ import common
 ### CONSTANTS ###
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.ERROR)
 # LOGGER.setLevel(logging.DEBUG)
 
 
@@ -61,42 +60,40 @@ def generate_node_headers(platform):
                 LOGGER.warning('Could not find module named "' + str(module_name) + '" during header generation!')
             else:
                 # Update header kwargs for this particular sensor index
-                sensor_headers = copy.deepcopy(header_module.HEADERS)
-                LOGGER.debug("sensor_headers keys = " + str(sensor_headers.keys()))
+                headers = copy.deepcopy(header_module.HEADERS)
 
-                # Iterate over header kwargs
-                if 'headers' in sensor_headers:
-                    for header_index in range(len(sensor_headers['headers'])):
-                        # Modify name (if needed)
-                        if total_counter[sensor_index]:
-                            sensor_headers['headers'][header_index]['name'] += ' ' + str(current_counter[sensor_index])
-                            LOGGER.debug('header name = ' + sensor_headers['headers'][header_index]['name'])
+                # Update Headers
+                for header_index, header in enumerate(headers):
+                    # Modify name (if needed)
+                    if total_counter[sensor_index]:
+                        header['name'] += ' ' + str(current_counter[sensor_index])
+                        LOGGER.debug('header name = ' + header['name'])
 
-                        # Assign channel number (AKA data_field)
-                        sensor_headers['headers'][header_index]['data_field'] = ADC_FIELDS[channel_number]
+                    # Assign channel number (AKA data_field)
+                    header['data_field'] = ADC_FIELDS[channel_number]
 
-                        # Add platform related constants (do it only once!)
-                        if header_index == 0:
-                            if 'constants' not in sensor_headers['headers'][header_index]['groups']:
-                                sensor_headers['headers'][header_index]['groups']['constants'] = list()
+                    # Add platform related constants (do it only once!)
+                    if header_index == 0:
+                        if 'constants' not in header['groups']:
+                            header['groups']['constants'] = list()
 
-                            constants_name = platform_company.upper() + '_CONSTANTS'
-                            if hasattr(common, constants_name):
-                                constants = getattr(common, constants_name)
-                                sensor_headers['headers'][header_index]['groups']['constants'].extend(constants)
+                        constants_name = platform_company.upper() + '_CONSTANTS'
+                        if hasattr(common, constants_name):
+                            constants = getattr(common, constants_name)
+                            header['groups']['constants'].extend(constants)
 
-                        # Add floating switch variable (if needed)
-                        if 'unit_list' not in sensor_headers['headers'][header_index]['groups']:
-                            sensor_headers['headers'][header_index]['groups']['unit_list'] = list()
-                        # sensor_headers['headers'][header_index]['groups']['unit_list'].append(common.FLOATING_SWITCH)
+                    # Add floating switch variable (if needed)
+                    if 'unit_list' not in header['groups']:
+                        header['groups']['unit_list'] = list()
+                    # header['groups']['unit_list'].append(common.FLOATING_SWITCH)
 
-                    headers_kwargs['headers'] += sensor_headers['headers']
+                headers_kwargs['headers'] += headers
 
         # Add some global/common data to header kwargs
-        display_headers_name = platform_company.upper() + '_HEADERS'
-        if hasattr(common, display_headers_name):
-            display_headers = getattr(common, display_headers_name)
-            headers_kwargs['headers'] += display_headers
+        headers_name = platform_company.upper() + '_HEADERS'
+        if hasattr(common, headers_name):
+            headers = getattr(common, headers_name)
+            headers_kwargs['headers'] += headers
 
         # Create headers with newly generated kwargs
         output = NodeHeaders(**headers_kwargs)

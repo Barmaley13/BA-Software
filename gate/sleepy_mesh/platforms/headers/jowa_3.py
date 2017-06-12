@@ -27,14 +27,12 @@ VOLTAGE = {
 }
 
 ## Headers Instance ##
-HEADERS = {
-    'diagnostics_headers': (
-        {
-            'name': 'Battery',
-            'groups': {
-                'unit_list': [VOLTAGE]
-            },
-            'diagnostics': True
+HEADERS = [
+    {
+        'name': 'Battery',
+        'groups': {
+            'unit_list': [VOLTAGE]
         },
-    )
-}
+        'diagnostics': True
+    }
+]
