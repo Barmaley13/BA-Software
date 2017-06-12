@@ -173,10 +173,13 @@ class BaseError(DatabaseDict):
         :param header: Header that we are investigating
         :return: True or False depending if alarm was triggered or not
         """
-        error_field = 'alarms_' + header['header_type']
+        error_field = 'alarms_' + header.header_type()
         alarm_values = self.__get_error_alarm_register(error_field)
 
-        output = bool(alarm_values & header.alarm_mask())
+        alarm_mask = 1 << header['header_position'] * 2
+        alarm_mask |= 1 << (header['header_position'] * 2 + 1)
+
+        output = bool(alarm_values & alarm_mask)
         # LOGGER.debug("alarm_triggered = " + str(output))
 
         return output
@@ -189,24 +192,27 @@ class BaseError(DatabaseDict):
         output = None
 
         error_register = 'sensor_fault'
-        error_field = error_register + '_' + header['header_type']
+        error_field = error_register + '_' + header.header_type()
         alarm_values = self.__get_error_alarm_register(error_field)
-        short_circuit_mask = header.short_circuit_mask()
-        open_circuit_mask = header.open_circuit_mask()
 
-        if alarm_values & short_circuit_mask:
-            error_code = header['data_field_position'] * 2
-            output = self['error']['_messages'][error_field][error_code]
+        if header['data_field_position'] is not None:
+            short_circuit_mask = 1 << header['data_field_position'] * 2
 
-        elif alarm_values & open_circuit_mask:
-            error_code = header['data_field_position'] * 2 + 1
-            output = self['error']['_messages'][error_field][error_code]
+            open_circuit_mask = 1 << (header['data_field_position'] * 2 + 1)
 
-        # if alarm_values:
-        #     LOGGER.debug('alarm_values: ' + str(alarm_values))
-        #     LOGGER.debug('short circuit mask: ' + str(short_circuit_mask))
-        #     LOGGER.debug('open circuit mask: ' + str(open_circuit_mask))
-        #     LOGGER.debug('output: ' + str(output))
+            if alarm_values & short_circuit_mask:
+                error_code = header['data_field_position'] * 2
+                output = self['error']['_messages'][error_field][error_code]
+
+            elif alarm_values & open_circuit_mask:
+                error_code = header['data_field_position'] * 2 + 1
+                output = self['error']['_messages'][error_field][error_code]
+
+            # if alarm_values:
+            #     LOGGER.debug('alarm_values: ' + str(alarm_values))
+            #     LOGGER.debug('short circuit mask: ' + str(short_circuit_mask))
+            #     LOGGER.debug('open circuit mask: ' + str(open_circuit_mask))
+            #     LOGGER.debug('output: ' + str(output))
 
         return output
 

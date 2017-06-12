@@ -33,8 +33,7 @@ def generate_node_headers(platform):
 
         headers_kwargs = {
             'platform': platform,
-            'display_headers': common.DISPLAY_HEADERS,
-            'diagnostics_headers': common.DIAGNOSTIC_HEADERS
+            'headers': common.HEADERS,
         }
 
         # Total count of repeating sensor indexes
@@ -66,44 +65,38 @@ def generate_node_headers(platform):
                 LOGGER.debug("sensor_headers keys = " + str(sensor_headers.keys()))
 
                 # Iterate over header kwargs
-                for kwarg in headers_kwargs:
-                    if kwarg in sensor_headers:
-                        for header_index in range(len(sensor_headers[kwarg])):
-                            # Modify name (if needed)
-                            if total_counter[sensor_index]:
-                                sensor_headers[kwarg][header_index]['name'] += ' ' + str(current_counter[sensor_index])
-                                LOGGER.debug('header name = ' + sensor_headers[kwarg][header_index]['name'])
+                if 'headers' in sensor_headers:
+                    for header_index in range(len(sensor_headers['headers'])):
+                        # Modify name (if needed)
+                        if total_counter[sensor_index]:
+                            sensor_headers['headers'][header_index]['name'] += ' ' + str(current_counter[sensor_index])
+                            LOGGER.debug('header name = ' + sensor_headers['headers'][header_index]['name'])
 
-                            # Assign channel number (AKA data_field)
-                            sensor_headers[kwarg][header_index]['data_field'] = ADC_FIELDS[channel_number]
+                        # Assign channel number (AKA data_field)
+                        sensor_headers['headers'][header_index]['data_field'] = ADC_FIELDS[channel_number]
 
-                            # Add platform related constants (do it only once!)
-                            if header_index == 0:
-                                if 'constants' not in sensor_headers[kwarg][header_index]['groups']:
-                                    sensor_headers[kwarg][header_index]['groups']['constants'] = list()
+                        # Add platform related constants (do it only once!)
+                        if header_index == 0:
+                            if 'constants' not in sensor_headers['headers'][header_index]['groups']:
+                                sensor_headers['headers'][header_index]['groups']['constants'] = list()
 
-                                constants_name = platform_company.upper() + '_CONSTANTS'
-                                if hasattr(common, constants_name):
-                                    constants = getattr(common, constants_name)
-                                    sensor_headers[kwarg][header_index]['groups']['constants'].extend(constants)
+                            constants_name = platform_company.upper() + '_CONSTANTS'
+                            if hasattr(common, constants_name):
+                                constants = getattr(common, constants_name)
+                                sensor_headers['headers'][header_index]['groups']['constants'].extend(constants)
 
-                            # Add floating switch variable (if needed)
-                            if 'unit_list' not in sensor_headers[kwarg][header_index]['groups']:
-                                sensor_headers[kwarg][header_index]['groups']['unit_list'] = list()
-                            # sensor_headers[kwarg][header_index]['groups']['unit_list'].append(common.FLOATING_SWITCH)
+                        # Add floating switch variable (if needed)
+                        if 'unit_list' not in sensor_headers['headers'][header_index]['groups']:
+                            sensor_headers['headers'][header_index]['groups']['unit_list'] = list()
+                        # sensor_headers['headers'][header_index]['groups']['unit_list'].append(common.FLOATING_SWITCH)
 
-                        headers_kwargs[kwarg] += sensor_headers[kwarg]
+                    headers_kwargs['headers'] += sensor_headers['headers']
 
         # Add some global/common data to header kwargs
-        display_headers_name = platform_company.upper() + '_DISPLAY_HEADERS'
+        display_headers_name = platform_company.upper() + '_HEADERS'
         if hasattr(common, display_headers_name):
             display_headers = getattr(common, display_headers_name)
-            headers_kwargs['display_headers'] += display_headers
-
-        diagnostic_headers_name = platform_company.upper() + '_DIAGNOSTIC_HEADERS'
-        if hasattr(common, diagnostic_headers_name):
-            diagnostic_headers = getattr(common, diagnostic_headers_name)
-            headers_kwargs['diagnostics_headers'] += diagnostic_headers
+            headers_kwargs['headers'] += display_headers
 
         # Create headers with newly generated kwargs
         output = NodeHeaders(**headers_kwargs)

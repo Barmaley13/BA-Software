@@ -88,7 +88,7 @@ CELSIUS = {
 
 ## Headers Instance ##
 HEADERS = {
-    'display_headers': (
+    'headers': (
         {
             'name': 'Temperature',
             'groups': {

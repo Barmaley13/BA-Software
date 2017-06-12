@@ -33,7 +33,8 @@ HEADERS = {
             'name': 'Battery',
             'groups': {
                 'unit_list': [VOLTAGE]
-            }
+            },
+            'diagnostics': True
         },
     )
 }

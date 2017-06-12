@@ -17,7 +17,7 @@ ADC_PERCENT = {
 
 ## Headers Instance ##
 HEADERS = {
-    'display_headers': (
+    'headers': (
         {
             'name': 'ADC',
             'groups': {

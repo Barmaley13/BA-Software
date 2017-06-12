@@ -256,7 +256,7 @@ KILO_GALLONS = {
 
 ## Headers Instance ##
 HEADERS = {
-    'display_headers': (
+    'headers': (
         {
             'name': 'Level',
             'groups': {

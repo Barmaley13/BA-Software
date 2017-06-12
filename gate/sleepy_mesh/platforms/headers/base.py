@@ -52,7 +52,7 @@ LOGGER = logging.getLogger(__name__)
 ## Data Type Classes ##
 class Headers(DatabaseDict):
     """ Headers class responsible for a group of headers """
-    def __init__(self, platform, display_headers, diagnostics_headers):
+    def __init__(self, platform, headers):
         """ Initializes headers """
         defaults = {
             'platform': platform,
@@ -66,11 +66,15 @@ class Headers(DatabaseDict):
             db_file=db_file,
             defaults=defaults
         )
-        self._display = OrderedDict()
-        self._diagnostics = OrderedDict()
-
-        self.__write('display', display_headers)
-        self.__write('diagnostics', diagnostics_headers)
+        self._headers = OrderedDict()
+        for header_position, header_kwargs in enumerate(headers):
+            new_header_kwargs = {
+                'platform': self['platform'],
+                'header_position': header_position
+            }
+            new_header_kwargs.update(header_kwargs)
+            header = Header(**new_header_kwargs)
+            self._headers[header['internal_name']] = header
 
         self.header_defaults = self.__create_defaults()
 
@@ -91,7 +95,6 @@ class Headers(DatabaseDict):
         diagnostics_headers = self.read('diagnostics').keys()
         for header in all_headers:
             header_field = header['data_field']
-            header_nickname = header['header_nickname']
             header_enable = bool(header['internal_name'] in diagnostics_headers)
 
             # Init constants and data_out structure
@@ -107,8 +110,8 @@ class Headers(DatabaseDict):
             # Inject header names into structures
             main_fields = {
                 'constants': header_field,
-                'alarms': header_nickname,
-                'enables': header_nickname
+                'alarms': header['header_position'],
+                'enables': header['header_position']
             }
             for main_field, sub_field in main_fields.items():
                 if sub_field not in output[main_field]:
@@ -153,45 +156,26 @@ class Headers(DatabaseDict):
 
         return output
 
-    def __read_write(self, header_type, new_headers=None):
+    def read(self, header_type):
+        """ Read Headers """
         output = None
+
         if header_type in ('all', 'display', 'diagnostics'):
-            _header_type = '_' + header_type
-            # Write Portion
-            if new_headers is not None:
-                if header_type in ('display', 'diagnostics'):
-                    for header_position, header_kwargs in enumerate(new_headers):
-                        new_header_kwargs = {
-                            'platform': self['platform'],
-                            'header_type': header_type,
-                            'header_position': header_position
-                        }
-                        new_header_kwargs.update(header_kwargs)
-                        header = Header(**new_header_kwargs)
-                        getattr(self, _header_type)[header['internal_name']] = header
-                else:
-                    LOGGER.error("Can not use 'all' header type to overwrite headers. " +
-                                 "Please use either display or diagnostics header types instead!")
-            # Read portion
             if header_type == 'all':
-                output = OrderedDict()
-                for header_type in ('display', 'diagnostics'):
-                    _header_type = '_' + header_type
-                    for header_key in getattr(self, _header_type).keys():
-                        output[header_key] = getattr(self, _header_type)[header_key]
+                header_types = ('display', 'diagnostics')
             else:
-                output = getattr(self, _header_type)
+                header_types = (header_type, )
+
+            output = OrderedDict()
+            for header_type in header_types:
+                for header_key, header in self._headers.items():
+                    if header.header_type() == header_type:
+                        output[header_key] = self._headers[header_key]
 
         else:
             LOGGER.error("Header type " + str(header_type) + " does not exist!")
 
         return output
-
-    def read(self, header_type):
-        return self.__read_write(header_type)
-
-    def __write(self, *args):
-        return self.__read_write(*args)
 
     def default_cookie(self, page_type):
         """
@@ -285,7 +269,7 @@ class Headers(DatabaseDict):
 
             for error_register in error_registers:
                 for header in headers:
-                    error_field = error_register + '_' + header['header_type']
+                    error_field = error_register + '_' + header.header_type()
                     for alarm_type_index, alarm_type in enumerate(('min_alarm', 'max_alarm')):
                         warning_description = header.alarm_messages(error_register, alarm_type)
                         if error_register in ALARM_HEADER_KEY_MAP:

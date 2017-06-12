@@ -203,7 +203,8 @@ _DRAW_LIFE_TIME = {
 LIFE_TIME = {
     'name': 'Life Time',
     'data_field': 'life_time',
-    'groups': {'unit_list': [SECONDS, MINUTES, HOURS, DAYS, MONTHS, YEARS, COMPOSITE_TIME]}
+    'groups': {'unit_list': [SECONDS, MINUTES, HOURS, DAYS, MONTHS, YEARS, COMPOSITE_TIME]},
+    'diagnostics': True
 }
 
 RECENT_SYNC_RATE = {
@@ -212,7 +213,8 @@ RECENT_SYNC_RATE = {
     'groups': {
         'constants': [_RSR_RECENT_SYNCS],
         'unit_list': [_RSR_PERCENT]
-    }
+    },
+    'diagnostics': True
 }
 
 LIFE_SYNC_RATE = {
@@ -221,7 +223,8 @@ LIFE_SYNC_RATE = {
     'groups': {
         'constants': [_LSR_SUCCESSFUL_SYNCS, _LSR_TOTAL_SYNCS],
         'unit_list': [_LSR_PERCENT]
-    }
+    },
+    'diagnostics': True
 }
 
 TOTAL_DRAW = {
@@ -229,7 +232,9 @@ TOTAL_DRAW = {
     'data_field': 'total_draw',
     'groups': {
         'constants': [_DRAW_LIFE_TIME],
-        'unit_list': [_DRAW_PERCENT, _DRAW_SECONDS, MINUTES, HOURS, DAYS, MONTHS, YEARS, _DRAW_COMPOSITE_TIME]}
+        'unit_list': [_DRAW_PERCENT, _DRAW_SECONDS, MINUTES, HOURS, DAYS, MONTHS, YEARS, _DRAW_COMPOSITE_TIME]
+    },
+    'diagnostics': True
 }
 
 # Platform Specific Diagnostics Headers #
@@ -237,7 +242,8 @@ TOTAL_DRAW = {
 JOWA_LQ = {
     'name': 'Signal Strength',
     'data_field': 'lq',
-    'groups': {'unit_list': [PERCENT]}
+    'groups': {'unit_list': [PERCENT]},
+    'diagnostics': True
 }
 
 SWE_BATT = {
@@ -261,10 +267,6 @@ MCU_TEMP = {
 JOWA_CONSTANTS = (JOWA_MAX, JOWA_REF)
 SWE_CONSTANTS = (SWE_MAX, )
 
-DISPLAY_HEADERS = ()
-JOWA_DISPLAY_HEADERS = (JOWA_LQ, MCU_TEMP)
-SWE_DISPLAY_HEADERS = (SWE_BATT, SWE_LQ, MCU_TEMP)
-
-DIAGNOSTIC_HEADERS = (LIFE_TIME, RECENT_SYNC_RATE, LIFE_SYNC_RATE, TOTAL_DRAW)
-JOWA_DIAGNOSTIC_HEADERS = ()
-SWE_DIAGNOSTIC_HEADERS = ()
+HEADERS = (LIFE_TIME, RECENT_SYNC_RATE, LIFE_SYNC_RATE, TOTAL_DRAW)
+JOWA_HEADERS = (JOWA_LQ, MCU_TEMP.update({'diagnostics': True}))
+SWE_HEADERS = (SWE_BATT, SWE_LQ, MCU_TEMP)

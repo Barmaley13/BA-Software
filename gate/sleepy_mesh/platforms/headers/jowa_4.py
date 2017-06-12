@@ -91,7 +91,7 @@ MEASUREMENT = {
 
 ## Headers Instance ##
 HEADERS = {
-    'display_headers': (
+    'headers': (
         {
             'name': '4-20 Input',
             'groups': {

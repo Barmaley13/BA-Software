@@ -15,6 +15,8 @@ import logging
 
 from py_knife.ordered_dict import OrderedDict
 
+from gate.strings import FIELD_UNIT
+
 from common import fetch_item
 from base import HeaderBase
 from constant import HeaderConstant
@@ -23,6 +25,12 @@ from unit import HeaderUnit
 
 
 ### CONSTANTS ###
+HEADER_TYPE_MAP = {True: 'diagnostics', False: 'display'}
+
+## Strings ##
+OF_NODE1 = FIELD_UNIT + " '"
+OF_NODE2 = "' "
+
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
@@ -31,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 ### CLASSES ###
 class Header(HeaderBase):
     """ Header class holding constants, variables, units and modbus units as well as number of methods """
-    def __init__(self, name, data_field, platform, header_type, header_position, groups, **kwargs):
+    def __init__(self, name, data_field, platform, header_position, groups, **kwargs):
         """
         Initializes header
 
@@ -58,7 +66,6 @@ class Header(HeaderBase):
                         'data_field': data_field,
                         'platform': platform,
                         'header_name': name,
-                        'header_type': header_type,
                         'header_position': header_position
                     }
                     new_group_kwargs.update(group_kwargs)
@@ -78,8 +85,8 @@ class Header(HeaderBase):
             'data_field': data_field,
             'platform': platform,
             'header_name': name,
-            'header_type': header_type,
             'header_position': header_position,
+            'diagnostics': False,
             '_external': True,
 
             # Default Cookies
@@ -120,7 +127,59 @@ class Header(HeaderBase):
                             group_variable['name'], field, self['internal_name']))
 
                         # Check/Clear Alarms
-                        group_variable.check_alarms(provider, calculated_value)
+                        for alarm_type in ('min_alarm', 'max_alarm'):
+                            alarm_triggered = group_variable.check_alarm(provider, calculated_value, alarm_type)
+
+                            if alarm_triggered and self.enables(provider, 'live_enable'):
+                                self._set_alarm(provider, group_variable, alarm_type)
+                                # LOGGER.debug("*** " + alarm_type + " Set! ***")
+
+                            elif group_variable.alarm_enable() or group_variable['_external']:
+                                self._clear_alarm(provider, group_variable, alarm_type)
+                                # LOGGER.debug("*** " + alarm_type + " Clear! ***
+
+    def _set_alarm(self, provider, group_variable, alarm_type):
+        """ Set Alarm """
+        # Determine Register
+        if group_variable['_external']:
+            error_register = 'alarms'
+            alarm_mask_key = 'header_position'
+        else:
+            error_register = 'sensor_fault'
+            alarm_mask_key = 'data_field_position'
+
+        # Alarm Error Code
+        error_field = error_register + '_' + self.header_type()
+        error_code = self[alarm_mask_key] * 2 + ('min_alarm', 'max_alarm').index(alarm_type)
+
+        # Alarm Error Message
+        if 'net_addr' in provider and provider['net_addr'] is not None:
+            error_message = OF_NODE1 + provider['name'] + OF_NODE2
+        else:
+            error_message = provider['name'] + ' '
+
+        # Extend Message (if needed)
+        alarm_message = group_variable.alarm_message(alarm_type)
+        if alarm_message:
+            error_message += alarm_message
+
+        provider.error.set_error(error_field, error_code, error_message)
+
+    def _clear_alarm(self, provider, group_variable, alarm_type):
+        """ Clear Alarm """
+        # Determine Register
+        if group_variable['_external']:
+            error_register = 'alarms'
+            alarm_mask_key = 'header_position'
+        else:
+            error_register = 'sensor_fault'
+            alarm_mask_key = 'data_field_position'
+
+        # Alarm Error Code
+        error_field = error_register + '_' + self.header_type()
+        error_code = self[alarm_mask_key] * 2 + ('min_alarm', 'max_alarm').index(alarm_type)
+
+        provider.error.clear_error(error_field, error_code)
 
     ## Alarm Message ##
     def alarm_messages(self, error_register, alarm_type):
@@ -133,7 +192,7 @@ class Header(HeaderBase):
 
                 for group_variable in getattr(self, field_types[error_register]).values():
                     if error_register == 'alarms':
-                        check_alarm_message = group_variable['header_type'] == 'display'
+                        check_alarm_message = self.header_type() == 'display'
                     else:
                         check_alarm_message = group_variable.alarm_enable(None, alarm_type)
 
@@ -261,43 +320,15 @@ class Header(HeaderBase):
         if new_unit_index is not None:
             _output = fetch_item(self.unit_list, new_unit_index)
             if _output is not None:
-                provider['alarms'][self['header_nickname']]['alarm_units'] = new_unit_index
+                provider['alarms'][self['header_position']]['alarm_units'] = new_unit_index
 
         # Read portion
-        unit_index = provider['alarms'][self['header_nickname']]['alarm_units']
+        unit_index = provider['alarms'][self['header_position']]['alarm_units']
 
         output = fetch_item(self.unit_list, unit_index)
 
         return output
 
-    def alarm_mask(self):
-        """
-        :return: Alarm Mask
-        """
-        output = 1 << self['header_position'] * 2
-        output |= 1 << (self['header_position'] * 2 + 1)
-        # LOGGER.debug("alarm_mask = " + str(output))
-
-        return output
-
-    def short_circuit_mask(self):
-        """
-        :return: Short Circuit Mask
-        """
-        output = 0
-
-        if self['data_field_position'] is not None:
-            output = 1 << self['data_field_position'] * 2
-
-        return output
-
-    def open_circuit_mask(self):
-        """
-        :return: Open Circuit Mask
-        """
-        output = 0
-
-        if self['data_field_position'] is not None:
-            output = 1 << (self['data_field_position'] * 2 + 1)
-
-        return output
+    def header_type(self):
+        """ Returns Header Type """
+        return HEADER_TYPE_MAP[self['diagnostics']]
