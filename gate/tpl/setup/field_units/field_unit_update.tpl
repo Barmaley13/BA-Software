@@ -175,6 +175,8 @@
         <input type='hidden' name='total_display' value="" >
         %# Track ADC Enables
         <input type='hidden' name='total_track' value="" >
+        %# Diagnostic Header Enables
+        <input type='hidden' name='total_diagnostics' value="" >
         %# ADC Alarm
         <input type='hidden' name='total_min_alarm' value="" >
         <input type='hidden' name='total_max_alarm' value="" >

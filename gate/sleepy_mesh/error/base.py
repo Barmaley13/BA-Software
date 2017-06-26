@@ -11,9 +11,9 @@ from gate.database import DatabaseDict
 
 ### CONSTANTS ###
 ## Error Register Length ##
-# Should be at least len(ADC_FIELDS)*2
-# Dynamic value would be len(headers) (either display or diagnostics, whatever is bigger) * 2
-LENGTH = 24
+# Should be at least len(ADC_FIELDS)
+# Dynamic value would be len(headers)
+LENGTH = 32
 
 ## Error Register Structure ##
 # Default Error Dictionary - Dynamic Generation #
@@ -26,10 +26,10 @@ DEFAULT_ERROR_DATA_TYPES = {
 }
 
 DEFAULT_ERROR_REGISTERS = {
-    'sensor_fault_display': None,
-    'sensor_fault_diagnostics': None,
-    'alarms_display': None,
-    'alarms_diagnostics': None
+    'sensor_fault_min_alarm': None,
+    'sensor_fault_max_alarm': None,
+    'alarms_min_alarm': None,
+    'alarms_max_alarm': None
 }
 
 ## Logger ##
@@ -156,13 +156,16 @@ class BaseError(DatabaseDict):
         :param header: Header that we are investigating
         :return: True or False depending if alarm was triggered or not
         """
-        error_field = 'alarms_' + header.header_type()
-        alarm_values = self.__get_error_alarm_register(error_field)
+        output = False
 
-        alarm_mask = 1 << header['header_position'] * 2
-        alarm_mask |= 1 << (header['header_position'] * 2 + 1)
+        for alarm_type in ('min_alarm', 'max_alarm'):
+            error_field = 'alarms_' + alarm_type
+            alarm_values = self.__get_error_alarm_register(error_field)
 
-        output = bool(alarm_values & alarm_mask)
+            alarm_mask = 1 << header['header_position']
+
+            output |= bool(alarm_values & alarm_mask)
+
         # LOGGER.debug("alarm_triggered = " + str(output))
 
         return output
@@ -174,28 +177,22 @@ class BaseError(DatabaseDict):
         """
         output = None
 
-        error_register = 'sensor_fault'
-        error_field = error_register + '_' + header.header_type()
-        alarm_values = self.__get_error_alarm_register(error_field)
-
         if header['data_field_position'] is not None:
-            short_circuit_mask = 1 << header['data_field_position'] * 2
+            for alarm_type in ('min_alarm', 'max_alarm'):
+                error_field = 'sensor_fault_' + alarm_type
+                alarm_values = self.__get_error_alarm_register(error_field)
 
-            open_circuit_mask = 1 << (header['data_field_position'] * 2 + 1)
+                alarm_mask = 1 << header['data_field_position']
 
-            if alarm_values & short_circuit_mask:
-                error_code = header['data_field_position'] * 2
-                output = self['error']['_messages'][error_field][error_code]
+                if alarm_values & alarm_mask:
+                    error_code = header['data_field_position']
+                    output = self['error']['_messages'][error_field][error_code]
 
-            elif alarm_values & open_circuit_mask:
-                error_code = header['data_field_position'] * 2 + 1
-                output = self['error']['_messages'][error_field][error_code]
+                    # LOGGER.debug('alarm_values: ' + str(alarm_values))
+                    # LOGGER.debug('alarm mask: ' + str(alarm_mask))
+                    # LOGGER.debug('output: ' + str(output))
 
-            # if alarm_values:
-            #     LOGGER.debug('alarm_values: ' + str(alarm_values))
-            #     LOGGER.debug('short circuit mask: ' + str(short_circuit_mask))
-            #     LOGGER.debug('open circuit mask: ' + str(open_circuit_mask))
-            #     LOGGER.debug('output: ' + str(output))
+                    break
 
         return output
 

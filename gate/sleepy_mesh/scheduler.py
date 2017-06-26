@@ -272,18 +272,17 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
             if node['presence'] and not self.update_in_progress():
                 if not node['inactive']:
                     # Update headers (if needed)
-                    update_dict = dict()
+                    header_enable = 0
+                    for enable_type in ('live_enable', 'diagnostics'):
+                        header_enable |= node.headers.node_enables(enable_type, node)
 
-                    for enable_type in ('live', 'log'):
-                        header_enable = node.headers.node_enables(enable_type, node)
-                        if node[enable_type + '_enable'] != header_enable:
-                            LOGGER.warning('Node and header ' + enable_type + '_enables do not match!')
-                            LOGGER.debug('Node ' + enable_type + '_enable: ' + str(node[enable_type + '_enable']))
-                            LOGGER.debug('Header ' + enable_type + '_enable: ' + str(header_enable))
-                            update_dict[enable_type + '_enable'] = header_enable
+                    if node['live_enable'] != header_enable:
+                        LOGGER.warning('Node and header live_enable do not match!')
+                        LOGGER.debug('Node live_enable: {}'.format(node['live_enable']))
+                        LOGGER.debug('Header live_enable: {}'.format(header_enable))
 
-                    if len(update_dict):
                         # Request node enables update
+                        update_dict = {'live_enable': header_enable}
                         self.networks[0].request_update(update_dict, [node])
 
     def __complete_callback(self):

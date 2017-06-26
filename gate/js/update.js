@@ -21,6 +21,7 @@ function AdcEnables(type, value)
 {
     var total_display = new Object();
     var total_track = new Object();
+    var total_diagnostics = new Object();
     
     if (type == 'live_enable')
     {
@@ -30,6 +31,10 @@ function AdcEnables(type, value)
             $("input[name='log_enable'][value='"+value+"']").prop('indeterminate', false);
             $("input[name='log_enable'][value='"+value+"']").prop('checked', false);
         }
+        else if ($("input[name='live_enable'][value='"+value+"']").prop('checked') == true)
+        {
+            $("input[name='diagnostics'][value='"+value+"']").prop('checked', false);
+        }
     }
     else if(type == 'log_enable')
     {
@@ -38,7 +43,19 @@ function AdcEnables(type, value)
             $("input[name='log_enable'][value='"+value+"']").prop('indeterminate', false);
             $("input[name='live_enable'][value='"+value+"']").prop('indeterminate', false);
             $("input[name='live_enable'][value='"+value+"']").prop('checked', true);
+            $("input[name='diagnostics'][value='"+value+"']").prop('checked', false);
         }
+    }
+    else if(type == 'diagnostics')
+    {
+        if ($("input[name='diagnostics'][value='"+value+"']").prop('checked') == true)
+        {
+            $("input[name='log_enable'][value='"+value+"']").prop('indeterminate', false);
+            $("input[name='log_enable'][value='"+value+"']").prop('checked', false);
+            $("input[name='live_enable'][value='"+value+"']").prop('indeterminate', false);
+            $("input[name='live_enable'][value='"+value+"']").prop('checked', false);
+        }
+
     }
 
     $("input[name='live_enable']").each(function() {
@@ -54,12 +71,18 @@ function AdcEnables(type, value)
         else
             total_track[$(this).val()] = $(this).prop('checked');
     });
-    
+
+     $("input[name='diagnostics']").each(function() {
+        total_diagnostics[$(this).val()] = $(this).prop('checked');
+    });
+
     $("input[name='total_display']").val(JSON.stringify(total_display));
     $("input[name='total_track']").val(JSON.stringify(total_track));
+    $("input[name='total_diagnostics']").val(JSON.stringify(total_diagnostics));
     
     //console.log(total_display);
     //console.log(total_track);
+    //console.log(total_diagnostics);
     
 }
 

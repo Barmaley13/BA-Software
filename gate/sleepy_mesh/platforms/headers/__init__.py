@@ -32,7 +32,7 @@ def generate_node_headers(platform):
 
         headers_kwargs = {
             'platform': platform,
-            'headers': common.HEADERS,
+            'headers': list(),
         }
 
         # Total count of repeating sensor indexes
@@ -89,7 +89,9 @@ def generate_node_headers(platform):
 
                 headers_kwargs['headers'] += headers
 
-        # Add some global/common data to header kwargs
+        # Add global/platform specific headers to kwargs
+        headers_kwargs['headers'] += copy.deepcopy(common.HEADERS)
+
         headers_name = platform_company.upper() + '_HEADERS'
         if hasattr(common, headers_name):
             headers = getattr(common, headers_name)

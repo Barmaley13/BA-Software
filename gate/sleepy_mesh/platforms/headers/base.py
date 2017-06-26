@@ -39,9 +39,10 @@ from header.common import fetch_item
 
 ### CONSTANTS ###
 ALARM_HEADER_KEY_MAP = {
-    'sensor_fault': 'data_field_position',
-    'alarms': 'header_position'
+    'alarms': 'header_position',
+    'sensor_fault': 'data_field_position'
 }
+HEADER_TYPE_MAP = {True: 'diagnostics', False: 'display'}
 
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
@@ -151,9 +152,10 @@ class Headers(DatabaseDict):
 
                 # Init enables
                 elif main_field == 'enables':
+                    _external_constants = header.external_constants()
                     for enable_type in ('live_enable', 'log_enable', 'const_set'):
                         # Fill in enables variables
-                        enable_value = (header_enable and enable_type != 'log_enable')
+                        enable_value = (enable_type == 'const_set' and not _external_constants)
                         header.enables(output, enable_type, enable_value)
 
         return output
@@ -171,7 +173,7 @@ class Headers(DatabaseDict):
             output = OrderedDict()
             for header_type in header_types:
                 for header_key, header in self._headers.items():
-                    if header.header_type() == header_type:
+                    if header_type == HEADER_TYPE_MAP[header['diagnostics']]:
                         output[header_key] = self._headers[header_key]
 
         else:
@@ -271,13 +273,13 @@ class Headers(DatabaseDict):
 
             for error_register in error_registers:
                 for header in headers:
-                    error_field = error_register + '_' + header.header_type()
-                    for alarm_type_index, alarm_type in enumerate(('min_alarm', 'max_alarm')):
+                    for alarm_type in ('min_alarm', 'max_alarm'):
+                        error_field = error_register + '_' + alarm_type
                         warning_description = header.alarm_messages(error_register, alarm_type)
                         if error_register in ALARM_HEADER_KEY_MAP:
                             header_key = ALARM_HEADER_KEY_MAP[error_register]
                             if header[header_key] is not None:
-                                error_code = header[header_key] * 2 + alarm_type_index
+                                error_code = header[header_key]
                                 if warning_description is not None:
                                     output[error_field + '-' + str(error_code)] = warning_description
 
@@ -285,11 +287,11 @@ class Headers(DatabaseDict):
 
 
 class NodeHeaders(Headers):
-    def update_enables(self, page_type, node, enable_dict):
+    def update_enables(self, enable_type, node, enable_dict):
         """ Updates header enables using enable_dict. AKA User update. """
         enable_value = 0
 
-        if page_type in ('live', 'log'):
+        if enable_type in ('live_enable', 'log_enable', 'diagnostics'):
             # Convert to node enables
             all_headers = self.read('all').values()
             for header in all_headers:
@@ -304,42 +306,47 @@ class NodeHeaders(Headers):
                         if bit_value:
                             enable_value |= header_mask
                         else:
-                            enable_value |= node[page_type + '_enable'] & header_mask
+                            if enable_type == 'diagnostics':
+                                _enable_type = 'live_enable'
+                            else:
+                                _enable_type = enable_type
+
+                            enable_value |= node[_enable_type] & header_mask
 
                     # Update headers
                     if bit_value is not None:
-                        header.enables(node, page_type + '_enable', bit_value)
+                        header.enables(node, enable_type, bit_value)
 
-            # LOGGER.debug(page_type + "_enable = " + str(enable_dict))
-            # LOGGER.debug("enable_value = " + str(enable_value))
+            # LOGGER.debug("{} = {}".format(enable_type, enable_dict))
+            # LOGGER.debug("enable_value = ".format(enable_value))
 
         else:
-            LOGGER.error("Page type: " + str(page_type) + " does not exist!")
+            LOGGER.error("Enable type '{}' does not exist!".format(enable_type))
 
         return enable_value
 
-    def node_enables(self, page_type, node, overwrite_headers=False):
+    def node_enables(self, enable_type, node, overwrite_headers=False):
         """ Generates node enables from header enables """
         enable_value = 0
 
-        if page_type in ('live', 'log'):
+        if enable_type in ('live_enable', 'log_enable', 'diagnostics'):
             # Convert to node enables
             all_headers = self.read('all').values()
             for header in all_headers:
                 if header['data_field_position'] is not None:
                     header_mask = 1 << header['data_field_position']
                     if overwrite_headers:
-                        header_enable = bool(node[page_type + '_enable'] & header_mask > 0)
-                        header.enables(node, page_type + '_enable', header_enable)
+                        header_enable = bool(node[enable_type] & header_mask > 0)
+                        header.enables(node, enable_type, header_enable)
 
-                    if header.enables(node, page_type + '_enable'):
+                    if header.enables(node, enable_type):
                         enable_value |= header_mask
 
-            # LOGGER.debug(page_type + "_enable = " + str(enable_dict))
-            # LOGGER.debug("enable_value = " + str(enable_value))
+            # LOGGER.debug("{} = {}".format(enable_type, enable_dict))
+            # LOGGER.debug("enable_value = ".format(enable_value))
 
         else:
-            LOGGER.error("Page type: " + str(page_type) + " does not exist!")
+            LOGGER.error("Enable type '{}' does not exist!".format(enable_type))
 
         return enable_value
 
@@ -355,7 +362,7 @@ class NodeHeaders(Headers):
                         header_dict[header_name] = header
                         break
         else:
-            LOGGER.error("Page type: " + str(page_type) + " does not exist!")
+            LOGGER.error("Page type '{}' does not exist!".format(page_type))
 
         # LOGGER.debug('page_type: ' + str(page_type))
         # LOGGER.debug('nodes: ' + str(nodes.keys()))

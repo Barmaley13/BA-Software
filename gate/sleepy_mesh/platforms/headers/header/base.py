@@ -83,17 +83,28 @@ class HeaderBase(DatabaseDict):
             # Read
             output = provider['enables'][self['header_position']][enable_type]
 
-            # Debugging
+            # # Debugging
             # if set_value is not None and 'net_addr' in provider:
-            #     debug_str = "nodes[" + provider['net_addr'] + "]['enables']["
-            #     debug_str += str(self['header_position']) + "][" + str(enable_type) + "]: "
-            #     debug_str += str(provider['enables'][self['header_position']][enable_type])
+            #     debug_str = "nodes[{}]['enables'][{}][{}]: {}".format(
+            #         provider['net_addr'],
+            #         self['header_position'],
+            #         enable_type,
+            #         provider['enables'][self['header_position']][enable_type]
+            #     )
             #     LOGGER.debug(debug_str)
+
+        elif enable_type in ('diagnostics', ):
+            # Write
+            if set_value is not None:
+                self[enable_type] = bool(set_value)
+            # Read
+            output = self[enable_type]
 
         else:
             LOGGER.error("Enable type: " + str(enable_type) + " does not exist!")
 
         return output
+
 
     ## Alarm Related ##
     def alarm_enable(self, provider, alarm_type, new_value=None):

@@ -83,7 +83,6 @@ class HeaderUnit(HeaderVariable):
         output = None
 
         if selector in ('min', 'max'):
-            # if self.enables(provider, 'live_enable') and self.enables(provider, 'const_set'):
             if self.enables(provider, 'const_set'):
                 _selector_value = self[selector + '_value']
                 if type(_selector_value) in (int, float):
@@ -112,12 +111,15 @@ class HeaderUnit(HeaderVariable):
         """
         output = None
 
-        if data_in is None:
-            enable_key = 'live_enable'
-        else:
-            enable_key = 'log_enable'
+        # if data_in is None:
+        #     header_enable = self.enables(provider, 'live_enable')
+        #     header_enable |= self.enables(provider, 'diagnostics')
+        # else:
+        #     header_enable = self.enables(provider, 'log_enable')
 
-        if self.enables(provider, enable_key) and self.enables(provider, 'const_set'):
+        header_enable = self.enables(provider, 'const_set')
+
+        if header_enable:
             data_out = {}
 
             if data_in is None:

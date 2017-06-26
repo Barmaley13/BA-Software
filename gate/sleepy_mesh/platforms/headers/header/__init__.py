@@ -25,8 +25,6 @@ from unit import HeaderUnit
 
 
 ### CONSTANTS ###
-HEADER_TYPE_MAP = {True: 'diagnostics', False: 'display'}
-
 ## Strings ##
 OF_NODE1 = FIELD_UNIT + " '"
 OF_NODE2 = "' "
@@ -129,12 +127,15 @@ class Header(HeaderBase):
                         # Check/Clear Alarms
                         for alarm_type in ('min_alarm', 'max_alarm'):
                             alarm_triggered = group_variable.check_alarm(provider, calculated_value, alarm_type)
+                            header_enable = self.enables(provider, 'live_enable')
+                            header_enable |= self.enables(provider, 'diagnostics')
+                            alarm_enable = group_variable.alarm_enable(provider, alarm_type)
 
-                            if alarm_triggered and self.enables(provider, 'live_enable'):
+                            if alarm_triggered and header_enable:
                                 self._set_alarm(provider, group_variable, alarm_type)
                                 # LOGGER.debug("*** " + alarm_type + " Set! ***")
 
-                            elif group_variable.alarm_enable() or group_variable['_external']:
+                            elif alarm_enable or group_variable['_external']:
                                 self._clear_alarm(provider, group_variable, alarm_type)
                                 # LOGGER.debug("*** " + alarm_type + " Clear! ***
 
@@ -149,8 +150,8 @@ class Header(HeaderBase):
             alarm_mask_key = 'data_field_position'
 
         # Alarm Error Code
-        error_field = error_register + '_' + self.header_type()
-        error_code = self[alarm_mask_key] * 2 + ('min_alarm', 'max_alarm').index(alarm_type)
+        error_field = error_register + '_' + alarm_type
+        error_code = self[alarm_mask_key]
 
         # Alarm Error Message
         if 'net_addr' in provider and provider['net_addr'] is not None:
@@ -176,8 +177,8 @@ class Header(HeaderBase):
             alarm_mask_key = 'data_field_position'
 
         # Alarm Error Code
-        error_field = error_register + '_' + self.header_type()
-        error_code = self[alarm_mask_key] * 2 + ('min_alarm', 'max_alarm').index(alarm_type)
+        error_field = error_register + '_' + alarm_type
+        error_code = self[alarm_mask_key]
 
         provider.error.clear_error(error_field, error_code)
 
@@ -192,7 +193,7 @@ class Header(HeaderBase):
 
                 for group_variable in getattr(self, field_types[error_register]).values():
                     if error_register == 'alarms':
-                        check_alarm_message = self.header_type() == 'display'
+                        check_alarm_message = self['diagnostics'] is False
                     else:
                         check_alarm_message = group_variable.alarm_enable(None, alarm_type)
 
@@ -329,6 +330,17 @@ class Header(HeaderBase):
 
         return output
 
-    def header_type(self):
-        """ Returns Header Type """
-        return HEADER_TYPE_MAP[self['diagnostics']]
+    ## External Constants ##
+    def external_constants(self):
+        """
+        Returns True or False depending if there are constants available for user editing.
+        :return:
+        """
+        output = False
+
+        for _constant in self.constants.values():
+            if _constant['_external']:
+                output = True
+                break
+
+        return output

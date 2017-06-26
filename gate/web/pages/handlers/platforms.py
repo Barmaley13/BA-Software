@@ -264,7 +264,9 @@ class WebHandler(WebHandlerBase):
             save_dict = dict()
             update_node = bool(request.forms.node_name)
             update_network = bool(request.forms.channel)
-            update_enables = bool(request.forms.total_display and request.forms.total_track)
+            update_enables = bool(request.forms.total_display)
+            update_enables &= bool(request.forms.total_track)
+            update_enables &= bool(request.forms.total_diagnostics)
 
             if update_node:
                 save_dict.update({
@@ -349,18 +351,20 @@ class WebHandler(WebHandlerBase):
                 if update_enables:
                     display = json.loads(request.forms.total_display.encode('ascii', 'ignore'))
                     track = json.loads(request.forms.total_track.encode('ascii', 'ignore'))
+                    diagnostics = json.loads(request.forms.total_diagnostics.encode('ascii', 'ignore'))
 
                     update_dict = dict()
-                    if display and track:
+                    if display and track and diagnostics:
                         platform = self._object.platform(address)
                         for node in self._object.nodes(address):
-                            enables_map = {'live': display, 'log': track}
-                            for page_type, enable_dict in enables_map.items():
-                                update_dict[page_type + '_enable'] = platform.headers.update_enables(
-                                    page_type, node, enable_dict)
+                            enables_map = {'live_enable': display, 'log_enable': track, 'diagnostics': diagnostics}
+                            for enable_type, enable_dict in enables_map.items():
+                                update_dict[enable_type] = platform.headers.update_enables(
+                                    enable_type, node, enable_dict)
 
                     update_enables = bool(len(update_dict))
                     if update_enables:
+                        update_dict['live_enable'] |= update_dict.pop('diagnostics')
                         save_dict.update(update_dict)
 
                     update_node |= update_enables
@@ -405,12 +409,9 @@ class WebHandler(WebHandlerBase):
 
             # Iterate over all constants
             platform = self._object.platform(address)
-            display_headers = platform.headers.read('display').values()
-            for header in display_headers:
-                if len(header.constants) == 0:
-                    if header not in header_list:
-                        header_list.append(header)
-                else:
+            all_headers = platform.headers.read('all').values()
+            for header in all_headers:
+                if header.external_constants():
                     for constant_name, constant_value in header.constants.items():
                         if constant_value['_external']:
                             data_field = header['data_field']
@@ -465,6 +466,10 @@ class WebHandler(WebHandlerBase):
 
                                     if not validate:
                                         break
+
+                else:
+                    # Just in case
+                    header_list.append(header)
 
                 if not validate:
                     break

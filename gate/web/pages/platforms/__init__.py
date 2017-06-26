@@ -87,8 +87,8 @@ def _html(header, nodes):
     """
     output = ''
 
-    for page_type in ('live', 'log'):
-        output += _enable_html(header, nodes, page_type)
+    for enable_type in ('live_enable', 'log_enable', 'diagnostics'):
+        output += _enable_html(header, nodes, enable_type)
 
     for alarm_type in ('min_alarm', 'max_alarm'):
         output += _alarm_html(header, nodes, alarm_type)
@@ -98,18 +98,16 @@ def _html(header, nodes):
     return output
 
 
-def _enable_html(header, nodes, page_type):
+def _enable_html(header, nodes, enable_type):
     """ Create html for the enables """
     start_time = time.time()
     output = ''
 
-    if page_type in ('live', 'log'):
-        enable_key = page_type + '_enable'
-
+    if enable_type in ('live_enable', 'log_enable', 'diagnostics'):
         indeterminate = False
         check = None
         for node in nodes:
-            enable = header.enables(node, enable_key)
+            enable = header.enables(node, enable_type)
             if check is None:
                 check = enable
             else:
@@ -120,7 +118,7 @@ def _enable_html(header, nodes, page_type):
 
         enable_data = {
             'name': header['internal_name'],
-            'key': enable_key,
+            'key': enable_type,
             'indeterminate': indeterminate,
             'check': check
         }
@@ -129,7 +127,7 @@ def _enable_html(header, nodes, page_type):
         output = bottle.template('enable_html', enable=enable_data)
 
     else:
-        LOGGER.error('Page type: ' + str(page_type) + ' does not exist!')
+        LOGGER.error("Enable type '{}' does not exist!".format(enable_type))
 
     LOGGER.debug('_enable_html Time: ' + str(time.time() - start_time) + ' seconds')
 
@@ -202,7 +200,6 @@ def _header_html(header, nodes):
         'alarm_units': header.alarm_units(nodes[0]),
         'unit_list': header.unit_list,
         'disabled': bool(
-            # not header.enables(nodes[0], 'live_enable') or
             not header.enables(nodes[0], 'const_set') or len(nodes) > 1
         )
     }
@@ -604,15 +601,16 @@ class WebPlatforms(object):
         platform = self.platform(address)
         nodes = self.nodes(address)
         all_headers = platform.headers.read('all')
-        diagnostics_headers = platform.headers.read('diagnostics')
+        # diagnostics_headers = platform.headers.read('diagnostics')
 
         header_table_content = ''
         for header_name, header in all_headers.items():
-            hide_header = bool(header_name in diagnostics_headers.keys())
+            # hide_header = bool(header_name in diagnostics_headers.keys())
             header_html = _html(header, nodes)
             header_table_content += bottle.template(
                 'header_row_html',
-                hide_header=hide_header,
+                hide_header=False,
+                # hide_header=hide_header,
                 header_name=header['name'],
                 header_html=header_html,
             )
@@ -633,20 +631,23 @@ class WebPlatforms(object):
             nodes = [copy.deepcopy(platform.headers.header_defaults)]
 
         js_validation_list = list()
-        display_headers = platform.headers.read('display').values()
-        for header in display_headers:
-            js_validation_list += _constants_js(header, nodes)
+        all_headers = platform.headers.read('all').values()
+
+        for header in all_headers:
+            if header.external_constants():
+                js_validation_list += _constants_js(header, nodes)
 
         constants_js = 'else '.join(js_validation_list)
 
         constants_html = ''
-        for header in display_headers:
-            header_html = _constants_html(header, nodes)
-            constants_html += bottle.template(
-                'constants_row_html',
-                header_name=header['name'],
-                header_html=header_html,
-            )
+        for header in all_headers:
+            if header.external_constants():
+                header_html = _constants_html(header, nodes)
+                constants_html += bottle.template(
+                    'constants_row_html',
+                    header_name=header['name'],
+                    header_html=header_html,
+                )
 
         return constants_js, constants_html
 

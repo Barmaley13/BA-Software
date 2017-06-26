@@ -96,10 +96,9 @@ class SleepyMeshStatistics(SleepyMeshBase):
         self.load()
 
         # Apply enables
-        headers = self.headers.read('diagnostics').values()
-        for header in headers:
+        all_headers = self.headers.read('all').values()
+        for header in all_headers:
             header.enables(self, 'const_set', True)
-            header.enables(self, 'live_enable', True)
 
     ## Private Methods ##
     # Upstream #
