@@ -1,6 +1,6 @@
 """
 Configure Raspberry Pi Script
-Project: `Bolder Automation <http://bolder-automation.io>`_
+Project: `Bolder Automation <http://bolderautomation.net>`_
 Author: `Kirill V. Belyayev <http://kbelyayev.com>`_
 """
 

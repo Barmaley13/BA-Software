@@ -10,7 +10,7 @@ SYSTEM_DATA = {
     '_title': 'My Mesh Network',
     'company': 'Simply Works Electronics LLC',
     'product': 'SleepyMesh',
-    'url': 'www.bolder-automation.io',
+    'url': 'www.bolderautomation.net',
 
     # Default User #
     'username': 'admin',

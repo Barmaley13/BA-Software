@@ -5,7 +5,7 @@ Setup brand new embedded platform (Pi or E10) for home/industrial automation pur
 Designed to be used on a brand new system!
 Use at your own risk or setup everything manually!
 
-Project: `Bolder Automation <http://bolder-automation.io>`_
+Project: `Bolder Automation <http://bolderautomation.net>`_
 Author: `Kirill V. Belyayev <http://kbelyayev.com>`_
 """
 
