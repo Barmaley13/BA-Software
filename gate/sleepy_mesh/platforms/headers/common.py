@@ -31,7 +31,7 @@ LOW_SYNC = " is low!"
 ## Platform Specific Constants ##
 JOWA_ADC_REF = 2.5                      # Volts
 JOWA_ADC_MAX = float(0xFFFFFF)          # 24-bit ADC
-SWE_ADC_MAX = float(0x3FF)              # 12-bit ADC
+SWE_ADC_MAX = float(0x3FF)              # 10-bit ADC
 
 ## Platform Specific Header Constants ##
 JOWA_MAX = {
