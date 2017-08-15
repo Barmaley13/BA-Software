@@ -117,8 +117,12 @@ class Header(HeaderBase):
                     # We need to filter proper group_variables that apply for checking/clearing alarms
                     check_alarm_enable = True
                     if group_variable['_external']:
-                        _alarm_name = self.alarm_units(provider)['internal_name']
-                        check_alarm_enable = bool(_alarm_name == group_variable['internal_name'])
+                        _alarm_units = self.alarm_units(provider)
+                        if _alarm_units is not None:
+                            _alarm_name = _alarm_units['internal_name']
+                            check_alarm_enable = bool(_alarm_name == group_variable['internal_name'])
+                        else:
+                            check_alarm_enable = False
 
                     if check_alarm_enable:
                         LOGGER.debug('Group Variable: {} Field: {} Header: {}'.format(

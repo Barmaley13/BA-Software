@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Jowa Header, Code #2
+Jowa Header, Code # 2
 Temperature
 """
 
