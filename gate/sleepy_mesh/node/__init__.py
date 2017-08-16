@@ -28,6 +28,7 @@ class Node(NodePlatform):
 
     def update_logs(self):
         """ Append logs (if needed). Dump logs to a file (if needed). Return dump log flag """
+        self['log_enable'] = self.headers.node_enables('log_enable', self)
         if self['log_enable'] and self['new_data']:
             log_data = copy.deepcopy(self['data_out'])
             log_data['time'] = self['last_sync']

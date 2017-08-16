@@ -105,7 +105,6 @@ class HeaderBase(DatabaseDict):
 
         return output
 
-
     ## Alarm Related ##
     def alarm_enable(self, provider, alarm_type, new_value=None):
         """
