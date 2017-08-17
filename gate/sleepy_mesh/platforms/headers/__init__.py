@@ -4,12 +4,12 @@ Collection of Headers for different platforms
 
 ### INCLUDES ###
 import copy
+import pkgutil
 import logging
 
+from base import NodeHeaders, Headers
+from gate.common import HEADERS_FOLDER
 from gate.sleepy_mesh.node import ADC_FIELDS
-
-from base import NodeHeaders
-import common
 
 
 ### CONSTANTS ###
@@ -35,6 +35,15 @@ def generate_node_headers(platform):
             'headers': list(),
         }
 
+        # Import common module from headers
+        common = None
+        for importer, module_name, is_package in pkgutil.iter_modules([HEADERS_FOLDER]):
+            if not is_package:
+                header_name = module_name.split('.')[-1]
+                if header_name == 'common':
+                    common = importer.find_module(module_name).load_module(module_name)
+                    break
+
         # Total count of repeating sensor indexes
         total_counter = {}
         for sensor_index in platform_sensor_code:
@@ -52,12 +61,19 @@ def generate_node_headers(platform):
                 current_counter[sensor_index] += 1
 
             # Fetch header for this particular sensor index
-            module_name = __name__ + '.' + platform_company + '_' + sensor_index
-            LOGGER.debug("module name = " + str(module_name))
-            try:
-                header_module = __import__(module_name, fromlist=[''])
-            except:
-                LOGGER.warning('Could not find module named "' + str(module_name) + '" during header generation!')
+            _header_name = platform_company + '_' + sensor_index
+            LOGGER.debug("header name = " + str(_header_name))
+
+            header_module = None
+            for importer, module_name, is_package in pkgutil.iter_modules([HEADERS_FOLDER]):
+                if not is_package:
+                    header_name = module_name.split('.')[-1]
+                    if header_name == _header_name:
+                        header_module = importer.find_module(module_name).load_module(module_name)
+                        break
+
+            if header_module is None:
+                LOGGER.warning('Could not find module named "' + str(_header_name) + '" during header generation!')
             else:
                 # Update header kwargs for this particular sensor index
                 headers = copy.deepcopy(header_module.HEADERS)
@@ -89,19 +105,41 @@ def generate_node_headers(platform):
 
                 headers_kwargs['headers'] += headers
 
-        # Add global/platform specific headers to kwargs
-        headers_kwargs['headers'] += copy.deepcopy(common.HEADERS)
+        if common is not None:
+            # Add global/platform specific headers to kwargs
+            headers_kwargs['headers'] += copy.deepcopy(common.HEADERS)
 
-        headers_name = platform_company.upper() + '_HEADERS'
-        if hasattr(common, headers_name):
-            headers = getattr(common, headers_name)
-            headers_kwargs['headers'] += headers
+            headers_name = platform_company.upper() + '_HEADERS'
+            if hasattr(common, headers_name):
+                headers = getattr(common, headers_name)
+                headers_kwargs['headers'] += headers
 
-        # Create headers with newly generated kwargs
-        output = NodeHeaders(**headers_kwargs)
-        LOGGER.debug("header keys = " + str(output.read('all').keys()))
+            # Create headers with newly generated kwargs
+            output = NodeHeaders(**headers_kwargs)
+            LOGGER.debug("header keys = " + str(output.read('all').keys()))
 
     else:
         LOGGER.error('Platform name "' + str(platform) + '" can not be used for header generation!')
+
+    return output
+
+
+def generate_system_headers():
+    """ Generates Headers Dynamically """
+    # Import system module from headers
+    common, system = None, None
+    for importer, module_name, is_package in pkgutil.iter_modules([HEADERS_FOLDER]):
+        if not is_package:
+            header_name = module_name.split('.')[-1]
+            if header_name == 'common':
+                common = importer.find_module(module_name).load_module(module_name)
+            if header_name == 'system':
+                system = importer.find_module(module_name).load_module(module_name)
+
+    headers = {}
+    if system is not None:
+        headers = system.HEADERS
+
+    output = Headers(**headers)
 
     return output

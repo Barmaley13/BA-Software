@@ -91,7 +91,8 @@ def clean_system(remove_database=True, remove_logs=True, overwrite_scripts=False
     """ Cleans system files (gate files on the system) """
     from py_knife import file_system
 
-    from gate.common import CWD, GATE_FOLDER, DOCS_FOLDER, LOGS_FOLDER, UPLOADS_FOLDER, DATABASE_FOLDER, SYSTEM_FOLDER
+    from gate.common import CWD, GATE_FOLDER, DOCS_FOLDER, LOGS_FOLDER, UPLOADS_FOLDER
+    from gate.common import DATABASE_FOLDER, SYSTEM_FOLDER, HEADERS_FOLDER
     from common import copy_files_w_permissions
 
     if remove_database:
@@ -112,17 +113,17 @@ def clean_system(remove_database=True, remove_logs=True, overwrite_scripts=False
     file_system.make_dir(UPLOADS_FOLDER)
     file_system.make_dir(DATABASE_FOLDER)
     file_system.make_dir(SYSTEM_FOLDER)
+    file_system.make_dir(HEADERS_FOLDER)
 
     if overwrite_scripts:
         print('*** Overwriting GATE scripts ***')
         gate_script_files = [('run_gate.py', '755'), ('reset_gate.py', '755'), ('ip_addr_utility.py', '755')]
         copy_files_w_permissions(gate_script_files, '', CWD)
 
-        # Copying documentation
+        # Copying documentation and system data
         file_system.copy_dir('docs', DOCS_FOLDER)
-
-        # Copying system data
         file_system.copy_dir('system', SYSTEM_FOLDER)
+        file_system.copy_dir('headers', HEADERS_FOLDER)
 
 
 ## Private Functions ##

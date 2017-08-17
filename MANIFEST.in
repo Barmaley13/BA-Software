@@ -1,9 +1,10 @@
 include README.md run_gate.py reset_gate.py ip_addr_utility.py
-global-exclude Obsolete obsolete obsolete.zip .idea
+global-exclude Obsolete obsolete obsolete.zip .idea *.pyc
 recursive-include docs *
 recursive-include database *
 recursive-include logs *
 recursive-include base *
 recursive-include node *
 recursive-include system *
-global-exclude Obsolete obsolete obsolete.zip .idea
+recursive-include headers *
+global-exclude Obsolete obsolete obsolete.zip .idea *.pyc

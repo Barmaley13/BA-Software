@@ -49,6 +49,7 @@ LOGS_FOLDER = os.path.join(GATE_FOLDER, 'logs')
 UPLOADS_FOLDER = os.path.join(GATE_FOLDER, 'uploads')
 DATABASE_FOLDER = os.path.join(GATE_FOLDER, 'database')
 SYSTEM_FOLDER = os.path.join(GATE_FOLDER, 'system')
+HEADERS_FOLDER = os.path.join(GATE_FOLDER, 'headers')
 
 ## Web(Media) Folders ##
 MWD = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))

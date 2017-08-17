@@ -8,8 +8,7 @@ import copy
 import logging
 
 from base import SleepyMeshBase, SYNC_TYPES, LAST_SYNCS_NUMBER
-from platforms.headers.base import Headers
-from platforms.headers.system import HEADERS
+from platforms.headers import generate_system_headers
 
 
 ### CONSTANTS ###
@@ -76,7 +75,7 @@ class SleepyMeshStatistics(SleepyMeshBase):
         self.__delay_times = list()
 
         # Create Headers
-        self.headers = Headers(**HEADERS)
+        self.headers = generate_system_headers()
 
         system_defaults = copy.deepcopy(STATISTICS_DEFAULTS)
         headers_defaults = copy.deepcopy(self.headers.header_defaults)
