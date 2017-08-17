@@ -1,7 +1,7 @@
-gate
-====
+headers
+=======
 
 .. toctree::
    :maxdepth: 4
 
-   gate
+   headers
