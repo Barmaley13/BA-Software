@@ -4,7 +4,7 @@ Battery Voltage
 """
 
 ### INCLUDES ###
-from .common import JOWA_BATT_THRESHOLD, LOW_BATTERY
+from common import JOWA_BATT_THRESHOLD, LOW_BATTERY
 
 
 ### CONSTANTS ###

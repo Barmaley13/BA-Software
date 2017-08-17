@@ -7,7 +7,27 @@ Common Constants used across different headers (as well as headers that belong t
 import copy
 import logging
 
-from gate.conversions import time_str
+
+### FUNCTIONS ###
+def time_str(input_seconds):
+    """ Converts seconds to 'YY-MM-DD HH:MM:SS' format """
+    output = None
+
+    if input_seconds is not None:
+        total_seconds = int(input_seconds)
+        seconds = total_seconds % 60
+        total_minutes = total_seconds / 60
+        minutes = total_minutes % 60
+        total_hours = total_minutes / 60
+        hours = total_hours % 24
+        total_days = total_hours / 24
+        days = total_days % 30
+        total_months = total_days / 30
+        months = total_months % 12
+        years = total_months / 12
+        output = "{0:0>2}-{1:0>2}-{2:0>2} {3:0>2}:{4:0>2}:{5:0>2}".format(years, months, days, hours, minutes, seconds)
+
+    return output
 
 
 ### CONSTANTS ###
