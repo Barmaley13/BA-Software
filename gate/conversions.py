@@ -85,6 +85,9 @@ def round_int(number, rounding, power):
 ## String related ##
 def internal_name(input_name):
     """ Generates internal name """
+    if type(input_name) not in (str, unicode):
+        input_name = str(input_name)
+
     _internal_name = input_name.replace(' ', '_').lower()
     output = ''.join(ALLOWED_CHARS.findall(_internal_name))
     return output

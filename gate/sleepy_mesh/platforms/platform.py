@@ -21,10 +21,8 @@ from headers import generate_node_headers
 ## Platform Naming Conventions ##
 PLATFORM_NAMING_CONVENTIONS = {
     'virgins': 'Virgin Hardware',
-    'jowa-1203': 'Default',
-    'jowa-4403': '4-20mA',
-    'jowa-4443': '3 x 4-20mA',
-    'swe-11111111': '8 x ADC'
+    'jowa-102': 'Level Measurement',
+    'swe-103': 'Default'
 }
 
 ## Logger ##

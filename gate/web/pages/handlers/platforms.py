@@ -270,17 +270,19 @@ class WebHandler(WebHandlerBase):
 
             if update_node:
                 save_dict.update({
-                    'name': request.forms.node_name.encode('ascii', 'ignore')
+                    'name': request.forms.node_name.encode('ascii', 'ignore'),
+                    'sensor_type': request.forms.sensor_type.encode('ascii', 'ignore')
                     # 'mac': request.forms.mac_str.encode('ascii', 'ignore')
                 })
 
                 # Validate data
                 # Make sure values are not empty
                 for value in save_dict.values():
-                    validate &= (len(value) > 0)
-                    # # Make sure MAC is 16 bytes and has valid digits
-                    # validate &= all(char in string.hexdigits for char in node_dict['mac']) \
-                    #             and (len(node_dict['mac']) == 16)
+                    validate &= 0 < len(value) < 255
+
+                # # Make sure MAC is 16 bytes and has valid digits
+                # validate &= all(char in string.hexdigits for char in save_dict['mac']) \
+                #             and (len(save_dict['mac']) == 16)
 
                 # Modbus Address
                 modbus_addr = request.forms.get('modbus_addr')

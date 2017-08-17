@@ -3,16 +3,21 @@ Collection of Headers for different platforms
 """
 
 ### INCLUDES ###
+import sys
 import copy
 import pkgutil
 import logging
 
 from base import NodeHeaders, Headers
-from gate.common import HEADERS_FOLDER
+from gate.common import GATE_FOLDER, HEADERS_FOLDER
 from gate.sleepy_mesh.node import ADC_FIELDS
 
 
 ### CONSTANTS ###
+DEFAULT_SENSOR_TYPES = {
+    'jowa': '1203',
+    'swe': '1111'
+}
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
@@ -23,12 +28,9 @@ def generate_node_headers(platform):
     """ Generates Headers Dynamically """
     output = None
 
-    platform_list = platform.split('-')
-    if len(platform_list) == 2:
-        LOGGER.debug("platform = " + str(platform))
-
-        platform_company = platform_list[0]
-        platform_sensor_code = platform_list[1]
+    platform_company = platform.split('-')[0]
+    if platform_company in DEFAULT_SENSOR_TYPES:
+        sensor_codes = DEFAULT_SENSOR_TYPES[platform_company]
 
         headers_kwargs = {
             'platform': platform,
@@ -36,24 +38,19 @@ def generate_node_headers(platform):
         }
 
         # Import common module from headers
-        common = None
-        for importer, module_name, is_package in pkgutil.iter_modules([HEADERS_FOLDER]):
-            if not is_package:
-                header_name = module_name.split('.')[-1]
-                if header_name == 'common':
-                    common = importer.find_module(module_name).load_module(module_name)
-                    break
+        sys.path.append(HEADERS_FOLDER)
+        import common
 
         # Total count of repeating sensor indexes
         total_counter = {}
-        for sensor_index in platform_sensor_code:
+        for sensor_index in sensor_codes:
             if sensor_index not in total_counter:
                 total_counter[sensor_index] = 0
             else:
                 total_counter[sensor_index] += 1
 
         current_counter = {}
-        for channel_number, sensor_index in enumerate(platform_sensor_code):
+        for channel_number, sensor_index in enumerate(sensor_codes):
             # Current count of repeating sensor indexes
             if sensor_index not in current_counter:
                 current_counter[sensor_index] = 1
@@ -119,27 +116,17 @@ def generate_node_headers(platform):
             LOGGER.debug("header keys = " + str(output.read('all').keys()))
 
     else:
-        LOGGER.error('Platform name "' + str(platform) + '" can not be used for header generation!')
+        LOGGER.error('Platform name "' + str(platform_company) + '" can not be used for header generation!')
 
     return output
 
 
 def generate_system_headers():
-    """ Generates Headers Dynamically """
+    """ Generate System Headers """
     # Import system module from headers
-    common, system = None, None
-    for importer, module_name, is_package in pkgutil.iter_modules([HEADERS_FOLDER]):
-        if not is_package:
-            header_name = module_name.split('.')[-1]
-            if header_name == 'common':
-                common = importer.find_module(module_name).load_module(module_name)
-            if header_name == 'system':
-                system = importer.find_module(module_name).load_module(module_name)
+    sys.path.append(GATE_FOLDER)
+    import headers.system as system
 
-    headers = {}
-    if system is not None:
-        headers = system.HEADERS
-
-    output = Headers(**headers)
+    output = Headers(**system.HEADERS)
 
     return output

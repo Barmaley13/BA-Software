@@ -88,7 +88,7 @@ def set_error_args(node, error_field, error_code, error_message=None):
         if error_field == 'node_fault':
             error_message = _error_message
         elif error_field == 'generic':
-            error_message = FIELD_UNIT + " '" + str(node['name']) + "'" + _error_message
+            error_message = FIELD_UNIT + " '" + str(node['name']) + "'" + str(_error_message)
 
     return error_field, error_code, error_message
 

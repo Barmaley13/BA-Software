@@ -81,17 +81,18 @@ class HeaderBase(DatabaseDict):
             if set_value is not None:
                 provider['enables'][self['header_position']][enable_type] = bool(set_value)
             # Read
-            output = provider['enables'][self['header_position']][enable_type]
+            if self['header_position'] in provider['enables']:
+                output = provider['enables'][self['header_position']][enable_type]
 
-            # # Debugging
-            # if set_value is not None and 'net_addr' in provider:
-            #     debug_str = "nodes[{}]['enables'][{}][{}]: {}".format(
-            #         provider['net_addr'],
-            #         self['header_position'],
-            #         enable_type,
-            #         provider['enables'][self['header_position']][enable_type]
-            #     )
-            #     LOGGER.debug(debug_str)
+                # # Debugging
+                # if set_value is not None and 'net_addr' in provider:
+                #     debug_str = "nodes[{}]['enables'][{}][{}]: {}".format(
+                #         provider['net_addr'],
+                #         self['header_position'],
+                #         enable_type,
+                #         provider['enables'][self['header_position']][enable_type]
+                #     )
+                #     LOGGER.debug(debug_str)
 
         elif enable_type in ('diagnostics', ):
             # Write

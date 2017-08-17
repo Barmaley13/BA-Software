@@ -54,13 +54,13 @@
                 }
             %end
             %"""
-            else if (form.mac.value.length != 16) 
+            else if (form.mac.value.length != 16)
             {
                 alert("MAC Address has to be 16 digits!");
                 form.mac.focus();
                 return false;
             }
-            else if (hex.test(form.mac.value)==false) 
+            else if (hex.test(form.mac.value)==false)
             {
                 alert("MAC Address contains invalid characters!");
                 form.mac.focus();
@@ -129,6 +129,7 @@
     
     <input type='hidden' name='platform' value="{{ADDRESS['platform']}}" >
     <input type='hidden' name='group' value="{{ADDRESS['group']}}" >
+    <input type='hidden' name='sensor_type' value="{{NODE['sensor_type']}}" >
 
     %## INPUT FIELDS ##
     %node_name = 'Multiple'

@@ -91,7 +91,7 @@ class NetworkCallbacks(NetworkExecutor):
             else:
                 if callback_type == 'long':
                     # Check if platform changed
-                    input_platform = self._manager.platforms.platform_match(input_dict, 'sensor_type')
+                    input_platform = self._manager.platforms.platform_match(input_dict, 'hw_type')
 
                     if node['platform'] != input_platform:
                         LOGGER.warning("Platform of a node '" + str(node['net_addr']) + "' has been changed!")

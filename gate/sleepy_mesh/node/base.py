@@ -45,6 +45,7 @@ NODE_DEFAULTS = {
 
     # Used by PLATFORMS, created dynamically!
     'platform': None,           # read (used by platforms)
+    'sensor_type': None,
     # Used by headers
     'constants': {},
     'alarms': {},

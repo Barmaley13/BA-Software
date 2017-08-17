@@ -33,8 +33,8 @@ class Platforms(ModifiedOrderedDict):
         LOGGER.debug("Creating Default Platforms")
 
         default_platforms = OrderedDict()
-        default_platforms['jowa-1203'] = Platform('jowa-1203', self._nodes)
-        default_platforms['swe-1111'] = Platform('swe-1111', self._nodes)
+        default_platforms['jowa-102'] = Platform('jowa-102', self._nodes)
+        default_platforms['swe-103'] = Platform('swe-103', self._nodes)
         default_platforms['virgins'] = Platform('virgins', self._nodes)
 
         super(Platforms, self).__init__(
@@ -64,13 +64,13 @@ class Platforms(ModifiedOrderedDict):
     ## Create Node/Platform ##
     def create_node(self, input_dict):
         """ Creates new node and adds it to nodes list """
-        node = None
-        platform_name = None
+        node, platform_name, sensor_type = None, None, None
 
         if 'raw_platform' in input_dict:
-            platform_name = self.platform_match(input_dict, 'sensor_type')
-            input_dict['platform'] = platform_name
-        elif 'platform' in input_dict:
+            input_dict['platform'] = self.platform_match(input_dict, 'hw_type')
+            input_dict['sensor_type'] = self.platform_match(input_dict, 'sensor_type')
+
+        if 'platform' in input_dict:
             platform_name = input_dict['platform']
 
         if platform_name is not None:
@@ -104,17 +104,13 @@ class Platforms(ModifiedOrderedDict):
         return node
 
     ## Platform Match ##
-    def platform_match(self, input_dict, match_field, output_dict=None):
+    def platform_match(self, input_dict, match_field):
         """ Matches specified field in output dict
         :param input_dict:
         :param match_field:
-        :param output_dict:
         :return:
         """
         output = None
-
-        if output_dict is None:
-            output_dict = self
 
         # Default platform
         platform_values = OrderedDict()
@@ -153,10 +149,10 @@ class Platforms(ModifiedOrderedDict):
 
             # Match starting from specific to generic platform names
             for platform in reversed(platform_list):
-                for platform_key in output_dict.keys():
+                for platform_key in self.keys():
                     if match_field != 'sensor_type':
                         if platform == platform_key:
-                            output = output_dict[platform_key]
+                            output = platform_key
                             break
                     else:
                         if platform in platform_key:

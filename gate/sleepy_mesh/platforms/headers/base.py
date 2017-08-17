@@ -42,7 +42,6 @@ ALARM_HEADER_KEY_MAP = {
     'alarms': 'header_position',
     'sensor_fault': 'data_field_position'
 }
-HEADER_TYPE_MAP = {True: 'diagnostics', False: 'display'}
 
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
@@ -163,6 +162,7 @@ class Headers(DatabaseDict):
     def read(self, header_type):
         """ Read Headers """
         output = None
+        header_type_map = {True: 'diagnostics', False: 'display'}
 
         if header_type in ('all', 'display', 'diagnostics'):
             if header_type == 'all':
@@ -173,7 +173,8 @@ class Headers(DatabaseDict):
             output = OrderedDict()
             for header_type in header_types:
                 for header_key, header in self._headers.items():
-                    if header_type == HEADER_TYPE_MAP[header['diagnostics']]:
+
+                    if header_type == header_type_map[header['diagnostics']]:
                         output[header_key] = self._headers[header_key]
 
         else:
