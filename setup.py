@@ -253,34 +253,35 @@ if len(sys.argv):
     if 'sdist' in sys.argv:
         from py_knife import aes, file_system
 
-        ## Extracting disto_password ##
-        DEFAULT_SYSTEM_DATA = dict()
-        for importer, module_name, is_package in pkgutil.iter_modules(['system']):
-            if not is_package:
-                system_name = module_name.split('.')[-1]
-                if not system_name.startswith('_'):
-                    handler_module = importer.find_module(module_name).load_module(module_name)
-                    DEFAULT_SYSTEM_DATA[system_name] = handler_module.SYSTEM_DATA
-
-        if SYSTEM_NAME in DEFAULT_SYSTEM_DATA:
-            system_data = DEFAULT_SYSTEM_DATA[SYSTEM_NAME]
-        else:
-            system_data = DEFAULT_SYSTEM_DATA['default']
-
-        distro_password = system_data['distro_password']
-
-        print('*** Encrypting Distribution ***')
-        if 'DIST_PATH' not in globals().keys():
-            dist_path = 'dist'
-
-        else:
-            dist_path = DIST_PATH
-
-        py_dist = os.path.join(CWD, dist_path, 'gate-' + __version__)
-
-        print('py_dist: {}'.format(py_dist))
-
-        aes.encrypt(py_dist + '.zip', py_dist + '.pea', distro_password)
+        # Encryption not needed since we moved to open source
+        # ## Extracting disto_password ##
+        # DEFAULT_SYSTEM_DATA = dict()
+        # for importer, module_name, is_package in pkgutil.iter_modules(['system']):
+        #     if not is_package:
+        #         system_name = module_name.split('.')[-1]
+        #         if not system_name.startswith('_'):
+        #             handler_module = importer.find_module(module_name).load_module(module_name)
+        #             DEFAULT_SYSTEM_DATA[system_name] = handler_module.SYSTEM_DATA
+        #
+        # if SYSTEM_NAME in DEFAULT_SYSTEM_DATA:
+        #     system_data = DEFAULT_SYSTEM_DATA[SYSTEM_NAME]
+        # else:
+        #     system_data = DEFAULT_SYSTEM_DATA['default']
+        #
+        # distro_password = system_data['distro_password']
+        #
+        # print('*** Encrypting Distribution ***')
+        # if 'DIST_PATH' not in globals().keys():
+        #     dist_path = 'dist'
+        #
+        # else:
+        #     dist_path = DIST_PATH
+        #
+        # py_dist = os.path.join(CWD, dist_path, 'gate-' + __version__)
+        #
+        # print('py_dist: {}'.format(py_dist))
+        #
+        # aes.encrypt(py_dist + '.zip', py_dist + '.pea', distro_password)
 
         print('*** Cleaning Up ***')
         for package_path in packages.values():

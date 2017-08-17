@@ -64,8 +64,8 @@ def disabled(condition):
 ## Software Form ##
 def form_extension(upload_type):
     """ Returns proper form extension depending on upload type """
-    if upload_type == "gate":
-        extension = ".pea"
+    if upload_type == 'gate':
+        extension = '.zip'
     else:
-        extension = ".spy"
+        extension = '.spy'
     return extension
