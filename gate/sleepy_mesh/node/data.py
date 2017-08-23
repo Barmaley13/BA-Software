@@ -9,16 +9,13 @@ from gate.conversions import bin_to_int
 from gate.sleepy_mesh.common import parse_raw_data
 from gate.sleepy_mesh.error import ADC_MISMATCH, ABSENT_NODE
 
+from headers import DISPLAY_FIELDS
 from diagnostics import NodeDiagnostics, DIAGNOSTIC_FIELDS, DIAGNOSTIC_VALUES
 
 
 ### CONSTANTS ###
 ## Default Data Fields ##
-ADC_FIELDS = ('adc0', 'adc1', 'adc2', 'adc3', 'adc4', 'adc5', 'adc6', 'adc7')
-DEFAULT_FIELDS = ('lq', 'temp', 'batt')
-DISPLAY_FIELDS = ADC_FIELDS + DEFAULT_FIELDS
 ALL_FIELDS = DISPLAY_FIELDS + DIAGNOSTIC_FIELDS
-
 ## Battery Monitor Conversions ##
 BAT_MON = [1.70, 1.75, 1.80, 1.85, 1.90, 1.95, 2.00, 2.05, 2.10, 2.15, 2.20,
            2.25, 2.30, 2.35, 2.40, 2.45, 2.550, 2.625, 2.700, 2.775, 2.850, 2.925,
@@ -70,7 +67,7 @@ def _lq_to_percent(link_quality):
 ### CLASSES ###
 class NodeData(NodeDiagnostics):
     """ Extending Node class with NodeData portion """
-    def __init__(self, system_settings, input_dict, *args, **kwargs):
+    def __init__(self, system_settings, input_dict):
         # Initialize data
         if 'type' not in input_dict or input_dict['type'] == 'node':
             display_defaults = dict(zip(DISPLAY_FIELDS, (None,) * len(DISPLAY_FIELDS)))
@@ -82,7 +79,7 @@ class NodeData(NodeDiagnostics):
                 '_battery_voltages': list()
             })
 
-        super(NodeData, self).__init__(system_settings, input_dict, *args, **kwargs)
+        super(NodeData, self).__init__(system_settings, input_dict)
 
     ## Private Methods ##
     # Upstream #

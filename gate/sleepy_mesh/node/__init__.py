@@ -8,7 +8,6 @@ import copy
 import logging
 
 from hw_platform import NodePlatform
-from data import ADC_FIELDS
 from diagnostics import DIAGNOSTIC_FIELDS
 
 
@@ -28,7 +27,7 @@ class Node(NodePlatform):
 
     def update_logs(self):
         """ Append logs (if needed). Dump logs to a file (if needed). Return dump log flag """
-        self['log_enable'] = self.headers.node_enables('log_enable', self)
+        self['log_enable'] = self.generate_enables('log_enable')
         if self['log_enable'] and self['new_data']:
             log_data = copy.deepcopy(self['data_out'])
             log_data['time'] = self['last_sync']
@@ -51,3 +50,75 @@ class Node(NodePlatform):
     def created(self):
         """ Reports time of the node creation """
         return self.system_settings.local_time(self['created'])
+
+    # Header Related Methods #
+    def read_headers(self, header_type):
+        output = {}
+
+        if self.headers:
+            output = self.headers.read(header_type, self['sensor_type'])
+
+        return output
+
+    def generate_enables(self, enable_type, overwrite_headers=False):
+        """ Generates node enables from header enables """
+        enable_value = 0
+
+        if enable_type in ('live_enable', 'log_enable', 'diagnostics'):
+            # Convert to node enables
+            all_headers = self.read_headers('all').values()
+            for header in all_headers:
+                if header['data_field_position'] is not None:
+                    header_mask = 1 << header['data_field_position']
+                    if overwrite_headers:
+                        header_enable = bool(self[enable_type] & header_mask > 0)
+                        header.enables(self, enable_type, header_enable)
+
+                    if header.enables(self, enable_type):
+                        enable_value |= header_mask
+
+            # LOGGER.debug("{} = {}".format(enable_type, enable_dict))
+            # LOGGER.debug("enable_value = ".format(enable_value))
+
+        else:
+            LOGGER.error("Enable type '{}' does not exist!".format(enable_type))
+
+        return enable_value
+
+    def update_enables(self, enable_type, enable_dict):
+        """ Updates header enables using enable_dict. AKA User update. """
+        enable_value = 0
+
+        if enable_type in ('live_enable', 'log_enable', 'diagnostics'):
+            # Convert to node enables
+            all_headers = self.read_headers('all').values()
+            for header in all_headers:
+                header_mask = None
+                if header['data_field_position'] is not None:
+                    header_mask = 1 << header['data_field_position']
+
+                if header['internal_name'] in enable_dict:
+                    bit_value = enable_dict[header['internal_name']]
+                    # Compose node enables
+                    if bit_value is not None and header_mask is not None:
+                        if bit_value:
+                            enable_value |= header_mask
+                        else:
+                            if enable_type == 'diagnostics':
+                                _enable_type = 'live_enable'
+                            else:
+                                _enable_type = enable_type
+
+                            enable_value |= self[_enable_type] & header_mask
+
+                    # Update headers
+                    if bit_value is not None:
+                        header.enables(self, enable_type, bit_value)
+
+            # LOGGER.debug("{} = {}".format(enable_type, enable_dict))
+            # LOGGER.debug("enable_value = ".format(enable_value))
+
+        else:
+            LOGGER.error("Enable type '{}' does not exist!".format(enable_type))
+
+        return enable_value

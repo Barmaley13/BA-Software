@@ -132,7 +132,7 @@ class WebHandler(WebHandlerBase):
                     target[target_key].delete()
                     del target[target_key]
 
-                    group_value = Group('Inactive Group', self._manager.nodes, target.headers)
+                    group_value = Group('Inactive Group', address['platform'], self._manager.nodes)
                     group_key = group_value['internal_name']
                     target[group_key] = group_value
                     target[group_key].nodes = group_nodes
@@ -201,8 +201,7 @@ class WebHandler(WebHandlerBase):
 
         if validate:
             platform = self._object.platform(address)
-
-            new_group = Group(group_name, self._manager.nodes, platform.headers)
+            new_group = Group(group_name, platform['platform'], self._manager.nodes)
             group_key = new_group['internal_name']
             # Copy node defaults from platform
             new_group.error.update(copy.deepcopy(platform.error))
@@ -233,7 +232,7 @@ class WebHandler(WebHandlerBase):
             groups = self._object.platform(address).groups
             index = groups.values().index(group)
 
-            group_value = Group(group_name, self._manager.nodes, group.headers)
+            group_value = Group(group_name, group['platform'], self._manager.nodes)
             group_value.nodes = group.nodes
             group_key = group_value['internal_name']
 
@@ -269,11 +268,8 @@ class WebHandler(WebHandlerBase):
             update_enables &= bool(request.forms.total_diagnostics)
 
             if update_node:
-                save_dict.update({
-                    'name': request.forms.node_name.encode('ascii', 'ignore'),
-                    'sensor_type': request.forms.sensor_type.encode('ascii', 'ignore')
-                    # 'mac': request.forms.mac_str.encode('ascii', 'ignore')
-                })
+                save_dict['name'] = request.forms.node_name.encode('ascii', 'ignore')
+                # save_dict['mac'] = request.forms.mac_str.encode('ascii', 'ignore')
 
                 # Validate data
                 # Make sure values are not empty
@@ -293,10 +289,29 @@ class WebHandler(WebHandlerBase):
                                  modbus_addr == node['modbus_addr'])
                     if validate:
                         node['modbus_addr'] = modbus_addr
+                
+                # Sensor Type
+                node = self._object.node(address)
+                if node:
+                    sensor_type = list(node['sensor_type'])
+                    sensor_codes = request.forms.sensor_codes
+                    if sensor_codes:
+                        sensor_codes = json.loads(sensor_codes.encode('ascii', 'ignore'))
+                        if sensor_codes:
+                            group = self._object.group(address)
+                            for data_field, sensor_code in sensor_codes.items():
+                                _position = int(data_field.split('_')[-1])
+                                _sensor_code = sensor_code.split('_')[-1][0]
+
+                                if _position < len(sensor_type):
+                                    sensor_type[_position] = _sensor_code
+
+                            sensor_type = ''.join(sensor_type)
+                            save_dict['sensor_type'] = sensor_type
 
                 # Alarms
-                platform = self._object.platform(address)
-                all_headers = platform.headers.read('all').values()
+                group = self._object.group(address)
+                all_headers = group.read_headers('all').values()
                 for header in all_headers:
                     header_name = header['internal_name']
                     LOGGER.debug("header = " + header_name)
@@ -357,12 +372,11 @@ class WebHandler(WebHandlerBase):
 
                     update_dict = dict()
                     if display and track and diagnostics:
-                        platform = self._object.platform(address)
                         for node in self._object.nodes(address):
                             enables_map = {'live_enable': display, 'log_enable': track, 'diagnostics': diagnostics}
                             for enable_type, enable_dict in enables_map.items():
-                                update_dict[enable_type] = platform.headers.update_enables(
-                                    enable_type, node, enable_dict)
+                                update_dict[enable_type] = node.update_enables(
+                                    enable_type, enable_dict)
 
                     update_enables = bool(len(update_dict))
                     if update_enables:
@@ -410,8 +424,8 @@ class WebHandler(WebHandlerBase):
             header_list = []
 
             # Iterate over all constants
-            platform = self._object.platform(address)
-            all_headers = platform.headers.read('all').values()
+            group = self._object.group(address)
+            all_headers = group.read_headers('all').values()
             for header in all_headers:
                 if header.external_constants():
                     for constant_name, constant_value in header.constants.items():
@@ -451,9 +465,10 @@ class WebHandler(WebHandlerBase):
                                     # Update measuring units (if applicable)
                                     # TODO: Change to dynamic/common scheme of some sort...
                                     # TODO: Move to cookies
-                                    if type(constant_value['default_value']) is list and constant_name == 'measuring_units':
-                                        header.unit_list.values()[0]['measuring_units'] = value
-                                        header.save()
+                                    if type(constant_value['default_value']) is list:
+                                        if constant_name == 'measuring_units':
+                                            header.unit_list.values()[0]['measuring_units'] = value
+                                            header.save()
 
                                 else:
                                     break
@@ -678,9 +693,10 @@ class LogExportThread(WorkerThread):
         if self.get_running():
             # Building csv headers
             csv_data = 'Time'
-            display_headers = self._node.headers.read('display').values()
-            for header in display_headers:
-                for log_unit in header.table_units(self._cookie, 'log').values():
+            display_headers = self._node.read_headers('display')
+            for header_name, header in display_headers.items():
+                # FIXME: self._cookie is a wrong cookie! And we need group!
+                for log_unit in group.table_units(self._cookie, 'log', header_name).values():
                     csv_data += ',' + header['name'] + ' - ' + log_unit['measuring_units']
 
         # Dump stored files on HD
@@ -743,7 +759,7 @@ class LogExportThread(WorkerThread):
         current_point = 0.0
         total_points = float(len(points))
         if total_points:
-            display_headers = self._node.headers.read('display').values()
+            display_headers = self._node.read_headers('display')
             for point in points:
                 if self.get_running():
                     current_point += 1.0
@@ -759,8 +775,9 @@ class LogExportThread(WorkerThread):
                     self._manager.websocket.send(progress_message, 'ws_init', progress_percentage)
 
                     csv_data += "\n" + self._manager.system_settings.local_time(point['time'])
-                    for header in display_headers:
-                        for log_unit in header.table_units(self._cookie, 'log').values():
+                    for header_name, header in display_headers.items():
+                        # FIXME: self._cookie is a wrong cookie! And we need group!
+                        for log_unit in group.table_units(self._cookie, 'log', header_name).values():
                             value = log_unit.get_string(self._node, point)
                             csv_data += "," + str(value)
                 else:

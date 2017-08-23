@@ -112,6 +112,19 @@ function AdcAlarms()
 
 }
 
+function SensorCode(header_name)
+{
+    var sensor_codes = JSON.parse($("input[name='sensor_codes']").val());
+
+    var sensor_code = $("select[name='" + header_name + "']").find(':selected').val();
+    sensor_codes[header_name] = sensor_code;
+
+    $("input[name='sensor_codes']").val(JSON.stringify(sensor_codes));
+
+    // console.log(sensor_codes);
+
+}
+
 function CreateNew()
 {
     $("input:radio[name='index']:checked").prop('checked', false);

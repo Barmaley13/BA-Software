@@ -41,7 +41,7 @@ def init_pages(pages):
 
 def init_page(page_dict):
     """
-    Initializes Page variables including subpages
+    Initializes Page variables including sub pages
 
     :param page_dict:
     :return: NA
@@ -169,7 +169,7 @@ class PagesBase(DatabaseOrderedDict):
             'page_access': 'no_access'
         }
 
-        ## Subpages ##
+        ## Sub Pages ##
         # Setup #
         self['setup_page']['sub_pages']['network_subpage'] = {
             'url': 'rf_network',
@@ -187,7 +187,7 @@ class PagesBase(DatabaseOrderedDict):
             'sub_pages': OrderedDict()
         }
 
-        # System Subpages #
+        # System Sub Pages #
         self['setup_page']['sub_pages']['system_subpage']['sub_pages']['system_home'] = {
             'url': 'system_home',
             'title': 'System',
@@ -416,7 +416,7 @@ class PagesBase(DatabaseOrderedDict):
         for page_name in ('live_data', 'logs_data'):
             data_page = self[page_name]
 
-            # Create subpages
+            # Create sub pages
             if len(sub_pages_list) > 1:
                 # Initial page creation (if needed)
                 if not ('sub_pages' in data_page):
@@ -438,7 +438,7 @@ class PagesBase(DatabaseOrderedDict):
 
                     data_page['sub_pages'][new_page['url']] = new_page
 
-            # Remove subpages
+            # Remove sub pages
             elif 'sub_pages' in data_page:
                 del data_page['sub_pages']
 

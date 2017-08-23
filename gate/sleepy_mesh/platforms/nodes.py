@@ -19,10 +19,9 @@ LOGGER.setLevel(logging.WARNING)
 
 ### CLASSES ###
 class GroupNodes(ModifiedOrderedDict):
-    def __init__(self, nodes, headers, **kwargs):
+    def __init__(self, nodes, **kwargs):
         self.system_settings = nodes.system_settings
         self._nodes = nodes
-        self.headers = headers
 
         super(GroupNodes, self).__init__('net_addr', **kwargs)
 

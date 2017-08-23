@@ -34,8 +34,8 @@
     %# Header Data
     <tbody>
     %cookie = pages.get_cookie()
-    %selected_nodes = group.headers.selected(cookie, 'log')
-    %enabled_headers = group.headers.enabled('log', group.nodes)
+    %enabled_headers = group.enabled_headers('log')
+    %selected_nodes = group.selected_header('log', cookie)
     %for node in group.nodes.values():
         <tr>
             <input type='hidden' name='net_addr' value="{{node['net_addr']}}" >

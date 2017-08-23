@@ -78,13 +78,21 @@ def _parse_url(address_str):
     return platform, group, node_index
 
 
-def _html(header, nodes):
-    """
-    Creates html for a particular header
+def _header_select_html(header, header_group):
+    """ Creates header selection drop down menu """
+    output = ''
 
-    :param nodes:
-    :return:
-    """
+    if header_group is None:
+        output += header['name']
+    else:
+        output += bottle.template(
+            'header_selection_html', header=header, header_group=header_group)
+
+    return output
+
+
+def _header_html(header, nodes):
+    """ Creates html for a particular header """
     output = ''
 
     for enable_type in ('live_enable', 'log_enable', 'diagnostics'):
@@ -93,14 +101,15 @@ def _html(header, nodes):
     for alarm_type in ('min_alarm', 'max_alarm'):
         output += _alarm_html(header, nodes, alarm_type)
 
-    output += _header_html(header, nodes)
+    output += _alarm_units_html(header, nodes)
 
     return output
 
 
 def _enable_html(header, nodes, enable_type):
     """ Create html for the enables """
-    start_time = time.time()
+    # start_time = time.time()
+
     output = ''
 
     if enable_type in ('live_enable', 'log_enable', 'diagnostics'):
@@ -129,14 +138,15 @@ def _enable_html(header, nodes, enable_type):
     else:
         LOGGER.error("Enable type '{}' does not exist!".format(enable_type))
 
-    LOGGER.debug('_enable_html Time: ' + str(time.time() - start_time) + ' seconds')
+    # LOGGER.debug('_enable_html Time: ' + str(time.time() - start_time) + ' seconds')
 
     return output
 
 
 def _alarm_html(header, nodes, alarm_type):
-    """ Create html for the enables """
-    start_time = time.time()
+    """ Create html for the alarms """
+    # start_time = time.time()
+
     output = ''
 
     if alarm_type in ('min_alarm', 'max_alarm'):
@@ -184,14 +194,14 @@ def _alarm_html(header, nodes, alarm_type):
 
     # print('Node Enables: {}'.format(nodes[0]['enables']))
 
-    LOGGER.debug('_alarm_html Time: ' + str(time.time() - start_time) + ' seconds')
+    # LOGGER.debug('_alarm_html Time: ' + str(time.time() - start_time) + ' seconds')
 
     return output
 
 
-def _header_html(header, nodes):
-    """ Create header html """
-    start_time = time.time()
+def _alarm_units_html(header, nodes):
+    """ Create alarm units html """
+    # start_time = time.time()
 
     output = ''
     header_data = {
@@ -204,9 +214,9 @@ def _header_html(header, nodes):
         )
     }
 
-    output += bottle.template('header_html', header=header_data)
+    output += bottle.template('alarm_units_html', header=header_data)
 
-    LOGGER.debug('_header_html Time: ' + str(time.time() - start_time) + ' seconds')
+    # LOGGER.debug('_alarm_units_html Time: ' + str(time.time() - start_time) + ' seconds')
 
     return output
 
@@ -218,7 +228,7 @@ def _constants_js(header, nodes):
     :param nodes: list of nodes that we are working with
     :return: js validation string
     """
-    start_time = time.time()
+    # start_time = time.time()
 
     output = []
     constants = nodes[0]['constants'][header['data_field']]
@@ -244,7 +254,7 @@ def _constants_js(header, nodes):
                 )
             )
 
-    LOGGER.debug('constants_js_validation Time: ' + str(time.time() - start_time) + ' seconds')
+    # LOGGER.debug('constants_js_validation Time: ' + str(time.time() - start_time) + ' seconds')
 
     return output
 
@@ -256,7 +266,7 @@ def _constants_html(header, nodes):
     :param nodes: list of nodes that we are working with
     :return: html string
     """
-    start_time = time.time()
+    # start_time = time.time()
 
     output = []
     constants = nodes[0]['constants'][header['data_field']]
@@ -279,7 +289,7 @@ def _constants_html(header, nodes):
 
     output = '\n'.join(output)
 
-    LOGGER.debug('constants_html Time: ' + str(time.time() - start_time) + ' seconds')
+    # LOGGER.debug('constants_html Time: ' + str(time.time() - start_time) + ' seconds')
 
     return output
 
@@ -300,20 +310,19 @@ class WebPlatforms(object):
 
     ## Default Cookies ##
     def default_cookie(self, page_type):
-        default_cookie = {'platforms': {}}
+        cookie = {}
 
         if page_type in ('live', 'log'):
             for platform_name, platform in self.items():
-                platform_cookie = {}
-                if platform.headers is not None:
-                    platform_cookie = platform.headers.default_cookie(page_type)
+                cookie[platform_name] = {}
 
-                default_cookie['platforms'][platform_name] = platform_cookie
+                for group_name, group in platform.groups.items():
+                    cookie[platform_name][group_name] = group.default_cookie(page_type)
 
         else:
             LOGGER.error("Page type: " + str(page_type) + " does not exist!")
 
-        return default_cookie
+        return cookie
 
     ## Some Generic Web Methods ##
     def active_platforms(self):
@@ -598,20 +607,23 @@ class WebPlatforms(object):
         :param address:
         :return:
         """
-        platform = self.platform(address)
+        group = self.group(address)
         nodes = self.nodes(address)
-        all_headers = platform.headers.read('all')
-        # diagnostics_headers = platform.headers.read('diagnostics')
+        all_headers = group.read_headers('all')
+        # diagnostics_headers = group.read_headers('diagnostics')
+
+        # LOGGER.debug('all_headers: {}'.format(all_headers))
 
         header_table_content = ''
-        for header_name, header in all_headers.items():
-            # hide_header = bool(header_name in diagnostics_headers.keys())
-            header_html = _html(header, nodes)
+        for header_key, header in all_headers.items():
+            # hide_header = bool(header_key in diagnostics_headers.keys())
+            header_group = group.header_group(header_key)
+            header_html = _header_html(header, nodes)
             header_table_content += bottle.template(
                 'header_row_html',
                 hide_header=False,
                 # hide_header=hide_header,
-                header_name=header['name'],
+                header_name=_header_select_html(header, header_group),
                 header_html=header_html,
             )
 
@@ -624,30 +636,30 @@ class WebPlatforms(object):
         """
         Generates constants js that validates constants
         """
-        platform = self.platform(address)
+        constants_js, constants_html = '', ''
 
         nodes = self.nodes(address)
-        if len(nodes) == 0:
-            nodes = [copy.deepcopy(platform.headers.header_defaults)]
+        if len(nodes):
+            js_validation_list = list()
 
-        js_validation_list = list()
-        all_headers = platform.headers.read('all').values()
+            group = self.group(address)
+            all_headers = group.read_headers('all').values()
 
-        for header in all_headers:
-            if header.external_constants():
-                js_validation_list += _constants_js(header, nodes)
+            for header in all_headers:
+                if header.external_constants():
+                    js_validation_list += _constants_js(header, nodes)
 
-        constants_js = 'else '.join(js_validation_list)
+            constants_js = 'else '.join(js_validation_list)
 
-        constants_html = ''
-        for header in all_headers:
-            if header.external_constants():
-                header_html = _constants_html(header, nodes)
-                constants_html += bottle.template(
-                    'constants_row_html',
-                    header_name=header['name'],
-                    header_html=header_html,
-                )
+            constants_html = ''
+            for header in all_headers:
+                if header.external_constants():
+                    header_html = _constants_html(header, nodes)
+                    constants_html += bottle.template(
+                        'constants_row_html',
+                        header_name=header['name'],
+                        header_html=header_html,
+                    )
 
         return constants_js, constants_html
 

@@ -35,7 +35,7 @@
         %if len(active_platforms) > 1:
             <p>{{pages.platforms[platform_name]['name']}}</p>
         %end
-        %display_headers = platform.headers.read('display')
+        %display_headers = platform.read_headers('display')
         %for header_name, header in display_headers.items():
             <p>{{header['name']}}:
                 <select name="{{platform_name}}_{{header_name}}_units" >

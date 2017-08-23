@@ -6,7 +6,6 @@ Single Node related intricacies
 import os
 import copy
 import logging
-
 from distutils.version import StrictVersion
 
 from gate.conversions import find_version
@@ -14,6 +13,7 @@ from gate.database import DatabaseDict
 from gate.sleepy_mesh import common
 from gate.sleepy_mesh import error
 
+from headers import generate_node_headers, generate_sensor_types
 from logs import NodeLogs
 
 
@@ -90,10 +90,15 @@ LOGGER = logging.getLogger(__name__)
 ### CLASSES ###
 class NodeBase(DatabaseDict):
     """ Generic Node class """
-    def __init__(self, system_settings, input_dict, headers=None):
+    def __init__(self, system_settings, input_dict):
         # Public Members #
         self.system_settings = system_settings
-        self.headers = headers
+
+        # Create Headers
+        self.headers = None
+        if 'raw_platform' in input_dict:
+            self.headers = generate_node_headers(input_dict['raw_platform'])
+            input_dict['sensor_type'] = generate_sensor_types(input_dict['raw_platform'])
 
         node_defaults = copy.deepcopy(NODE_DEFAULTS)
         if input_dict is not None:
@@ -127,6 +132,11 @@ class NodeBase(DatabaseDict):
             db_file=db_file,
             defaults=node_defaults
         )
+
+        # Load Headers
+        if self.headers is None and self['type'] == 'node':
+            if 'raw_platform' in self._main:
+                self.headers = generate_node_headers(self['raw_platform'])
 
         self.update_dict = common.UpdateDict(common.NODE_UPDATE_FIELDS + common.NETWORK_UPDATE_FIELDS)
         self.error = error.NodeError(system_settings=self.system_settings, db_file=error_db_file)

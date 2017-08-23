@@ -20,10 +20,10 @@ LOGGER = logging.getLogger(__name__)
 
 ### CLASSES ###
 class Groups(ModifiedOrderedDict):
-    def __init__(self, nodes, headers, **kwargs):
+    def __init__(self, nodes, platform_name, **kwargs):
         self.system_settings = nodes.system_settings
         self._nodes = nodes
-        self.headers = headers
+        self._platform_name = platform_name
         super(Groups, self).__init__('internal_name', **kwargs)
 
     ## Overwriting load/save methods ##
@@ -45,6 +45,6 @@ class Groups(ModifiedOrderedDict):
                 for group_name in self._main.values():
                     self.main[group_name] = Group(
                         external_name(group_name),
-                        self._nodes,
-                        self.headers,
+                        self._platform_name,
+                        self._nodes
                     )

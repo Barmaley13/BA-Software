@@ -17,11 +17,9 @@ SWITCH_STATE = {
 
 
 ## Headers Instance ##
-HEADERS = [
-    {
-        'name': 'Switch',
-        'groups': {
-            'unit_list': [SWITCH_STATE]
-        }
+HEADER = {
+    'name': 'Switch',
+    'groups': {
+        'unit_list': [SWITCH_STATE]
     }
-]
+}

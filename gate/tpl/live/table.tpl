@@ -12,7 +12,7 @@
     %group = pages.get_group()
 %end
 
-%HEADERS = group.headers.enabled('live', group.nodes)
+%HEADERS = group.enabled_headers('live')
 
 
 %### HTML ###
@@ -44,7 +44,7 @@
         %for header_name, header in HEADERS.items():
             %for unit_name, unit_value in header.unit_list.items():
                 %cookie = pages.get_cookie()
-                %if unit_name in header.table_units(cookie, 'live').keys():
+                %if unit_name in group.table_units(cookie, 'live', header_name).keys():
                     <tr>
                         <td>{{header['name']}}, {{unit_value['measuring_units']}}</td>
                         %for index in range(0, LIVE_NODES_NUMBER):

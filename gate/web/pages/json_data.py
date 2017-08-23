@@ -42,9 +42,9 @@ YAXES_DEFAULTS = {
 }
 
 ## Floating Switch States ##
-FLOATING_SWITCH_STATES = {
-    False: 'Floating switch is Open!',
-    True: 'Floating switch is Closed!'
+SWITCH_STATES = {
+    False: 'Switch is Open!',
+    True: 'Switch is Closed!'
 }
 
 ## Strings ##
@@ -212,8 +212,8 @@ class PagesJsonData(StatusIcons):
 
         if len(group.nodes):
             cookie = self.get_cookie()
-            selected_header = group.headers.selected(cookie, 'live')
-            enabled_headers = group.headers.enabled('live', group.nodes)
+            selected_header = group.selected_header('live', cookie)
+            enabled_headers = group.enabled_headers('live')
 
             live_header = None
             if selected_header is not None and selected_header['internal_name'] in enabled_headers.keys():
@@ -241,9 +241,9 @@ class PagesJsonData(StatusIcons):
                         warning += TO_DISPLAY1 + live_header['name'] + ' ' + TO_DISPLAY2
                     else:
                         switch_state = None
-                        if live_units['internal_name'] == 'floating_switch':
+                        if live_units['internal_name'] in ('floating_switch', 'switch'):
                             _switch_state = bool(live_units.get_float(node))
-                            switch_state = FLOATING_SWITCH_STATES[_switch_state]
+                            switch_state = SWITCH_STATES[_switch_state]
 
                         node_fault = node.error.node_fault()
                         sensor_fault = node.error.sensor_fault(live_header)
@@ -317,11 +317,11 @@ class PagesJsonData(StatusIcons):
 
                     # Node Data #
                     json_dict['nodes'][-1]['data'] = {}
-                    display_headers = group.headers.read('display').values()
-                    for log_header in display_headers:
-                        log_units = log_header.table_units(cookie, 'log').values()
+                    display_headers = group.read_headers('display')
+                    for header_name, header in display_headers.items():
+                        log_units = group.table_units(cookie, 'log', header_name).values()
                         for log_unit in log_units:
-                            internal_name = log_header['internal_name'] + '_' + log_unit['internal_name']
+                            internal_name = header['internal_name'] + '_' + log_unit['internal_name']
                             current_value = log_unit.get_string(node)
                             json_dict['nodes'][-1]['data'][internal_name] = current_value
 
@@ -357,14 +357,14 @@ class PagesJsonData(StatusIcons):
                 if test_max_time > max_time:
                     max_time = test_max_time
 
-                color_number = node_index * len(node.headers.read('display')) + header_index
+                color_number = node_index * len(node.read_headers('display')) + header_index
                 json_dict['series'].append({'color': color_number})
 
                 json_dict['series'][-1]['label'] = node['name'] + " " + header['name']
                 # json_dict['series'][-1]['yaxis'] = len(json_dict['series'])
                 json_dict['series'][-1]['data'] = []
 
-                log_units = header.units(cookie, 'log')
+                log_units = group.units(cookie, 'log', header['internal_name'])
                 if cookie['single_point']:
                     # LOGGER.debug("Single Point!")
                     current_time = self.manager.system_settings.log_time(logs[-1]['time'])
@@ -383,11 +383,10 @@ class PagesJsonData(StatusIcons):
                 'lines': {'show': True},
                 'points': {'show': True}}
             json_dict['options']['grid'] = {'hoverable': True}
-            #json_dict['options']['legend'] = {'position': 'se'}
-            json_dict['options']['xaxes'][0].update({
-                'zoomRange': [60000, int(max_time)],
-                'panRange': [int(min_time), int(max_time)]
-            })
+            # json_dict['options']['legend'] = {'position': 'se'}
+            json_dict['options']['xaxes'][0]['zoomRange'] = [60000, int(max_time)]
+            json_dict['options']['xaxes'][0]['panRange'] = [int(min_time), int(max_time)]
+
             for index, entry in enumerate(logs_data):
                 header = entry['header']
                 node = entry['node']
@@ -395,7 +394,7 @@ class PagesJsonData(StatusIcons):
 
                 if len(logs):
                     # Get min and max values while considering Output Options
-                    log_units = header.units(cookie, 'log')
+                    log_units = group.units(cookie, 'log', header['internal_name'])
                     min_value = log_units.get_min(node)
                     max_value = log_units.get_max(node)
 
@@ -424,12 +423,12 @@ class PagesJsonData(StatusIcons):
 
         for node_index, node in enumerate(group.nodes.values()):
             cookie = self.get_cookie()
-            selected_nodes = group.headers.selected(cookie, 'log')
+            selected_nodes = group.selected_header('log', cookie)
             if node['net_addr'] in selected_nodes:
                 selected_headers = selected_nodes[node['net_addr']]
                 # LOGGER.debug("selected_headers[" + node['net_addr'] + "] = " + str(selected_headers))
 
-                display_headers = group.headers.read('display').values()
+                display_headers = group.read_headers('display').values()
                 for header_index, header in enumerate(display_headers):
                     if header['internal_name'] in selected_headers.keys():
                         logs_data.append({
@@ -459,7 +458,7 @@ class PagesJsonData(StatusIcons):
             if logs_data:
                 page_type = 'log'
 
-            enabled_headers = group.headers.enabled(page_type, group.nodes)
+            enabled_headers = group.enabled_headers(page_type)
             if len(enabled_headers) == 0:
                 if logs_data is None:
                     display_warnings.append(PLEASE_SET + DISPLAY_ENABLES + TO_DISPLAY1 + TO_DISPLAY2)

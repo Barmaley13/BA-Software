@@ -70,18 +70,6 @@ SWE_MAX = {
 }
 
 ## Global Header Constants, Variables and Units ##
-FLOATING_SWITCH = {
-    'name': 'Floating Switch',
-    'formula': '1-round(self/adc_max)',         # Opposite polarity
-    'measuring_units': 'on/off',
-    'min_value': 0,
-    'max_value': 1.0,
-    'min_alarm': 0.5,
-    'min_alarm_message': SHORT_CIRCUIT,
-    'max_alarm': 0.5,
-    'max_alarm_message': OPEN_CIRCUIT
-}
-
 # Percent Units #
 PERCENT = {
     'name': 'percent',
@@ -198,6 +186,13 @@ _DRAW_COMPOSITE_TIME.update({
 })
 
 ## Header Instances ##
+# Display Units #
+_MULTIPLE_UNITS = {
+    'name': 'multiple',
+    'formula': 'self*0',
+    'measuring_units': 'multiple'
+}
+
 # Diagnostic Constants #
 _RSR_RECENT_SYNCS = {
     'name': 'recent_syncs',
@@ -217,6 +212,13 @@ _LSR_TOTAL_SYNCS = {
 _DRAW_LIFE_TIME = {
     'name': 'life_time',
     'default_value': None
+}
+
+# Global Display Headers #
+MULTIPLE = {
+    'name': 'Multiple',
+    'groups': {'unit_list': [_MULTIPLE_UNITS]},
+    'diagnostics': False
 }
 
 # Global Diagnostics Headers #
@@ -284,7 +286,7 @@ SWE_MCU_TEMP = {
 }
 
 JOWA_MCU_TEMP = copy.deepcopy(SWE_MCU_TEMP)
-JOWA_MCU_TEMP.update({'diagnostics': True})
+JOWA_MCU_TEMP['diagnostics'] = True
 
 ## Platform Specific Dynamic Imports ##
 JOWA_CONSTANTS = [JOWA_MAX, JOWA_REF]

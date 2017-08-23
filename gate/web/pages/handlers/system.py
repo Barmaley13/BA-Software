@@ -148,7 +148,7 @@ class WebHandler(WebHandlerBase):
             # Modbus Units #
             active_platforms = self._manager.platforms.active_platforms()
             for platform_name, platform in active_platforms.items():
-                display_headers = platform.headers.read('display').values()
+                display_headers = platform.read_headers('display').values()
                 for header in display_headers:
                     header_name = header['internal_name']
                     new_units = request.forms.get(platform_name + '_' + header_name + '_units')

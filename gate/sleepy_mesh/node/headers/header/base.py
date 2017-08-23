@@ -8,7 +8,8 @@ import logging
 
 from gate.database import DatabaseDict
 from gate.conversions import internal_name
-from gate.sleepy_mesh.node.data import DISPLAY_FIELDS
+
+from common import DISPLAY_FIELDS
 
 
 ### CONSTANTS ###
@@ -25,7 +26,7 @@ class HeaderBase(DatabaseDict):
     header constant, variable and unit classes.
     """
 
-    def __init__(self, name, data_field, platform, header_name, header_position, **kwargs):
+    def __init__(self, name, data_field, header_name, header_position, **kwargs):
         """ Initializes base class for all header type instances. Following parameters are must haves across all
             header type instances
 
@@ -33,7 +34,6 @@ class HeaderBase(DatabaseDict):
             generate internal constant name that is used internally.
         :param data_field: Raw data field that this constant is associated to.
             This gets automatically filled in by Header class.
-        :param platform:
         :param header_position:
         :param kwargs:
         :return: Initialized base class
@@ -44,25 +44,20 @@ class HeaderBase(DatabaseDict):
         if data_field in DISPLAY_FIELDS:
             data_field_position = DISPLAY_FIELDS.index(data_field)
 
-        db_file = os.path.join('headers', platform, _internal_name + '.db')
-
         defaults = {
             # Global Must Haves
             'name': name,
             'internal_name': _internal_name,
             'data_field': data_field,
             'data_field_position': data_field_position,
-            'platform': platform,
             'header_name': header_name,
             'header_position': header_position,
+            'selected': False,
             '_external': False
         }
         defaults.update(kwargs)
 
-        super(HeaderBase, self).__init__(
-            db_file=db_file,
-            defaults=defaults
-        )
+        super(HeaderBase, self).__init__(defaults=defaults)
 
     ## Enable Related ##
     def enables(self, provider, enable_type, set_value=None):
@@ -192,6 +187,7 @@ class HeaderBase(DatabaseDict):
         output = None
         if self[alarm_type + '_message']:
             if self['_external']:
+                # FIXME: Get rid of 'header_name'!
                 output = self['header_name']
             else:
                 output = self['name']

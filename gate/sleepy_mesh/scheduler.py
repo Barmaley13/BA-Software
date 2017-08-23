@@ -7,7 +7,6 @@ import logging
 
 from gate.strings import AWAKE, SLEEP
 
-from bridge import SNAP_POLL_DEVIATION
 from network import SleepyMeshNetwork
 from base import SleepyMeshBase
 from node import DIAGNOSTIC_FIELDS
@@ -36,15 +35,15 @@ LOGGER.setLevel(logging.WARNING)
 def _check_battery(node):
     """ Check battery voltage of a node, reset statistics if we get new battery """
     if node['presence']:
+        battery_voltage = None
+
         # Fetch battery value
-        all_headers = node.headers.read('all').values()
-        for header in all_headers:
+        all_headers = node.read_headers('all')
+        for header_name, header in all_headers.items():
             # FIXME: Probably not the best way to determine battery header
-            if header['internal_name'] == 'battery':
+            if header_name == 'battery':
                 battery_voltage = header.units('voltage').get_float(node)
                 break
-        else:
-            battery_voltage = None
 
         # LOGGER.debug("Node '" + str(node['name']) + "' battery_voltage: " + str(battery_voltage))
 
@@ -220,7 +219,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
                 if node['new_data']:
                     # Apply formulas to all headers of this node
-                    all_headers = node.headers.read('all').values()
+                    all_headers = node.read_headers('all').values()
                     for header in all_headers:
                         header.apply_formulas(node)
 
@@ -231,8 +230,8 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
                 elif not node['presence']:
                     # Apply formulas to diagnostic headers (+ lq) of this node
-                    diagnostics_headers = node.headers.read('diagnostics').values()
-                    for header in diagnostics_headers:
+                    all_headers = node.read_headers('all').values()
+                    for header in all_headers:
                         if header['data_field'] in DIAGNOSTIC_FIELDS + ('lq', ):
                             header.apply_formulas(node)
 
@@ -274,7 +273,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
                     # Update headers (if needed)
                     header_enable = 0
                     for enable_type in ('live_enable', 'diagnostics'):
-                        header_enable |= node.headers.node_enables(enable_type, node)
+                        header_enable |= node.generate_enables(enable_type)
 
                     if node['live_enable'] != header_enable:
                         LOGGER.warning('Node and header live_enable do not match!')

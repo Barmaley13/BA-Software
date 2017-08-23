@@ -33,7 +33,7 @@ class Nodes(ModifiedOrderedDict):
     ## Overwriting load/save methods ##
     def load(self):
         """
-        Overwriting default load method.
+        Overloading default load method.
         Load list does not contain node instances themselves, just network addresses.
         This method uses those network addresses to load node instances into nodes dictionary.
 

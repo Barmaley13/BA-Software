@@ -8,7 +8,7 @@ import copy
 import logging
 
 from base import SleepyMeshBase, SYNC_TYPES, LAST_SYNCS_NUMBER
-from platforms.headers import generate_system_headers
+from node.headers import generate_system_headers
 
 
 ### CONSTANTS ###
@@ -95,9 +95,12 @@ class SleepyMeshStatistics(SleepyMeshBase):
         self.load()
 
         # Apply enables
-        all_headers = self.headers.read('all').values()
+        all_headers = self.read_headers('all').values()
         for header in all_headers:
             header.enables(self, 'const_set', True)
+
+    def read_headers(self, header_type):
+        return self.headers.read(header_type, '')
 
     ## Private Methods ##
     # Upstream #
@@ -172,7 +175,7 @@ class SleepyMeshStatistics(SleepyMeshBase):
             self._calculate_current_draw()
 
             # Apply formulas on system headers
-            headers = self.headers.read('diagnostics').values()
+            headers = self.read_headers('diagnostics').values()
             for header in headers:
                 header.apply_formulas(self)
 
@@ -194,7 +197,7 @@ class SleepyMeshStatistics(SleepyMeshBase):
         nodes = self.platforms.select_nodes('all')
         for node in nodes.values():
             if node.headers is not None:
-                all_headers = node.headers.read('all').values()
+                all_headers = node.read_headers('all').values()
                 for header in all_headers:
                     if header['data_field'] == 'temp':
                         current_temp = header.units('celsius').get_float(node)
@@ -216,10 +219,12 @@ class SleepyMeshStatistics(SleepyMeshBase):
             sync_rate_sum = 0
 
             for node in active_nodes.values():
-                header = node.headers.read('diagnostics')[sync_rate_type]
-                node_sync_rate = header.units('percent').get_float(node)
-                if node_sync_rate is not None:
-                    sync_rate_sum += node_sync_rate
+                all_headers = node.read_headers('all')
+                if sync_rate_type in all_headers:
+                    header = all_headers[sync_rate_type]
+                    node_sync_rate = header.units('percent').get_float(node)
+                    if node_sync_rate is not None:
+                        sync_rate_sum += node_sync_rate
 
             output = int(sync_rate_sum / float(nodes_number))
 

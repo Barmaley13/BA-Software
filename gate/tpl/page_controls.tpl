@@ -8,9 +8,9 @@
 %ONCLICK_FUNCTIONS = {'live': 'GetLiveData()', 'log': 'GetLogData()'}
 
 %### HTML ###
-%headers = group.headers.enabled(page_type, group.nodes)
 %cookie = pages.get_cookie()
-%selected_header = group.headers.selected(cookie, page_type)
+%headers = group.enabled_headers(page_type)
+%selected_header = group.selected_header(page_type, cookie)
 %onclick_function = ONCLICK_FUNCTIONS[page_type]
 
 %platform_name = group['platform']
@@ -25,7 +25,7 @@
     
     <select name="{{platform_name}}_{{header_name}}_units" onchange='{{onclick_function}}' >
         %for unit_name, unit_value in header.unit_list.items():
-            <option value="{{unit_name}}" {{selected(unit_name == header.units(cookie, page_type)['internal_name'])}}>
+            <option value="{{unit_name}}" {{selected(unit_name == group.units(cookie, page_type, header_name)['internal_name'])}}>
                 {{unit_value['measuring_units']}}
             </option>
         %end

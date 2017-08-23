@@ -24,11 +24,9 @@ ADC_PERCENT = {
 
 
 ## Headers Instance ##
-HEADERS = [
-    {
-        'name': 'ADC',
-        'groups': {
-            'unit_list': [ADC_VOLTAGE, ADC_PERCENT]
-        }
+HEADER = {
+    'name': 'ADC',
+    'groups': {
+        'unit_list': [ADC_VOLTAGE, ADC_PERCENT]
     }
-]
+}

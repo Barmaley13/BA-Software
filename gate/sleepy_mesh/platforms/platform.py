@@ -14,15 +14,14 @@ from gate.sleepy_mesh.error import NodeError
 from base import PlatformBase
 from group import Group
 from groups import Groups
-from headers import generate_node_headers
 
 
 ### CONSTANTS ###
 ## Platform Naming Conventions ##
 PLATFORM_NAMING_CONVENTIONS = {
-    'virgins': 'Virgin Hardware',
     'jowa-102': 'Level Measurement',
-    'swe-103': 'Default'
+    'swe-103': 'Default',
+    'virgins': 'Virgin Hardware'
 }
 
 ## Logger ##
@@ -41,31 +40,23 @@ class Platform(PlatformBase):
         else:
             name = str(platform_name) + ' Platform'
 
-        headers = None
+        super(Platform, self).__init__(name, platform_name, 'platforms')
+
         groups_db_file = None
         error_db_file = None
         if platform_name != 'virgins':
-            headers = generate_node_headers(platform_name)
             db_path = os.path.join('platforms', platform_name)
             groups_db_file = os.path.join(db_path, 'groups.db')
             error_db_file = os.path.join(db_path, 'default_error.db')
 
-        super(Platform, self).__init__(name, headers, 'platforms')
-
-        # Assign header information to all the nodes that belong to this platform (if needed)
-        for net_addr, node in self._nodes.items():
-            if node.headers is None:
-                if node['platform'] == self['platform']:
-                    node.headers = self.headers
-
         LOGGER.debug("Creating Default Groups")
 
         default_groups = OrderedDict()
-        default_groups['inactive_group'] = Group('Inactive Group', self._nodes, self.headers)
+        default_groups['inactive_group'] = Group('Inactive Group', platform_name, self._nodes)
 
         self.groups = Groups(
             self._nodes,
-            self.headers,
+            platform_name,
             db_file=groups_db_file,
             defaults=default_groups
         )

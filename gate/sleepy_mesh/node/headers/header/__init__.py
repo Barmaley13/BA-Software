@@ -15,9 +15,9 @@ import logging
 
 from py_knife.ordered_dict import OrderedDict
 
+from gate.conversions import fetch_item
 from gate.strings import FIELD_UNIT
 
-from common import fetch_item
 from base import HeaderBase
 from constant import HeaderConstant
 from variable import HeaderVariable
@@ -37,7 +37,7 @@ LOGGER = logging.getLogger(__name__)
 ### CLASSES ###
 class Header(HeaderBase):
     """ Header class holding constants, variables, units and modbus units as well as number of methods """
-    def __init__(self, name, data_field, platform, header_position, groups, **kwargs):
+    def __init__(self, name, data_field, header_position, groups, **kwargs):
         """
         Initializes header
 
@@ -62,7 +62,6 @@ class Header(HeaderBase):
                 for group_kwargs in groups[group_name]:
                     new_group_kwargs = {
                         'data_field': data_field,
-                        'platform': platform,
                         'header_name': name,
                         'header_position': header_position
                     }
@@ -81,7 +80,6 @@ class Header(HeaderBase):
             # Global Must Haves
             'name': name,
             'data_field': data_field,
-            'platform': platform,
             'header_name': name,
             'header_position': header_position,
             'diagnostics': False,
@@ -125,8 +123,8 @@ class Header(HeaderBase):
                             check_alarm_enable = False
 
                     if check_alarm_enable:
-                        LOGGER.debug('Group Variable: {} Field: {} Header: {}'.format(
-                            group_variable['name'], field, self['internal_name']))
+                        # LOGGER.debug('Group Variable: {} Field: {} Header: {}'.format(
+                        #     group_variable['name'], field, self['internal_name']))
 
                         # Check/Clear Alarms
                         for alarm_type in ('min_alarm', 'max_alarm'):
@@ -244,73 +242,8 @@ class Header(HeaderBase):
 
         return output
 
-    def units(self, cookie=None, page_type='live'):
-        """
-        Returns currently selected units for the bar graph on live page.
-
-        :return: currently selected units
-        """
-        return self._units(cookie, page_type, 'units')
-
-    def table_units(self, cookie, page_type):
-        """
-        Returns currently selected list of units for the logs.
-
-        :return: list of currently selected units
-        """
-        return self._units(cookie, page_type, 'table_units')
-
-    def _units(self, cookie, page_type, units_type):
-        """
-        Returns currently selected units for the bar graph on live page.
-
-        :return: currently selected units
-        """
-        output = None
-        if units_type == 'table_units':
-            output = OrderedDict()
-
-        header_cookie = None
-        if cookie is None:
-            cookie = dict()
-
-        elif type(cookie) in (str, unicode):
-            if units_type == 'units':
-                # TODO: Check that cookie string matches with a valid unit instance
-                header_cookie = {'units': cookie}
-
-        if page_type in ('live', 'log'):
-            if header_cookie is None:
-                if 'platforms' in cookie and self['platform'] in cookie['platforms']:
-                    _platform_cookie = cookie['platforms'][self['platform']]
-
-                    if 'headers' in _platform_cookie and self['internal_name'] in _platform_cookie['headers']:
-                        _header_cookie = _platform_cookie['headers'][self['internal_name']]
-                        if units_type in _header_cookie:
-                            header_cookie = _header_cookie
-
-            if header_cookie is None:
-                LOGGER.warning("Using default cookies during '" + units_type + "' execution!")
-                # LOGGER.debug("cookie = " + str(cookie))
-                # LOGGER.debug('internal_name = ' + str(self['internal_name']))
-                header_cookie = self.default_cookie(page_type)
-
-            # Read portion
-            if units_type == 'units':
-                unit_index = header_cookie[units_type]
-                _output = fetch_item(self.unit_list, unit_index)
-                if _output is not None:
-                    output = _output
-
-            elif units_type == 'table_units':
-                for unit_index in header_cookie[units_type]:
-                    _output = fetch_item(self.unit_list, unit_index)
-                    if _output is not None:
-                        output[_output['internal_name']] = _output
-        else:
-            LOGGER.error("Page type: " + str(page_type) + " does not exist!")
-
-        return output
+    def units(self, unit_index):
+        return fetch_item(self.unit_list, unit_index)
 
     ## Alarm Related ##
     def alarm_units(self, provider, new_unit_index=None):
@@ -346,5 +279,18 @@ class Header(HeaderBase):
             if _constant['_external']:
                 output = True
                 break
+
+        return output
+
+    ## Misc ##
+    def selected(self, sensor_type):
+        output = False
+
+        # LOGGER.debug('sensor_code: {}'.format(self['sensor_code']))
+        # LOGGER.debug('sensor_type: {}'.format(sensor_type))
+        # LOGGER.debug('header_position: {}'.format(self['header_position']))
+
+        if 'sensor_code' in self._main:
+            output = self['sensor_code'][-1] == sensor_type[self['header_position']]
 
         return output

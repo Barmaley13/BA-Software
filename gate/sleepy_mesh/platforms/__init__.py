@@ -30,7 +30,7 @@ class Platforms(ModifiedOrderedDict):
         self._nodes = nodes
 
         # FYI, default platforms dictionary should not contain any node instances
-        LOGGER.debug("Creating Default Platforms")
+        # LOGGER.debug("Creating Default Platforms")
 
         default_platforms = OrderedDict()
         default_platforms['jowa-102'] = Platform('jowa-102', self._nodes)
@@ -47,7 +47,7 @@ class Platforms(ModifiedOrderedDict):
         """ Load Platforms """
         super(Platforms, self).load()
 
-        LOGGER.debug("Loading Platforms")
+        # LOGGER.debug("Loading Platforms")
 
         if self._db_file is not None:
             if len(self._main):
@@ -64,11 +64,10 @@ class Platforms(ModifiedOrderedDict):
     ## Create Node/Platform ##
     def create_node(self, input_dict):
         """ Creates new node and adds it to nodes list """
-        node, platform_name, sensor_type = None, None, None
+        node, platform_name = None, None
 
         if 'raw_platform' in input_dict:
             input_dict['platform'] = self.platform_match(input_dict, 'hw_type')
-            input_dict['sensor_type'] = self.platform_match(input_dict, 'sensor_type')
 
         if 'platform' in input_dict:
             platform_name = input_dict['platform']
@@ -76,17 +75,22 @@ class Platforms(ModifiedOrderedDict):
         if platform_name is not None:
             if platform_name not in self.keys():
                 # Create Platform
-                LOGGER.debug("Create Platform: " + str(platform_name))
+                # LOGGER.debug("Create Platform: " + str(platform_name))
                 self[platform_name] = Platform(platform_name, self._nodes)
 
             # Create node
-            LOGGER.debug('Creating Node: ' + str(input_dict['net_addr']))
+            LOGGER.debug('Creating Node: {}'.format(input_dict['net_addr']))
 
             node = Node(
                 system_settings=self.system_settings,
-                input_dict=input_dict,
-                headers=self[platform_name].headers
+                input_dict=input_dict
             )
+
+            # LOGGER.debug('raw_platform: {}'.format(node['raw_platform']))
+            # LOGGER.debug('platform: {}'.format(node['platform']))
+            # LOGGER.debug('sensor_type: {}'.format(node['sensor_type']))
+            # LOGGER.debug('headers: {}'.format(node.headers))
+
             # Update node error object
             node.error.update(copy.copy(self[platform_name].error))
 
@@ -105,7 +109,8 @@ class Platforms(ModifiedOrderedDict):
 
     ## Platform Match ##
     def platform_match(self, input_dict, match_field):
-        """ Matches specified field in output dict
+        """
+        Matches specified field in output dict
         :param input_dict:
         :param match_field:
         :return:
@@ -117,21 +122,14 @@ class Platforms(ModifiedOrderedDict):
         platform_values['company'] = self.system_settings.name
         platform_values['hw_type'] = None
         platform_values['sensor_type'] = None
-        platform_values['battery_type'] = None             # For future reference
 
         # Split platform
         raw_platform_list = input_dict['raw_platform'].split('-')
 
         # Fill out fields
         for platform_index, platform_key in enumerate(platform_values.keys()):
-            if len(raw_platform_list) > platform_index:
-                platform_value = raw_platform_list[platform_index]
-                # Discard revision number
-                if '.' not in platform_value:
-                    platform_values[platform_key] = platform_value
-                    continue
-
-            break
+            if platform_index < len(raw_platform_list):
+                platform_values[platform_key] = raw_platform_list[platform_index]
 
         # Start matching procedure
         if match_field in platform_values and match_field != 'company':

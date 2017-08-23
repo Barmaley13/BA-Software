@@ -46,12 +46,12 @@
                 
                 %# Table Data #
                 <tfoot>
-                    %diagnostics_headers = group.headers.read('diagnostics')
+                    %diagnostics_headers = group.read_headers('diagnostics')
                     %for header_name, header in diagnostics_headers.items():
                         <input type='hidden' name="{{platform_name}}_header" value="{{platform_name}}_{{header_name}}" >
                         <tr>
                             %cookie = pages.get_cookie()
-                            %live_units = header.units(cookie)
+                            %live_units = group.units(cookie, 'live', header_name)
                             <td>{{header['name']}}, 
                                 <select name="{{platform_name}}_{{header_name}}_units" onchange="GetDiagnostics()" >
                                     %for unit_name, unit_value in header.unit_list.items():
@@ -75,15 +75,15 @@
     <h3>System Statistics</h3>
     <table class="hor-minimalist-b" >
         <tfoot>
-            %platform_name = manager.headers['platform']
+            %platform_name = 'system'
             <input type='hidden' name='platform' value="{{platform_name}}" >
             
-            %diagnostics_headers = manager.headers.read('diagnostics')
+            %diagnostics_headers = manager.read_headers('diagnostics')
             %for header_name, header in diagnostics_headers.items():
                 <input type='hidden' name="{{platform_name}}_header" value="{{platform_name}}_{{header_name}}" >
                 <tr>
                     %cookie = pages.get_cookie()
-                    %live_units = header.units(cookie)
+                    %live_units = header.units(cookie, 'live')
                     <td>{{header['name']}}, 
                         <select name="{{platform_name}}_{{header_name}}_units" onchange="GetDiagnostics()" >
                             %for unit_name, unit_value in header.unit_list.items():

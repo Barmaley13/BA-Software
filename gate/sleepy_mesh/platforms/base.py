@@ -21,28 +21,19 @@ LOGGER = logging.getLogger(__name__)
 
 ### CLASSES ###
 class PlatformBase(DatabaseDict):
-    def __init__(self, name, headers, db_file_prefix, **kwargs):
+    def __init__(self, name, platform_name, db_file_prefix):
         defaults = {
             'name': name,
             'internal_name': internal_name(name),
+            'platform': platform_name,
+            # Default Cookies
+            'live_cookie': {'selected': 0},
+            'log_cookie': {'selected': []}
         }
 
         db_file = None
-        self.headers = headers
-
-        if self.headers is not None:
-            if db_file_prefix is not None:
-                db_file = os.path.join(db_file_prefix, defaults['internal_name'] + '.db')
-
-            defaults.update({
-                'platform': self.headers['platform'],
-            })
-        else:
-            defaults.update({
-                'platform': 'virgins',
-            })
-
-        defaults.update(kwargs)
+        if db_file_prefix is not None:
+            db_file = os.path.join(db_file_prefix, defaults['internal_name'] + '.db')
 
         # LOGGER.debug("Defaults = " + defaults['name'])
 

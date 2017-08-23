@@ -1,99 +1,103 @@
 # -*- coding: utf-8 -*-
 """
 Jowa Header, Code # 2
-Temperature
+Volume
 """
-
-### INCLUDES ###
-from common import FAHRENHEIT, OPEN_CIRCUIT, SHORT_CIRCUIT
 
 
 ### CONSTANTS ###
-## Temperature Constants ##
-# External DTL
-DTL = {
-    'name': 'DTL',
-    'default_value': 19.4,
+## Volume Constants ##
+TANK_TYPE = {
+    'name': 'Tank Type',
+    'default_value': ['Constant', 'Vertical', 'Horizontal'],
+    'measuring_units': '',
+    'description': ['Constant Area Tank', 'Vertical Cylindrical Tank', 'Horizontal Cylindrical Tank']
+}
+AREA = {
+    'name': 'Area',
+    'default_value': None,
+    'measuring_units': u'meters²',
+    'description': 'Specify Area',
+    'min_value': 0.01,
+    'max_value': 500,
+    'step': 0.01
+}
+DIAMETER = {
+    'name': 'Diameter',
+    'default_value': None,
     'measuring_units': 'meters',
-    'description': 'Distance from sensor "zero" to Temperature element',
-    'min_value': 0.0,
-    'max_value': 49.9,
-    'step': 0.001
+    'description': 'Specify Diameter',
+    'min_value': 0.01,
+    'max_value': 100,
+    'step': 0.01
+}
+LENGTH = {
+    'name': 'Length',
+    'default_value': None,
+    'measuring_units': 'meters',
+    'description': 'Specify Length',
+    'min_value': 0.01,
+    'max_value': 30,
+    'step': 0.01
 }
 
-# Internal DTL
-# DTL = {
-#     'name': 'DTL',
-#     'default_value': 0
-# }
-
-ZT = {
-    'name': 'ZT',
-    'default_value': 0,
-    'measuring_units': u'°C',
-    'description': 'Zero Level (offset adjustment)',
-    'min_value': -10,
-    'max_value': 10,
-    'step': 0.001
+## Volume Units and Variables ##
+LITERS_MAX = {
+    'name': 'liters_max',
+    'formula': '_get_liters(constants, th)'
 }
-# External RPT
-# RPT = {
-#     'name': 'RPT',
-#     'default_value': 4020,
-#     'measuring_units': 'ohms',
-#     'description': 'Value of temperature pull up resistor',
-#     'min_value': 500,
-#     'max_value': 1000000,
-#     'step': 1
-# }
-# Internal RPT
-RPT = {
-    'name': 'RPT',
-    'default_value': 4020
+KILO_LITERS_MAX = {
+    'name': 'kilo_liters_max',
+    'formula': 'liters_max/1000'
+}
+GALLONS_MAX = {
+    'name': 'gallons_max',
+    'formula': 'liters_max * 0.264172'
+}
+KILO_GALLONS_MAX = {
+    'name': 'kilo_gallons_max',
+    'formula': 'gallons_max/1000'
 }
 
-
-## Temperature Units and Variables ##
-# Temperature in celsius calculation notes:
-# T = C0 + C1*RTC + C2*RTC^2 + ZT
-# RTC = ((RPT*ADC/ADCmax)/(1-ADC/ADCmax)) - DTL*KT
-# Where:
-# T, Temperature
-# C0 = -245.653
-# C1 = 0.235482
-# C2 = 0.000010171
-# DTL, Distance from sensor "zero" to temperature element
-# KT, Resistance of copper wire (0.63 Ohm/m)
-# ZT, Zero Level (offset adjustment)
-# RPT, Value of pull up resistor (Probably 4.02K)
-# ADC, Current value of ADC (read DB value for that)
-# ADCmax, Max value of ADC => 0xFFFFFF = 16777215
-TEMP_RST = {
-    'name': 'Temperature Resistance',
-    'formula': '(rpt*self)/(adc_max-self) - dtl*0.63',
-    'min_alarm': 800,
-    'min_alarm_message': SHORT_CIRCUIT,
-    'max_alarm': 1600,
-    'max_alarm_message': OPEN_CIRCUIT
+LITERS = {
+    'name': 'liters',
+    'formula': '_get_liters(constants, meters)',
+    'measuring_units': 'liters',
+    'min_value': 0,
+    'max_value': 'liters_max',
+    'str_format': '{0:.0f}'
 }
-CELSIUS = {
-    'name': 'celsius',
-    'formula': '-245.653 + 0.235482*temperature_resistance + 0.000010171*temperature_resistance**2 + zt',
-    'measuring_units': u'°C',
-    'min_value': -40,
-    'max_value': 80,
-    'str_format': '{0:.1f}'
+KILO_LITERS = {
+    'name': 'kilo_liters',
+    'formula': 'liters/1000',
+    'measuring_units': u'KLiters (m³)',
+    'min_value': 0,
+    'max_value': 'kilo_liters_max',
+    'str_format': '{0:.0f}'
 }
-
+GALLONS = {
+    'name': 'gallons',
+    'formula': 'liters * 0.264172',
+    'measuring_units': 'gallons',
+    'min_value': 0,
+    'max_value': 'gallons_max',
+    'str_format': '{0:.0f}'
+}
+KILO_GALLONS = {
+    'name': 'kilo_gallons',
+    'formula': 'gallons/1000',
+    'measuring_units': 'KGallons',
+    'min_value': 0,
+    'max_value': 'kilo_gallons_max',
+    'str_format': '{0:.0f}'
+}
 
 ## Headers Instance ##
-HEADERS = [
-    {
-        'name': 'Temperature',
-        'groups': {
-            'constants': [DTL, ZT, RPT],
-            'variables': [TEMP_RST],
-            'unit_list': [CELSIUS, FAHRENHEIT]
-        }
+HEADER = {
+    'name': 'Volume',
+    'groups': {
+        'constants': [TANK_TYPE, AREA, DIAMETER, LENGTH],
+        'variables': [LITERS_MAX, KILO_LITERS_MAX, GALLONS_MAX, KILO_GALLONS_MAX],
+        'unit_list': [LITERS, KILO_LITERS, GALLONS, KILO_GALLONS]
     }
-]
+}

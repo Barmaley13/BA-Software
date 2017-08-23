@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-SWE Header, Code # 2
+JOWA Header, Code # 6
 Generic On/Off switch. Shorting switch to ground shows up as high value on the switch.
 """
 
@@ -18,7 +18,7 @@ SWITCH_STATE = {
 
 ## Headers Instance ##
 HEADER = {
-    'name': 'N. Switch',
+    'name': 'Floating Switch',
     'groups': {
         'unit_list': [SWITCH_STATE]
     }

@@ -7,7 +7,8 @@ import logging
 
 from gate.sleepy_mesh.error import ADC_EOC, ADC_EXR, ADC_SIG, NODE_MESSAGES
 
-from data import NodeData, ADC_FIELDS
+from headers import ADC_FIELDS
+from data import NodeData
 
 
 ### CONSTANTS ###

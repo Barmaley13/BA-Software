@@ -6,7 +6,7 @@
 
 %### HTML ###
 %platform_name = group['platform']
-%headers = group.headers.enabled('live', group.nodes)
+%headers = group.enabled_headers('live')
 
 %if page_type == 'live':
     <table class='hor-minimalist-b' >
@@ -43,7 +43,7 @@
                             onclick='GetLogData(false, true)'
                         %end
                         %cookie = pages.get_cookie()
-                        {{checked(unit_name in header.table_units(cookie, page_type).keys())}} >
+                        {{checked(unit_name in group.table_units(cookie, page_type, header_name).keys())}} >
                     </td>
                 %end
             %end

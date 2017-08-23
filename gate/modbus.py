@@ -242,7 +242,7 @@ class ModbusServer(DatabaseDict):
             self._write_data(node, node_address2, net_addr[2:])
 
             # Append modbus data with enabled data
-            display_headers = node.headers.read('display').values()
+            display_headers = node.read_headers('display').values()
             for header in display_headers:
                 modbus_units = header.modbus_units()
                 current_value = modbus_units.get_float(node)

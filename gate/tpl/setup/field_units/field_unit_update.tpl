@@ -103,20 +103,13 @@
     function SelectGroup()
     {
         var group_name = $("select[name='new_group']").find(":selected").val();
-        if (group_name != "{{PLATFORM.groups.keys()[0]}}")
-        {
-            $("select[name='channel']").prop('disabled', true);
-            $("select[name='data_rate']").prop('disabled', true);
-            $("input[name='aes_enable']").prop('disabled', true);
-            $("input[name='aes_key']").prop('disabled', true);
-        }
-        else
-        {
-            $("select[name='channel']").prop('disabled', false);
-            $("select[name='data_rate']").prop('disabled', false);
-            $("input[name='aes_enable']").prop('disabled', false);
-            $("input[name='aes_key']").prop('disabled', false);
-        }
+        var network_disabled = Boolean(group_name != "{{PLATFORM.groups.keys()[0]}}");
+
+        $("select[name='channel']").prop('disabled', network_disabled);
+        $("select[name='data_rate']").prop('disabled', network_disabled);
+        $("input[name='aes_enable']").prop('disabled', network_disabled);
+        $("input[name='aes_key']").prop('disabled', network_disabled);
+
     }
     
 //--></script>
@@ -129,7 +122,7 @@
     
     <input type='hidden' name='platform' value="{{ADDRESS['platform']}}" >
     <input type='hidden' name='group' value="{{ADDRESS['group']}}" >
-    <input type='hidden' name='sensor_type' value="{{NODE['sensor_type']}}" >
+    <input type='hidden' name='sensor_codes' value="{}" >
 
     %## INPUT FIELDS ##
     %node_name = 'Multiple'
@@ -199,7 +192,7 @@
     %for net_addr in ADDRESS['nodes']:
         %LOGGER.debug("*** NET_ADDR = " + net_addr + " ***")
         %node = pages.platforms.node(ADDRESS, net_addr)
-        %display_headers = PLATFORM.headers.read('display').values()
+        %display_headers = node.read_headers('display').values()
         %for header in display_headers:
             %LOGGER.debug(header['name'] + ": display = " + str(header.enables(node, 'live_enable')) + " track = " + str(header.enables(node, 'log_enable')))
         %end
@@ -210,7 +203,7 @@
     <p>
         %if users.check_access('write'):
             <span class="float_left">
-                %nodes = pages.platforms.group(ADDRESS).nodes
+                %nodes = pages.platforms.nodes(ADDRESS)
                 %if len(nodes):
                     %net_addr = ADDRESS['nodes'][0]
                     %index = nodes.keys().index(net_addr)
