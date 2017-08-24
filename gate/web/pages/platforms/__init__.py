@@ -9,7 +9,7 @@ Author: `Kirill V. Belyayev <http://kbelyayev.com>`_
 
 ### INCLUDES ###
 import os
-import time
+# import time
 import copy
 import urllib
 import math
@@ -308,7 +308,7 @@ class WebPlatforms(object):
         self.delete_node = self._manager.platforms.delete_node
         self.save = self._manager.platforms.save
 
-    ## Default Cookies ##
+    ## Cookie Methods ##
     def default_cookie(self, page_type):
         cookie = {'platforms': {}}
 
@@ -610,6 +610,8 @@ class WebPlatforms(object):
         :param address:
         :return:
         """
+        output = ''
+
         group = self.group(address)
         nodes = self.nodes(address)
 

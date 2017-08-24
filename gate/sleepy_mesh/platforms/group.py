@@ -10,7 +10,7 @@ import logging
 
 from py_knife.ordered_dict import OrderedDict
 
-from gate.conversions import internal_name, fetch_item
+from gate.conversions import internal_name, fetch_item, load_from_cookie
 from gate.sleepy_mesh.error import NodeError
 
 from base import PlatformBase
@@ -144,25 +144,15 @@ class Group(PlatformBase):
 
         return cookie
 
-    def selected_header(self, page_type, cookie):
+    def selected_header(self, cookie, page_type):
         """ Returns selected header or set of headers """
         output = None
         if page_type == 'log':
             output = {}
 
         if page_type in ('live', 'log'):
-            _cookie = None
-            if 'platforms' in cookie:
-                cookie = cookie['platforms']
-
-                if self['platform'] in cookie:
-                    cookie = cookie[self['platform']]
-
-                    if self['internal_name'] in cookie:
-                        cookie = cookie[self['internal_name']]
-
-                        if 'selected' in cookie:
-                            _cookie = cookie
+            address = ('platforms', self['platform'], self['internal_name'], 'selected')
+            _cookie = load_from_cookie(cookie, address)
 
             if _cookie is None:
                 LOGGER.warning("Using default cookies during 'selected' execution!")
@@ -191,39 +181,32 @@ class Group(PlatformBase):
 
         return output
 
-    def units(self, cookie, page_type, header_name):
+    def live_units(self, cookie, header_name):
         """ Returns currently selected units for the bar graph on live page """
-        return self._units(cookie, page_type, 'units', header_name)
+        return self._units(cookie, header_name, 'live', 'units')
 
-    def table_units(self, cookie, page_type, header_name):
+    def log_units(self, cookie, header_name):
+        """ Returns currently selected units for the bar graph on live page """
+        return self._units(cookie, header_name, 'log', 'units')
+
+    def live_table_units(self, cookie, header_name):
         """ Returns currently selected list of units for the logs """
-        return self._units(cookie, page_type, 'table_units', header_name)
+        return self._units(cookie, header_name, 'live', 'table_units')
 
-    def _units(self, cookie, page_type, units_type, header_name):
+    def log_table_units(self, cookie, header_name):
+        """ Returns currently selected list of units for the logs """
+        return self._units(cookie, header_name, 'log', 'table_units')
+
+    def _units(self, cookie, header_name, page_type, units_type):
         """ Returns currently selected units for the bar graph on live page """
         output = None
         if units_type == 'table_units':
             output = OrderedDict()
 
         if page_type in ('live', 'log'):
-            _cookie = None
-            if 'platforms' in cookie:
-                cookie = cookie['platforms']
-
-                if self['platform'] in cookie:
-                    cookie = cookie[self['platform']]
-
-                    if self['internal_name'] in cookie:
-                        cookie = cookie[self['internal_name']]
-
-                        if 'headers' in cookie:
-                            cookie = cookie['headers']
-
-                            if header_name in cookie:
-                                cookie = cookie[header_name]
-
-                                if units_type in cookie:
-                                    _cookie = cookie
+            address = (
+                'platforms', self['platform'], self['internal_name'], 'headers', header_name, units_type)
+            _cookie = load_from_cookie(cookie, address)
 
             header = None
             display_headers = self.read_headers('display')
@@ -234,6 +217,8 @@ class Group(PlatformBase):
 
             if header is not None:
                 if _cookie is None:
+                    LOGGER.warning("Using default cookies during 'selected' execution!")
+                    # LOGGER.debug("cookie = " + str(cookie))
                     _cookie = header.default_cookie(page_type)
 
                 # Read portion

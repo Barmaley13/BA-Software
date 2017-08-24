@@ -383,6 +383,21 @@ def fetch_item(item_dict, item_index):
     return output
 
 
+def load_from_cookie(cookie, address):
+    """ Loads inner data from cookie using provided address """
+    output = None
+    if address[0] in cookie:
+        del address[0]
+
+        if len(address):
+            return load_from_cookie(cookie[address[0]], address)
+
+        else:
+            return cookie
+
+    return output
+
+
 ## Private Function ##
 def _get_integer(float_value):
     """ Extracts integer portion(int) from float """

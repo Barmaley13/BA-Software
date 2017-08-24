@@ -54,7 +54,7 @@
                         <input type='hidden' name='{{platform_name}}_{{group_name}}_header' value='{{header_name}}' >
                         <tr>
                             %cookie = pages.get_cookie()
-                            %live_units = group.units(cookie, 'live', header_name)
+                            %live_units = group.live_units(cookie, header_name)
                             <td>{{header['name']}}, 
                                 <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' onchange="GetDiagnostics()" >
                                     %for unit_name, unit_value in header.unit_list.items():
@@ -78,8 +78,7 @@
     <h3>System Statistics</h3>
     <table class="hor-minimalist-b" >
         <tfoot>
-            %platform_name = 'system'
-            %group_name = 'system'
+            %platform_name, group_name = 'system', 'system'
             <input type='hidden' name='platform' value='{{platform_name}}' >
             <input type='hidden' name='{{platform_name}}_group' value='{{group_name}}' >
             
@@ -88,7 +87,7 @@
                 <input type='hidden' name='{{platform_name}}_{{group_name}}_header' value='{{header_name}}' >
                 <tr>
                     %cookie = pages.get_cookie()
-                    %live_units = header.units(cookie, 'live')
+                    %live_units = manager.live_units(cookie, header_name)
                     <td>{{header['name']}}, 
                         <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' onchange="GetDiagnostics()" >
                             %for unit_name, unit_value in header.unit_list.items():

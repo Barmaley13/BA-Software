@@ -46,7 +46,8 @@
                             onclick='GetLogData(false, true)'
                         %end
                         %cookie = pages.get_cookie()
-                        {{checked(unit_name in group.table_units(cookie, page_type, header_name).keys())}} >
+                        %table_units = getattr(group, page_type + '_table_units')(cookie, header_name).keys()
+                        {{checked(unit_name in table_units)}} >
                     </td>
                 %end
             %end

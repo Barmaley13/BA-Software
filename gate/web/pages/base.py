@@ -17,6 +17,7 @@ from gate.web.users import Users, GUEST_USER
 from . import handlers
 from .platforms import WebPlatforms
 
+
 ### CONSTANTS ###
 NAV_DEPTH = 1
 
@@ -353,7 +354,7 @@ class PagesBase(DatabaseOrderedDict):
         self.set_cookie(log_cookies, 'logs_data')
         self.set_cookie({}, 'nodes_subpage')
 
-    # Misc #
+    # Group Methods #
     def get_group(self):
         """ Selects targeted group of nodes via provided url and template """
         group_url = None

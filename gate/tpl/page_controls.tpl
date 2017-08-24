@@ -10,7 +10,7 @@
 %### HTML ###
 %cookie = pages.get_cookie()
 %headers = group.enabled_headers(page_type)
-%selected_header = group.selected_header(page_type, cookie)
+%selected_header = group.selected_header(cookie, page_type)
 %onclick_function = ONCLICK_FUNCTIONS[page_type]
 
 %# Platform and Group Names
@@ -28,7 +28,8 @@
     
     <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' onchange='{{onclick_function}}' >
         %for unit_name, unit_value in header.unit_list.items():
-            <option value='{{unit_name}}'' {{selected(unit_name == group.units(cookie, page_type, header_name)['internal_name'])}}>
+            %selected_units = getattr(group, page_type + '_units')(cookie, header_name)['internal_name']
+            <option value='{{unit_name}}'' {{selected(unit_name == selected_units)}}>
                 {{unit_value['measuring_units']}}
             </option>
         %end
