@@ -159,13 +159,14 @@ class Headers(DatabaseDict):
     def read(self, header_type, sensor_type):
         """ Read Headers """
         output = None
-        header_type_map = {True: 'diagnostics', False: 'display'}
 
         if header_type in ('all', 'display', 'diagnostics'):
             if header_type == 'all':
                 header_types = ('display', 'diagnostics')
             else:
                 header_types = (header_type, )
+
+            header_type_map = {True: 'diagnostics', False: 'display'}
 
             output = OrderedDict()
             for header_type in header_types:
@@ -182,6 +183,53 @@ class Headers(DatabaseDict):
             LOGGER.error("Header type " + str(header_type) + " does not exist!")
 
         return output
+
+    def header_group(self, header_key, sensor_type):
+        """ Returns header group for a particular header """
+        output = None
+        for _header_group in self._headers:
+            if len(_header_group) > 1:
+                if header_key in _header_group.keys():
+                    output = copy.deepcopy(_header_group)
+
+                    sensor_index = _header_group[header_key]['header_position']
+                    if sensor_type[sensor_index] is not None:
+                        del output[output.keys()[0]]
+
+                    break
+
+        return output
+
+    def rename_headers(self, sensor_type):
+        """ Renames headers after changing sensor code of a particular node """
+        # Total count of repeating sensor indexes
+        total_counter = {}
+        for sensor_code in sensor_type:
+            total_counter[sensor_code] = total_counter.get(sensor_code, -1) + 1
+
+        # LOGGER.debug('total_counter: {}'.format(total_counter))
+
+        current_counter = {}
+        for header_group in self._headers:
+            if len(header_group) > 1:
+                for header in header_group.values():
+                    if header.selected(sensor_type):
+                        # LOGGER.debug('sensor_code: {}'.format(sensor_code))
+
+                        # Reset name to default one
+                        header['name'] = header['_name']
+
+                        sensor_code = header['sensor_code'][-1]
+                        if sensor_code in total_counter:
+                            # Current count of repeating sensor indexes
+                            current_counter[sensor_code] = current_counter.get(sensor_code, 0) + 1
+                            if total_counter[sensor_code]:
+                                # Append name count if needed
+                                header['name'] += ' ' + str(current_counter[sensor_code])
+
+                                # LOGGER.debug("header['name']: {}".format(header['name']))
+
+        # LOGGER.debug('current_counter: {}'.format(current_counter))
 
     # Alarm Messages #
     def alarm_messages(self, alert_group):
@@ -222,45 +270,3 @@ class Headers(DatabaseDict):
                                     output[error_field + '-' + str(error_code)] = warning_description
 
         return output
-
-    def header_group(self, header_name):
-        """ Returns header group for a particular header """
-        output = None
-        for header_group in self._headers:
-            if len(header_group) > 1:
-                if header_name in header_group.keys():
-                    output = header_group
-                    break
-
-        return output
-
-    def rename_headers(self, sensor_type):
-        """ Renames headers after changing sensor code of a particular node """
-        # Total count of repeating sensor indexes
-        total_counter = {}
-        for sensor_code in sensor_type:
-            total_counter[sensor_code] = total_counter.get(sensor_code, -1) + 1
-
-        # LOGGER.debug('total_counter: {}'.format(total_counter))
-
-        current_counter = {}
-        for header_group in self._headers:
-            if len(header_group) > 1:
-                for header in header_group.values():
-                    if header.selected(sensor_type):
-                        # LOGGER.debug('sensor_code: {}'.format(sensor_code))
-
-                        # Reset name to default one
-                        header['name'] = header['_name']
-
-                        sensor_code = header['sensor_code'][-1]
-                        if sensor_code in total_counter:
-                            # Current count of repeating sensor indexes
-                            current_counter[sensor_code] = current_counter.get(sensor_code, 0) + 1
-                            if total_counter[sensor_code]:
-                                # Append name count if needed
-                                header['name'] += ' ' + str(current_counter[sensor_code])
-
-                                # LOGGER.debug("header['name']: {}".format(header['name']))
-
-        # LOGGER.debug('current_counter: {}'.format(current_counter))

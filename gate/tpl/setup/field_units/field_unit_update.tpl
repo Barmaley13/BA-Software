@@ -203,13 +203,16 @@
     <p>
         %if users.check_access('write'):
             <span class="float_left">
-                %nodes = pages.platforms.nodes(ADDRESS)
-                %if len(nodes):
-                    %net_addr = ADDRESS['nodes'][0]
-                    %index = nodes.keys().index(net_addr)
-                    <input type='button' value='Up' onclick="SubmitAction('node_update', 'up')" {{disabled(index == 0 or len(ADDRESS['nodes']) > 1)}} >
-                    <input type='button' value='Down' onclick="SubmitAction('node_update', 'down')" {{disabled(index == len(nodes)-1 or len(ADDRESS['nodes']) > 1)}} >
-                    <input type='button' value='Remove' onclick="SubmitAction('node_update', 'remove')" >
+                %group = pages.platforms.group(ADDRESS)
+                %if group:
+                    %nodes = group.nodes
+                    %if len(nodes):
+                        %net_addr = ADDRESS['nodes'][0]
+                        %index = nodes.keys().index(net_addr)
+                        <input type='button' value='Up' onclick="SubmitAction('node_update', 'up')" {{disabled(index == 0 or len(ADDRESS['nodes']) > 1)}} >
+                        <input type='button' value='Down' onclick="SubmitAction('node_update', 'down')" {{disabled(index == len(nodes)-1 or len(ADDRESS['nodes']) > 1)}} >
+                        <input type='button' value='Remove' onclick="SubmitAction('node_update', 'remove')" >
+                    %end
                 %end
             </span>
             <span class="float_right">

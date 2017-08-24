@@ -69,28 +69,37 @@ class Group(PlatformBase):
 
         if len(self.nodes):
             first_node = self.nodes.values()[0]
-            if first_node:
-                sensor_type = list(first_node['sensor_type'])
+            sensor_type = self.__sensor_type()
 
-                if len(self.nodes) > 1:
-                    for node in self.nodes.values():
-                        for sensor_index, sensor_code in enumerate(sensor_type):
-                            if node['sensor_type'][sensor_index] != sensor_code:
-                                sensor_type[sensor_index] = None
-
-                # LOGGER.debug('sensor_type: {}'.format(sensor_type))
-                output = first_node.headers.read(header_type, sensor_type)
+            # LOGGER.debug('sensor_type: {}'.format(sensor_type))
+            output = first_node.headers.read(header_type, sensor_type)
 
         return output
 
-    def header_group(self, header_name):
+    def header_group(self, header_key):
         """ Returns header group for a particular header """
-        output = []
+        output = None
 
         if len(self.nodes):
-            output = self.nodes.values()[0].headers.header_group(header_name)
+            first_node = self.nodes.values()[0]
+            sensor_type = self.__sensor_type()
+
+            output = first_node.headers.header_group(header_key, sensor_type)
 
         return output
+
+    def __sensor_type(self):
+        """ Determine sensor type of the group """
+        first_node = self.nodes.values()[0]
+        sensor_type = list(first_node['sensor_type'])
+
+        if len(self.nodes) > 1:
+            for node in self.nodes.values():
+                for sensor_index, sensor_code in enumerate(sensor_type):
+                    if node['sensor_type'][sensor_index] != sensor_code:
+                        sensor_type[sensor_index] = None
+
+        return sensor_type
 
     def enabled_headers(self, page_type):
         """ Fetch enabled headers """
