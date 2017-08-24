@@ -4,7 +4,7 @@ Web Pages Related Intricacies
 
 ### INCLUDES ###
 import os
-import json
+import yaml
 import logging
 
 import bottle
@@ -128,7 +128,7 @@ class WebPages(PagesJsonData):
 
         # Form Fetch #
         if request.query.data:
-            data = json.loads(request.query.data.encode('ascii', 'ignore'))
+            data = yaml.safe_load(request.query.data)
 
             # LOGGER.debug("data = " + str(data))
 

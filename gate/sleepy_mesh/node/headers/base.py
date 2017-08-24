@@ -192,7 +192,7 @@ class Headers(DatabaseDict):
                 if header_key in _header_group.keys():
                     output = copy.deepcopy(_header_group)
 
-                    sensor_index = _header_group[header_key]['header_position']
+                    sensor_index = _header_group[header_key]['data_field_position']
                     if sensor_type[sensor_index] is not None:
                         del output[output.keys()[0]]
 

@@ -244,6 +244,7 @@ setup(
         'pyasn1 (==0.1.7)',
         'pysnmp (==4.2.5)',
         'pycrypto (>=2.1.0)',
+        'pyyaml',
         'py_knife (>=0.01.23)',
         'snapconnect (==3.6.1)'
     ]

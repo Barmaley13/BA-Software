@@ -6,7 +6,7 @@ Platforms Web Handler with integrated Edit Methods
 import os
 import time
 import copy
-import json
+import yaml
 import logging
 
 from bottle import request, static_file
@@ -291,23 +291,25 @@ class WebHandler(WebHandlerBase):
                         node['modbus_addr'] = modbus_addr
                 
                 # Sensor Type
-                node = self._object.node(address)
-                if node:
-                    sensor_type = list(node['sensor_type'])
-                    sensor_codes = request.forms.sensor_codes
+                sensor_codes = request.forms.sensor_codes
+                if sensor_codes:
+                    sensor_codes = yaml.safe_load(sensor_codes)
+                    # LOGGER.debug('sensor_codes: {}'.format(sensor_codes))
+
                     if sensor_codes:
-                        sensor_codes = json.loads(sensor_codes.encode('ascii', 'ignore'))
-                        if sensor_codes:
-                            group = self._object.group(address)
-                            for data_field, sensor_code in sensor_codes.items():
-                                _position = int(data_field.split('_')[-1])
-                                _sensor_code = sensor_code.split('_')[-1][0]
+                        node = self._object.node(address)
+                        sensor_type = list(node['sensor_type'])
 
-                                if _position < len(sensor_type):
-                                    sensor_type[_position] = _sensor_code
+                        for data_field, sensor_code in sensor_codes.items():
+                            _position = int(data_field.split('_')[-1])
+                            _sensor_code = sensor_code.split('_')[-1][0]
 
-                            sensor_type = ''.join(sensor_type)
-                            save_dict['sensor_type'] = sensor_type
+                            if _position < len(sensor_type):
+                                sensor_type[_position] = _sensor_code
+
+                        sensor_type = str(''.join(sensor_type))
+                        save_dict['sensor_type'] = sensor_type
+                        # LOGGER.debug('sensor_type: {}'.format(sensor_type))
 
                 # Alarms
                 group = self._object.group(address)
@@ -326,7 +328,8 @@ class WebHandler(WebHandlerBase):
                         # Alarm Enables
                         alarm_enables = request.forms.get('total_' + alarm_type)
                         if alarm_enables:
-                            alarm_enables = json.loads(alarm_enables.encode('ascii', 'ignore'))
+                            alarm_enables = yaml.safe_load(alarm_enables)
+                            # LOGGER.debug('alarm_enables: {}'.format(alarm_enables))
                             if alarm_enables:
                                 if header_name in alarm_enables:
                                     LOGGER.debug(alarm_type + '_enable = ' + str(alarm_enables[header_name]))
@@ -366,17 +369,19 @@ class WebHandler(WebHandlerBase):
 
             if validate:
                 if update_enables:
-                    display = json.loads(request.forms.total_display.encode('ascii', 'ignore'))
-                    track = json.loads(request.forms.total_track.encode('ascii', 'ignore'))
-                    diagnostics = json.loads(request.forms.total_diagnostics.encode('ascii', 'ignore'))
+                    display = yaml.safe_load(request.forms.total_display)
+                    track = yaml.safe_load(request.forms.total_track)
+                    diagnostics = yaml.safe_load(request.forms.total_diagnostics)
 
                     update_dict = dict()
                     if display and track and diagnostics:
                         for node in self._object.nodes(address):
                             enables_map = {'live_enable': display, 'log_enable': track, 'diagnostics': diagnostics}
                             for enable_type, enable_dict in enables_map.items():
-                                update_dict[enable_type] = node.update_enables(
-                                    enable_type, enable_dict)
+                                enables = node.update_enables(enable_type, enable_dict)
+                                update_dict[enable_type] = enables
+                                # LOGGER.debug('{}: {}'.format(enable_type, enable_dict))
+                                # LOGGER.debug('{}: {}'.format(enable_type, enables))
 
                     update_enables = bool(len(update_dict))
                     if update_enables:
@@ -534,7 +539,7 @@ class WebHandler(WebHandlerBase):
                 if self._log_export is not None:
                     self._log_export.stop()
 
-                self._log_export = LogExportThread(self._manager, address, node)
+                self._log_export = LogExportThread(self._pages, address, node)
                 self._log_export.start()
 
                 # LOGGER.debug('main niceness2 = ' + str(os.nice(0)))
@@ -663,11 +668,14 @@ class WebHandler(WebHandlerBase):
 
 class LogExportThread(WorkerThread):
     """ Worker based on Thread class """
-    def __init__(self, manager, cookie, node):
+    def __init__(self, pages, address, node):
         super(LogExportThread, self).__init__()
-        self._manager = manager
+        self._pages = pages
+        self._manager = pages.manager
+        self._group = pages.platforms.group(address)
         self._update_interface = self._manager.update_interfaces.create(('log_export', ))
-        self._cookie = cookie
+        # FIXME: Need to make sure we are getting proper cookie!
+        self._cookie = self._pages.get_cookie('logs_data')
         self._node = node
 
     def run(self):
@@ -695,8 +703,8 @@ class LogExportThread(WorkerThread):
             csv_data = 'Time'
             display_headers = self._node.read_headers('display')
             for header_name, header in display_headers.items():
-                # FIXME: self._cookie is a wrong cookie! And we need group!
-                for log_unit in group.table_units(self._cookie, 'log', header_name).values():
+                # FIXME: self._cookie is a wrong cookie!
+                for log_unit in self._group.table_units(self._cookie, 'log', header_name).values():
                     csv_data += ',' + header['name'] + ' - ' + log_unit['measuring_units']
 
         # Dump stored files on HD
@@ -776,8 +784,7 @@ class LogExportThread(WorkerThread):
 
                     csv_data += "\n" + self._manager.system_settings.local_time(point['time'])
                     for header_name, header in display_headers.items():
-                        # FIXME: self._cookie is a wrong cookie! And we need group!
-                        for log_unit in group.table_units(self._cookie, 'log', header_name).values():
+                        for log_unit in self._group.table_units(self._cookie, 'log', header_name).values():
                             value = log_unit.get_string(self._node, point)
                             csv_data += "," + str(value)
                 else:

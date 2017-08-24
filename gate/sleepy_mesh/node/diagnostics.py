@@ -22,6 +22,7 @@ AWAKE_DRAW = [(-20.0, 6.6e-3), (0.0, 5.1e-3), (25.0, 3.5e-3), (55.0, 3.4e-3)]
 
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.ERROR)
 # LOGGER.setLevel(logging.DEBUG)
 
 

@@ -609,25 +609,27 @@ class WebPlatforms(object):
         """
         group = self.group(address)
         nodes = self.nodes(address)
-        all_headers = group.read_headers('all')
-        # diagnostics_headers = group.read_headers('diagnostics')
 
-        # LOGGER.debug('all_headers: {}'.format(all_headers))
+        if len(nodes):
+            all_headers = group.read_headers('all')
+            # diagnostics_headers = group.read_headers('diagnostics')
 
-        header_table_content = ''
-        for header_key, header in all_headers.items():
-            # hide_header = bool(header_key in diagnostics_headers.keys())
-            header_group = group.header_group(header_key)
-            header_html = _header_html(header, nodes)
-            header_table_content += bottle.template(
-                'header_row_html',
-                hide_header=False,
-                # hide_header=hide_header,
-                header_name=_header_select_html(header, header_group),
-                header_html=header_html,
-            )
+            # LOGGER.debug('all_headers: {}'.format(all_headers))
 
-        output = bottle.template('header_table_html', header_table_content=header_table_content)
+            header_table_content = ''
+            for header_key, header in all_headers.items():
+                # hide_header = bool(header_key in diagnostics_headers.keys())
+                header_group = group.header_group(header_key)
+                header_html = _header_html(header, nodes)
+                header_table_content += bottle.template(
+                    'header_row_html',
+                    hide_header=False,
+                    # hide_header=hide_header,
+                    header_name=_header_select_html(header, header_group),
+                    header_html=header_html,
+                )
+
+            output = bottle.template('header_table_html', header_table_content=header_table_content)
 
         return output
 

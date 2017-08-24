@@ -55,7 +55,7 @@ class Node(NodePlatform):
     def read_headers(self, header_type):
         output = {}
 
-        if self.headers:
+        if self.headers is not None:
             output = self.headers.read(header_type, self['sensor_type'])
 
         return output
@@ -91,8 +91,8 @@ class Node(NodePlatform):
 
         if enable_type in ('live_enable', 'log_enable', 'diagnostics'):
             # Convert to node enables
-            all_headers = self.read_headers('all').values()
-            for header in all_headers:
+            all_headers = self.read_headers('all')
+            for header in all_headers.values():
                 header_mask = None
                 if header['data_field_position'] is not None:
                     header_mask = 1 << header['data_field_position']

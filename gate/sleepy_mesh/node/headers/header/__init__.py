@@ -31,6 +31,7 @@ OF_NODE2 = "' "
 
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.ERROR)
 # LOGGER.setLevel(logging.DEBUG)
 
 
@@ -288,9 +289,9 @@ class Header(HeaderBase):
 
         # LOGGER.debug('sensor_code: {}'.format(self['sensor_code']))
         # LOGGER.debug('sensor_type: {}'.format(sensor_type))
-        # LOGGER.debug('header_position: {}'.format(self['header_position']))
+        # LOGGER.debug('data_field_position: {}'.format(self['data_field_position']))
 
         if 'sensor_code' in self._main:
-            output = self['sensor_code'][-1] == sensor_type[self['header_position']]
+            output = self['sensor_code'][-1] == sensor_type[self['data_field_position']]
 
         return output
