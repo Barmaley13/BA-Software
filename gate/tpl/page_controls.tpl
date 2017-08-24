@@ -13,19 +13,22 @@
 %selected_header = group.selected_header(page_type, cookie)
 %onclick_function = ONCLICK_FUNCTIONS[page_type]
 
+%# Platform and Group Names
 %platform_name = group['platform']
+%group_name = group['internal_name']
+<input type='hidden' name='{{platform_name}}_group' value='{{group_name}}' >
+
 %for header_name, header in headers.items():
+    <input type='radio' name='{{platform_name}}_{{group_name}}_header' value='{{header_name}}'
     %if page_type == 'live':
-        <input type='radio' name='{{platform_name}}_header' value="{{platform_name}}_{{header_name}}"
         onclick='{{onclick_function}}' {{checked(selected_header['internal_name'] == header_name)}} >{{header['name']}},
     %elif page_type == 'log':
-        <input type='hidden' name='{{platform_name}}_header' value="{{platform_name}}_{{header_name}}" >
         <th scope="col">{{header['name']}},
     %end
     
-    <select name="{{platform_name}}_{{header_name}}_units" onchange='{{onclick_function}}' >
+    <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' onchange='{{onclick_function}}' >
         %for unit_name, unit_value in header.unit_list.items():
-            <option value="{{unit_name}}" {{selected(unit_name == group.units(cookie, page_type, header_name)['internal_name'])}}>
+            <option value='{{unit_name}}'' {{selected(unit_name == group.units(cookie, page_type, header_name)['internal_name'])}}>
                 {{unit_value['measuring_units']}}
             </option>
         %end

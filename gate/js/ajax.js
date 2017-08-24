@@ -85,57 +85,68 @@ function GenerateHeaderCookies()
     $("input[name='platform']").each(function() {
 
         var platform_name = $(this).val();
-        platforms[platform_name] = new Object();
+        if !(platform_name in platforms)
+            platforms[platform_name] = new Object();
 
-        var header_fields = $("input[name='" + platform_name + "_header']");
-        if (header_fields.length > 0)
-        {
-            var selected_header = header_fields.filter(':checked');
-            var nodes = $("input[name='net_addr']");
-            if (selected_header.length > 0)
-            {
-                platforms[platform_name].selected = selected_header.val().replace(platform_name + '_', '');
-            }
-            else if (nodes.length > 0)
-            {
-                platforms[platform_name].selected = new Object();
-                nodes.each(function (){
-                    //var node_enables = 0;
-                    var net_addr = $(this).val();
+        $("input[name='" + platform_name + "_group']").each(function() {
 
-                    platforms[platform_name].selected[net_addr] = new Array();
-                    $("input[name='log_"+$(this).val()+"']:checked").each(function (){
-                        platforms[platform_name].selected[net_addr].push($(this).val());
+            var group_name = $(this).val();
+            if !(group_name in platforms[platform_name])
+                platforms[platform_name][group_name] = new Object();
+
+            var header_fields = $("input[name='" + platform_name + "_" + group_name + "_header']");
+            if (header_fields.length > 0)
+            {
+                var selected_header = header_fields.filter(':checked');
+                var nodes = $("input[name='net_addr']");
+                if (selected_header.length > 0)
+                {
+                    platforms[platform_name][group_name].selected = selected_header.val();
+                }
+                else if (nodes.length > 0)
+                {
+                    platforms[platform_name][group_name].selected = new Object();
+                    nodes.each(function (){
+                        //var node_enables = 0;
+                        var net_addr = $(this).val();
+
+                        platforms[platform_name][group_name].selected[net_addr] = new Array();
+                        $("input[name='log_"+$(this).val()+"']:checked").each(function (){
+                            platforms[platform_name][group_name].selected[net_addr].push($(this).val());
+                        });
+
                     });
+                }
+
+                var headers = new Object();
+                header_fields.each(function() {
+                    var header_name = $(this).val();
+                    headers[header_name] = new Object();
+
+                    var units_name = platform_name + '_' + group_name + '_' + header_name
+
+                    var units_fields = $("[name='" + units_name + "_units']");
+                    if (units_fields.length > 0)
+                    {
+                        headers[header_name]['units'] = units_fields.val();
+                    }
+
+                    var table_units_fields = $("[name='" + units_name + "_table_units']");
+                    if (table_units_fields.length > 0)
+                    {
+                        headers[header_name]['table_units'] = new Array();
+                        table_units_fields.filter(':checked').each(function() {
+                            headers[header_name]['table_units'].push($(this).val());
+                        });
+                    }
 
                 });
+
+                platforms[platform_name][group_name].headers = headers;
             }
 
-            var headers = new Object();
-            header_fields.each(function() {
-                var header_field = $(this).val();
-                var header_name = header_field.replace(platform_name + '_', '');
-                headers[header_name] = new Object();
-
-                var units_fields = $("[name='" + header_field + "_units']");
-                if (units_fields.length > 0)
-                {
-                    headers[header_name]['units'] = units_fields.val();
-                }
-
-                var table_units_fields = $("[name='" + header_field + "_table_units']");
-                if (table_units_fields.length > 0)
-                {
-                    headers[header_name]['table_units'] = new Array();
-                    table_units_fields.filter(':checked').each(function() {
-                        headers[header_name]['table_units'].push($(this).val());
-                    });
-                }
-
-            });
-
-            platforms[platform_name].headers = headers;
         }
+
 
     });
 

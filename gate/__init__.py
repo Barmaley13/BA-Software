@@ -5,5 +5,5 @@ Highly flexible & customizable low power Wireless Mesh Network System
 """
 
 __author__ = 'Kirill V. Belyayev'
-__version__ = '03.05.39'
+__version__ = '03.05.40'
 __license__ = 'GNUv3'

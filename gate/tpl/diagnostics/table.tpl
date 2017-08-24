@@ -18,8 +18,11 @@
         %group = pages.platforms.fetch_group_from_url(page_url['url'])
         
         %if len(group.nodes):
+            %# Platform and Group Names
             %platform_name = group['platform']
-            <input type='hidden' name='platform' value="{{platform_name}}" >
+            %group_name = group['internal_name']
+            <input type='hidden' name='platform' value='{{platform_name}}' >
+            <input type='hidden' name='{{platform_name}}_group' value='{{group_name}}' >
             
             %## Group Title ##
             %active_platforms = pages.platforms.active_platforms()
@@ -48,12 +51,12 @@
                 <tfoot>
                     %diagnostics_headers = group.read_headers('diagnostics')
                     %for header_name, header in diagnostics_headers.items():
-                        <input type='hidden' name="{{platform_name}}_header" value="{{platform_name}}_{{header_name}}" >
+                        <input type='hidden' name='{{platform_name}}_{{group_name}}_header' value='{{header_name}}' >
                         <tr>
                             %cookie = pages.get_cookie()
                             %live_units = group.units(cookie, 'live', header_name)
                             <td>{{header['name']}}, 
-                                <select name="{{platform_name}}_{{header_name}}_units" onchange="GetDiagnostics()" >
+                                <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' onchange="GetDiagnostics()" >
                                     %for unit_name, unit_value in header.unit_list.items():
                                         <option value="{{unit_name}}" {{selected(unit_name == live_units['internal_name'])}} >
                                             {{unit_value['measuring_units']}}
@@ -76,18 +79,20 @@
     <table class="hor-minimalist-b" >
         <tfoot>
             %platform_name = 'system'
-            <input type='hidden' name='platform' value="{{platform_name}}" >
+            %group_name = 'system'
+            <input type='hidden' name='platform' value='{{platform_name}}' >
+            <input type='hidden' name='{{platform_name}}_group' value='{{group_name}}' >
             
             %diagnostics_headers = manager.read_headers('diagnostics')
             %for header_name, header in diagnostics_headers.items():
-                <input type='hidden' name="{{platform_name}}_header" value="{{platform_name}}_{{header_name}}" >
+                <input type='hidden' name='{{platform_name}}_{{group_name}}_header' value='{{header_name}}' >
                 <tr>
                     %cookie = pages.get_cookie()
                     %live_units = header.units(cookie, 'live')
                     <td>{{header['name']}}, 
-                        <select name="{{platform_name}}_{{header_name}}_units" onchange="GetDiagnostics()" >
+                        <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' onchange="GetDiagnostics()" >
                             %for unit_name, unit_value in header.unit_list.items():
-                                <option value="{{unit_name}}" {{selected(unit_name == live_units['internal_name'])}} >
+                                <option value='{{unit_name}}' {{selected(unit_name == live_units['internal_name'])}} >
                                     {{unit_value['measuring_units']}}
                                 </option>
                             %end

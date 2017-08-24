@@ -310,14 +310,17 @@ class WebPlatforms(object):
 
     ## Default Cookies ##
     def default_cookie(self, page_type):
-        cookie = {}
+        cookie = {'platforms': {}}
 
         if page_type in ('live', 'log'):
+            _cookie = {}
             for platform_name, platform in self.items():
-                cookie[platform_name] = {}
+                _cookie[platform_name] = {}
 
                 for group_name, group in platform.groups.items():
-                    cookie[platform_name][group_name] = group.default_cookie(page_type)
+                    _cookie[platform_name][group_name] = group.default_cookie(page_type)
+
+            cookie['platforms'] = _cookie
 
         else:
             LOGGER.error("Page type: " + str(page_type) + " does not exist!")

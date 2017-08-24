@@ -5,7 +5,9 @@
 
 
 %### HTML ###
+%# Platform and Group Names
 %platform_name = group['platform']
+%group_name = group['internal_name']
 %headers = group.enabled_headers('live')
 
 %if page_type == 'live':
@@ -36,7 +38,8 @@
             %for header_name, header in headers.items():
                 %for unit_name, unit_value in header.unit_list.items():
                     <td>
-                        <input type='checkbox' name="{{platform_name}}_{{header_name}}_table_units" value="{{unit_name}}"
+                        <input type='checkbox' name='{{platform_name}}_{{group_name}}_{{header_name}}_table_units'
+                        value='{{unit_name}}'
                         %if page_type == 'live':
                             onclick='GetLiveData()'
                         %elif page_type == 'log':

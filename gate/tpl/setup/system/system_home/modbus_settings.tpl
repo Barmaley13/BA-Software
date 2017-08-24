@@ -38,7 +38,7 @@
         %display_headers = platform.read_headers('display')
         %for header_name, header in display_headers.items():
             <p>{{header['name']}}:
-                <select name="{{platform_name}}_{{header_name}}_units" >
+                <select name="{{platform_name}}_{{group_name}}_{{header_name}}_units" >
                     %for unit_name, unit_value in header.unit_list.items():
                         <option value="{{unit_name}}" {{selected(unit_value == header.modbus_units())}}>
                             {{unit_value['measuring_units']}}

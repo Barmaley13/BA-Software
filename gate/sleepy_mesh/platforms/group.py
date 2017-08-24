@@ -33,7 +33,14 @@ class Group(PlatformBase):
         if internal_name(group_name) != 'inactive_group':
             db_file_prefix = os.path.join('platforms', platform_name, 'groups')
 
-        super(Group, self).__init__(group_name, platform_name, db_file_prefix)
+        # Default Cookies
+        defaults_kwargs = {
+            'live_cookie': {'selected': 0},
+            'log_cookie': {'selected': []}
+        }
+
+        super(Group, self).__init__(
+            group_name, platform_name, db_file_prefix, **defaults_kwargs)
 
         nodes_db_file = None
         error_db_file = None
@@ -145,14 +152,17 @@ class Group(PlatformBase):
 
         if page_type in ('live', 'log'):
             _cookie = None
-            if self['platform'] in cookie:
-                cookie = cookie[self['platform']]
+            if 'platforms' in cookie:
+                cookie = cookie['platforms']
 
-                if self['internal_name'] in cookie:
-                    cookie = cookie[self['internal_name']]
+                if self['platform'] in cookie:
+                    cookie = cookie[self['platform']]
 
-                    if 'selected' in cookie:
-                        _cookie = cookie
+                    if self['internal_name'] in cookie:
+                        cookie = cookie[self['internal_name']]
+
+                        if 'selected' in cookie:
+                            _cookie = cookie
 
             if _cookie is None:
                 LOGGER.warning("Using default cookies during 'selected' execution!")
@@ -197,23 +207,23 @@ class Group(PlatformBase):
 
         if page_type in ('live', 'log'):
             _cookie = None
-            if self['platform'] in cookie:
-                cookie = cookie[self['platform']]
+            if 'platforms' in cookie:
+                cookie = cookie['platforms']
 
-                if self['internal_name'] in cookie:
-                    cookie = cookie[self['internal_name']]
+                if self['platform'] in cookie:
+                    cookie = cookie[self['platform']]
 
-                    if 'headers' in cookie:
-                        cookie = cookie['headers']
+                    if self['internal_name'] in cookie:
+                        cookie = cookie[self['internal_name']]
 
-                        if header_name in cookie:
-                            cookie = cookie[header_name]
+                        if 'headers' in cookie:
+                            cookie = cookie['headers']
 
-                            if units_type in cookie:
-                                _cookie = cookie
+                            if header_name in cookie:
+                                cookie = cookie[header_name]
 
-            if _cookie is None:
-                _cookie = self.default_cookie(page_type)
+                                if units_type in cookie:
+                                    _cookie = cookie
 
             header = None
             display_headers = self.read_headers('display')
@@ -223,6 +233,9 @@ class Group(PlatformBase):
                     break
 
             if header is not None:
+                if _cookie is None:
+                    _cookie = header.default_cookie(page_type)
+
                 # Read portion
                 if units_type == 'units':
                     unit_index = _cookie[units_type]

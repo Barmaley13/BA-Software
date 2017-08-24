@@ -222,7 +222,7 @@ class PagesJsonData(StatusIcons):
                 live_header = enabled_headers.values()[0]
 
             if live_header is not None:
-                live_units = live_header.units(cookie, 'live')
+                live_units = group.units(cookie, 'live', live_header['internal_name'])
                 for node in group.nodes.values():
                     json_dict['nodes'].append({})
 
