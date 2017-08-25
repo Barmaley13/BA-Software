@@ -9,8 +9,8 @@
 
 %### HTML ###
 %cookie = pages.get_cookie()
-%headers = group.enabled_headers(page_type)
-%selected_header = group.selected_header(cookie, page_type)
+%headers = getattr(group, page_type + '_headers')()
+%selected_header = getattr(group, page_type + '_header')(cookie)['internal_name']
 %onclick_function = ONCLICK_FUNCTIONS[page_type]
 
 %# Platform and Group Names
@@ -21,7 +21,7 @@
 %for header_name, header in headers.items():
     <input type='radio' name='{{platform_name}}_{{group_name}}_header' value='{{header_name}}'
     %if page_type == 'live':
-        onclick='{{onclick_function}}' {{checked(selected_header['internal_name'] == header_name)}} >{{header['name']}},
+        onclick='{{onclick_function}}' {{checked(header_name == selected_header)}} >{{header['name']}},
     %elif page_type == 'log':
         <th scope="col">{{header['name']}},
     %end

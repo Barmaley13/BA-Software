@@ -10,6 +10,7 @@
 
 %### CONSTANTS ###
 %URL = pages.url()
+%cookie = pages.get_cookie()
 
 
 %### HTML ###
@@ -33,16 +34,15 @@
 
     %# Header Data
     <tbody>
-    %cookie = pages.get_cookie()
-    %enabled_headers = group.enabled_headers('log')
-    %selected_nodes = group.selected_header(cookie, 'log')
+    %log_headers = group.log_headers()
+    %selected_nodes = group.log_header(cookie)
     %for node in group.nodes.values():
         <tr>
             <input type='hidden' name='net_addr' value="{{node['net_addr']}}" >
             <td>{{node['name']}}</td>
             <td>{{node['mac']}}</td>          
             
-            %for header_name, header in enabled_headers.items():
+            %for header_name, header in log_headers.items():
                 <td>
                     %selected_headers = {}
                     %if node['net_addr'] in selected_nodes:

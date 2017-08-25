@@ -39,7 +39,7 @@ SYNC_BY = "Sync by "
 
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
-# LOGGER.setLevel(logging.DEBUG)
+LOGGER.setLevel(logging.WARNING)
 
 
 ### FUNCTIONS ###
@@ -109,61 +109,57 @@ class SleepyMeshStatistics(SleepyMeshBase):
     # TODO: Eliminate this!
     def live_units(self, cookie, header_name):
         """ Returns currently selected units for the bar graph on live page """
-        return self._units(cookie, header_name, 'live', 'units')
+        return self.__units(cookie, header_name, 'live', 'units')
 
     def log_units(self, cookie, header_name):
-        """ Returns currently selected units for the bar graph on live page """
-        return self._units(cookie, header_name, 'log', 'units')
+        """ Returns currently selected units for the bar graph on log page """
+        return self.__units(cookie, header_name, 'log', 'units')
 
     def live_table_units(self, cookie, header_name):
-        """ Returns currently selected list of units for the logs """
-        return self._units(cookie, header_name, 'live', 'table_units')
+        """ Returns currently selected list of units for the live page """
+        return self.__units(cookie, header_name, 'live', 'table_units')
 
     def log_table_units(self, cookie, header_name):
-        """ Returns currently selected list of units for the logs """
-        return self._units(cookie, header_name, 'log', 'table_units')
+        """ Returns currently selected list of units for the log page """
+        return self.__units(cookie, header_name, 'log', 'table_units')
 
-    def _units(self, cookie, header_name, page_type, units_type):
+    def __units(self, cookie, header_name, page_type, units_type):
         """ Returns currently selected units for the bar graph on live page """
         output = None
         if units_type == 'table_units':
             output = OrderedDict()
 
-        if page_type in ('live', 'log'):
-            address = (
-                'platforms', 'system', 'system', 'headers', header_name, units_type)
-            _cookie = load_from_cookie(cookie, address)
+        address = [
+            'platforms', 'system', 'system', 'headers', header_name, units_type]
+        _cookie = load_from_cookie(cookie, address)
 
-            header = None
-            display_headers = self.read_headers('display')
-            for _header_name, _header in display_headers.items():
-                if header_name == _header_name:
-                    header = _header
-                    break
+        header = None
+        all_headers = self.read_headers('all')
+        for _header_name, _header in all_headers.items():
+            if header_name == _header_name:
+                header = _header
+                break
 
-            if header is not None:
-                if _cookie is None:
-                    LOGGER.warning("Using default cookies during 'selected' execution!")
-                    # LOGGER.debug("cookie = " + str(cookie))
-                    _cookie = header.default_cookie(page_type)
+        if header is not None:
+            if _cookie is None:
+                # Fetch default Header Cookie
+                LOGGER.warning("Using default header cookie during 'selected' execution!")
+                _cookie = copy.deepcopy(header[page_type + '_cookie'])
 
-                # Read portion
-                if units_type == 'units':
-                    unit_index = _cookie[units_type]
+            # Read portion
+            if units_type == 'units':
+                unit_index = _cookie[units_type]
+                _output = header.units(unit_index)
+                if _output is not None:
+                    output = _output
+
+            elif units_type == 'table_units':
+                for unit_index in _cookie[units_type]:
                     _output = header.units(unit_index)
                     if _output is not None:
-                        output = _output
-
-                elif units_type == 'table_units':
-                    for unit_index in _cookie[units_type]:
-                        _output = header.units(unit_index)
-                        if _output is not None:
-                            output[_output['internal_name']] = _output
-            else:
-                LOGGER.error("Header: " + str(header_name) + " does not exist!")
-
+                        output[_output['internal_name']] = _output
         else:
-            LOGGER.error("Page type: " + str(page_type) + " does not exist!")
+            LOGGER.error("Header: " + str(header_name) + " does not exist!")
 
         return output
 

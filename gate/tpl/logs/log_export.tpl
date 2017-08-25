@@ -13,6 +13,7 @@
 %if not defined('group'):
     %group = pages.get_group()
 %end
+%cookie = pages.get_cookie()
 
 
 %### JS ###
@@ -47,7 +48,6 @@ function validate_remove(form)
                     <input type='hidden' name='ajax' value='true' >
                     <select name="net_addr" onchange='GetLogData(false, true)' >
                         %export_net_addr = None
-                        %cookie = pages.get_cookie()
                         %if 'export_net_addr' in cookie:
                             %export_net_addr = cookie['export_net_addr']
                         %end

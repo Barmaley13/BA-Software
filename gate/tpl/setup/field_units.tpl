@@ -12,7 +12,8 @@
 <div id='form'></div>
 
 %# Trigger Form display #
-%if pages.get_cookie() is not None and len(pages.platforms.select_nodes('ALL')):
+%cookie = pages.get_cookie()
+%if cookie is not None and len(pages.platforms.select_nodes('ALL')):
     <script><!--
         $(window).load(function(){GetForm('form')});
     //--></script>

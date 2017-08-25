@@ -212,14 +212,14 @@ class PagesJsonData(StatusIcons):
 
         if len(group.nodes):
             cookie = self.get_cookie()
-            enabled_headers = group.enabled_headers('live')
-            selected_header = group.selected_header(cookie, 'live')
+            live_headers = group.live_headers()
+            selected_header = group.live_header(cookie)
 
             live_header = None
-            if selected_header is not None and selected_header['internal_name'] in enabled_headers.keys():
+            if selected_header is not None and selected_header['internal_name'] in live_headers.keys():
                 live_header = selected_header
-            elif len(enabled_headers):
-                live_header = enabled_headers.values()[0]
+            elif len(live_headers):
+                live_header = live_headers.values()[0]
 
             if live_header is not None:
                 live_units = group.live_units(cookie, live_header['internal_name'])
@@ -421,9 +421,9 @@ class PagesJsonData(StatusIcons):
         """ Generate data for logs """
         logs_data = []
 
+        cookie = self.get_cookie()
+        selected_nodes = group.log_header(cookie)
         for node_index, node in enumerate(group.nodes.values()):
-            cookie = self.get_cookie()
-            selected_nodes = group.selected_header(cookie, 'log')
             if node['net_addr'] in selected_nodes:
                 selected_headers = selected_nodes[node['net_addr']]
                 # LOGGER.debug("selected_headers[" + node['net_addr'] + "] = " + str(selected_headers))
@@ -458,7 +458,7 @@ class PagesJsonData(StatusIcons):
             if logs_data:
                 page_type = 'log'
 
-            enabled_headers = group.enabled_headers(page_type)
+            enabled_headers = getattr(group, page_type + '_headers')()
             if len(enabled_headers) == 0:
                 if logs_data is None:
                     display_warnings.append(PLEASE_SET + DISPLAY_ENABLES + TO_DISPLAY1 + TO_DISPLAY2)

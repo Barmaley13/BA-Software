@@ -85,13 +85,13 @@ function GenerateHeaderCookies()
     $("input[name='platform']").each(function() {
 
         var platform_name = $(this).val();
-        if !(platform_name in platforms)
+        if (!(platform_name in platforms))
             platforms[platform_name] = new Object();
 
         $("input[name='" + platform_name + "_group']").each(function() {
 
             var group_name = $(this).val();
-            if !(group_name in platforms[platform_name])
+            if (!(group_name in platforms[platform_name]))
                 platforms[platform_name][group_name] = new Object();
 
             var header_fields = $("input[name='" + platform_name + "_" + group_name + "_header']");
@@ -127,9 +127,7 @@ function GenerateHeaderCookies()
 
                     var units_fields = $("[name='" + units_name + "_units']");
                     if (units_fields.length > 0)
-                    {
                         headers[header_name]['units'] = units_fields.val();
-                    }
 
                     var table_units_fields = $("[name='" + units_name + "_table_units']");
                     if (table_units_fields.length > 0)
@@ -145,9 +143,7 @@ function GenerateHeaderCookies()
                 platforms[platform_name][group_name].headers = headers;
             }
 
-        }
-
-
+        });
     });
 
     cookies.platforms = platforms;

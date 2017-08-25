@@ -329,6 +329,9 @@ class PagesBase(DatabaseOrderedDict):
                     if new_cookie != cookie:
                         cookie = self.set_cookie(new_cookie)
 
+            # LOGGER.debug('url: {}'.format(_url))
+            # LOGGER.debug('cookie: {}'.format(cookie))
+
         return cookie
 
     def set_cookie(self, value, page_name=None):

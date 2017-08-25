@@ -8,16 +8,15 @@
 
 
 %### CONSTANTS ###
+%cookie = pages.get_cookie()
 %if not defined('group'):
     %group = pages.get_group()
 %end
 
-%HEADERS = group.enabled_headers('live')
-
 
 %### HTML ###
 <table class="main_table" >
-    %# Platfrom Name
+    %# Platform Name
     %platform_name = group['platform']
     <input type='hidden' name='platform' value="{{platform_name}}" >
     
@@ -41,9 +40,9 @@
     </thead>
     <tbody>
         %# Table with alternative units #
-        %for header_name, header in HEADERS.items():
+        %headers = group.live_headers()
+        %for header_name, header in headers.items():
             %for unit_name, unit_value in header.unit_list.items():
-                %cookie = pages.get_cookie()
                 %if unit_name in group.live_table_units(cookie, header_name).keys():
                     <tr>
                         <td>{{header['name']}}, {{unit_value['measuring_units']}}</td>

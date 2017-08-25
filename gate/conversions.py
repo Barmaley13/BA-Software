@@ -387,10 +387,10 @@ def load_from_cookie(cookie, address):
     """ Loads inner data from cookie using provided address """
     output = None
     if address[0] in cookie:
-        del address[0]
-
-        if len(address):
-            return load_from_cookie(cookie[address[0]], address)
+        if len(address) > 1:
+            cookie = cookie[address[0]]
+            del address[0]
+            return load_from_cookie(cookie, address)
 
         else:
             return cookie

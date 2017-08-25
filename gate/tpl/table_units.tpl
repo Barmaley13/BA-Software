@@ -8,7 +8,7 @@
 %# Platform and Group Names
 %platform_name = group['platform']
 %group_name = group['internal_name']
-%headers = group.enabled_headers('live')
+%headers = group.live_headers()
 
 %if page_type == 'live':
     <table class='hor-minimalist-b' >
@@ -34,18 +34,14 @@
         </tr>
         
         %# Unit Checkboxes
+        %cookie = pages.get_cookie()
+        %onclick_functions = {'live': 'GetLiveData()', 'log': 'GetLogData(false, true)'}
         <tr>
             %for header_name, header in headers.items():
                 %for unit_name, unit_value in header.unit_list.items():
                     <td>
                         <input type='checkbox' name='{{platform_name}}_{{group_name}}_{{header_name}}_table_units'
-                        value='{{unit_name}}'
-                        %if page_type == 'live':
-                            onclick='GetLiveData()'
-                        %elif page_type == 'log':
-                            onclick='GetLogData(false, true)'
-                        %end
-                        %cookie = pages.get_cookie()
+                        value='{{unit_name}}' onclick='{{onclick_functions[page_type]}}'
                         %table_units = getattr(group, page_type + '_table_units')(cookie, header_name).keys()
                         {{checked(unit_name in table_units)}} >
                     </td>

@@ -207,19 +207,6 @@ class Header(HeaderBase):
 
         return output
 
-    ## Default Cookie ##
-    def default_cookie(self, page_type):
-        """ Returns default header cookie """
-        header_cookie = {}
-
-        if page_type in ('live', 'log'):
-            header_cookie = copy.deepcopy(self[page_type + '_cookie'])
-
-        else:
-            LOGGER.error("Page type: " + str(page_type) + " does not exist!")
-
-        return header_cookie
-
     ## Selected Units ##
     def modbus_units(self, new_unit_index=None):
         """

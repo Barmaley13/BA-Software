@@ -8,6 +8,7 @@
 
 
 %### HTML ###
+%cookie = pages.get_cookie()
 %page_urls = pages.platforms.compose_group_urls()
 %if not len(page_urls):
     {{!template('display_warnings', messages=NO_ACTIVE_NODES)}}
@@ -53,12 +54,11 @@
                     %for header_name, header in diagnostics_headers.items():
                         <input type='hidden' name='{{platform_name}}_{{group_name}}_header' value='{{header_name}}' >
                         <tr>
-                            %cookie = pages.get_cookie()
-                            %live_units = group.live_units(cookie, header_name)
+                            %selected_units = group.live_units(cookie, header_name)['internal_name']
                             <td>{{header['name']}}, 
                                 <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' onchange="GetDiagnostics()" >
                                     %for unit_name, unit_value in header.unit_list.items():
-                                        <option value="{{unit_name}}" {{selected(unit_name == live_units['internal_name'])}} >
+                                        <option value="{{unit_name}}" {{selected(unit_name == selected_units)}} >
                                             {{unit_value['measuring_units']}}
                                         </option>
                                     %end
@@ -86,12 +86,11 @@
             %for header_name, header in diagnostics_headers.items():
                 <input type='hidden' name='{{platform_name}}_{{group_name}}_header' value='{{header_name}}' >
                 <tr>
-                    %cookie = pages.get_cookie()
-                    %live_units = manager.live_units(cookie, header_name)
-                    <td>{{header['name']}}, 
+                    %selected_units = manager.live_units(cookie, header_name)['internal_name']
+                    <td>{{header['name']}},
                         <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' onchange="GetDiagnostics()" >
                             %for unit_name, unit_value in header.unit_list.items():
-                                <option value='{{unit_name}}' {{selected(unit_name == live_units['internal_name'])}} >
+                                <option value='{{unit_name}}' {{selected(unit_name == selected_units)}} >
                                     {{unit_value['measuring_units']}}
                                 </option>
                             %end

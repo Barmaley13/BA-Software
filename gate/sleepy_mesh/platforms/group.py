@@ -20,7 +20,7 @@ from nodes import GroupNodes
 ### CONSTANTS ###
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
-# LOGGER.setLevel(logging.DEBUG)
+LOGGER.setLevel(logging.WARNING)
 
 
 ### CLASSES ###
@@ -108,19 +108,40 @@ class Group(PlatformBase):
 
         return sensor_type
 
-    def enabled_headers(self, page_type):
+    # TODO: Move this whole cookie business out of here!!!
+    ## Cookie Methods ##
+    def default_cookie(self, page_type):
+        """ Creates default cookie for a particular group """
+
+        cookie = copy.deepcopy(self[page_type + '_cookie'])
+        cookie['headers'] = {}
+
+        all_headers = self.read_headers('all')
+        for header_name, header in all_headers.items():
+            header_cookie = copy.deepcopy(header[page_type + '_cookie'])
+            cookie['headers'][header_name] = header_cookie
+
+        return cookie
+
+    ## Headers, Header and Unit Selection Methods ##
+    def live_headers(self):
+        """ Fetch enabled headers for the live page """
+        self.__enabled_headers('live')
+
+    def log_headers(self):
+        """ Fetch enabled headers for the log page """
+        self.__enabled_headers('log')
+
+    def __enabled_headers(self, page_type):
         """ Fetch enabled headers """
         header_dict = OrderedDict()
 
-        if page_type in ('live', 'log'):
-            display_headers = self.read_headers('display')
-            for header_name, header in display_headers.items():
-                for node in self.nodes.values():
-                    if header.enables(node, page_type + '_enable'):
-                        header_dict[header_name] = header
-                        break
-        else:
-            LOGGER.error("Page type '{}' does not exist!".format(page_type))
+        display_headers = self.read_headers('display')
+        for header_name, header in display_headers.items():
+            for node in self.nodes.values():
+                if header.enables(node, page_type + '_enable'):
+                    header_dict[header_name] = header
+                    break
 
         # LOGGER.debug('page_type: ' + str(page_type))
         # LOGGER.debug('nodes: ' + str(nodes.keys()))
@@ -128,115 +149,100 @@ class Group(PlatformBase):
 
         return header_dict
 
-    def default_cookie(self, page_type):
-        cookie = {}
+    def live_header(self, cookie):
+        """ Returns selected header or set of headers on the live page """
+        return self.__selected_header(cookie, 'live')
 
-        if page_type in ('live', 'log'):
-            cookie = copy.deepcopy(self[page_type + '_cookie'])
-            cookie['headers'] = {}
+    def log_header(self, cookie):
+        """ Returns selected header or set of headers on the log page """
+        return self.__selected_header(cookie, 'log')
 
-            all_headers = self.read_headers('all')
-            for header_name, header in all_headers.items():
-                cookie['headers'][header_name] = header.default_cookie(page_type)
-
-        else:
-            LOGGER.error("Page type: " + str(page_type) + " does not exist!")
-
-        return cookie
-
-    def selected_header(self, cookie, page_type):
+    def __selected_header(self, cookie, page_type):
         """ Returns selected header or set of headers """
         output = None
         if page_type == 'log':
             output = {}
 
-        if page_type in ('live', 'log'):
-            address = ('platforms', self['platform'], self['internal_name'], 'selected')
-            _cookie = load_from_cookie(cookie, address)
+        address = [
+            'platforms', self['platform'], self['internal_name'], 'selected']
+        _cookie = load_from_cookie(cookie, address)
 
-            if _cookie is None:
-                LOGGER.warning("Using default cookies during 'selected' execution!")
-                # LOGGER.debug("cookie = " + str(cookie))
-                _cookie = self.default_cookie(page_type)
+        if _cookie is None:
+            LOGGER.warning("Using default cookies during 'selected' execution!")
+            # LOGGER.debug("cookie = " + str(cookie))
+            _cookie = self.default_cookie(page_type)
 
-            # Read portion
-            display_headers = self.read_headers('display')
-            if page_type == 'live':
-                header_index = _cookie['selected']
-                _output = fetch_item(display_headers, header_index)
-                if _output is not None:
-                    output = _output
-            else:
-                selected_nodes = _cookie['selected']
-                for net_addr in selected_nodes:
-                    output[net_addr] = OrderedDict()
-                    node_headers = selected_nodes[net_addr]
-                    for header_index in node_headers:
-                        _output = fetch_item(display_headers, header_index)
-                        if _output is not None:
-                            output[net_addr][_output['internal_name']] = _output
-
+        # Read portion
+        display_headers = self.read_headers('display')
+        if page_type == 'live':
+            header_index = _cookie['selected']
+            _output = fetch_item(display_headers, header_index)
+            if _output is not None:
+                output = _output
         else:
-            LOGGER.error("Page type: " + str(page_type) + " does not exist!")
+            selected_nodes = _cookie['selected']
+            for net_addr in selected_nodes:
+                output[net_addr] = OrderedDict()
+                node_headers = selected_nodes[net_addr]
+                for header_index in node_headers:
+                    _output = fetch_item(display_headers, header_index)
+                    if _output is not None:
+                        output[net_addr][_output['internal_name']] = _output
 
         return output
 
     def live_units(self, cookie, header_name):
         """ Returns currently selected units for the bar graph on live page """
-        return self._units(cookie, header_name, 'live', 'units')
+        return self.__units(cookie, header_name, 'live', 'units')
 
     def log_units(self, cookie, header_name):
-        """ Returns currently selected units for the bar graph on live page """
-        return self._units(cookie, header_name, 'log', 'units')
+        """ Returns currently selected units for the bar graph on log page """
+        return self.__units(cookie, header_name, 'log', 'units')
 
     def live_table_units(self, cookie, header_name):
-        """ Returns currently selected list of units for the logs """
-        return self._units(cookie, header_name, 'live', 'table_units')
+        """ Returns currently selected list of units for the live page """
+        return self.__units(cookie, header_name, 'live', 'table_units')
 
     def log_table_units(self, cookie, header_name):
-        """ Returns currently selected list of units for the logs """
-        return self._units(cookie, header_name, 'log', 'table_units')
+        """ Returns currently selected list of units for the log page """
+        return self.__units(cookie, header_name, 'log', 'table_units')
 
-    def _units(self, cookie, header_name, page_type, units_type):
+    def __units(self, cookie, header_name, page_type, units_type):
         """ Returns currently selected units for the bar graph on live page """
         output = None
         if units_type == 'table_units':
             output = OrderedDict()
 
-        if page_type in ('live', 'log'):
-            address = (
-                'platforms', self['platform'], self['internal_name'], 'headers', header_name, units_type)
-            _cookie = load_from_cookie(cookie, address)
+        address = [
+            'platforms', self['platform'], self['internal_name'], 'headers', header_name, units_type]
+        _cookie = load_from_cookie(cookie, address)
 
-            header = None
-            display_headers = self.read_headers('display')
-            for _header_name, _header in display_headers.items():
-                if header_name == _header_name:
-                    header = _header
-                    break
+        header = None
+        all_headers = self.read_headers('all')
+        for _header_name, _header in all_headers.items():
+            if header_name == _header_name:
+                header = _header
+                break
 
-            if header is not None:
-                if _cookie is None:
-                    LOGGER.warning("Using default cookies during 'selected' execution!")
-                    # LOGGER.debug("cookie = " + str(cookie))
-                    _cookie = header.default_cookie(page_type)
+        if header is not None:
+            if _cookie is None:
+                # Fetch default Header Cookie
+                LOGGER.warning("Using default header cookie during 'selected' execution!")
+                _cookie = copy.deepcopy(header[page_type + '_cookie'])
 
-                # Read portion
-                if units_type == 'units':
-                    unit_index = _cookie[units_type]
+            # Read portion
+            if units_type == 'units':
+                unit_index = _cookie[units_type]
+                _output = header.units(unit_index)
+                if _output is not None:
+                    output = _output
+
+            elif units_type == 'table_units':
+                for unit_index in _cookie[units_type]:
                     _output = header.units(unit_index)
                     if _output is not None:
-                        output = _output
-
-                elif units_type == 'table_units':
-                    for unit_index in _cookie[units_type]:
-                        _output = header.units(unit_index)
-                        if _output is not None:
-                            output[_output['internal_name']] = _output
-            else:
-                LOGGER.error("Header: " + str(header_name) + " does not exist!")
-
+                        output[_output['internal_name']] = _output
         else:
-            LOGGER.error("Page type: " + str(page_type) + " does not exist!")
+            LOGGER.error("Header: " + str(header_name) + " does not exist!")
 
         return output
