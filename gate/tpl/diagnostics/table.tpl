@@ -54,7 +54,8 @@
                     %for header_name, header in diagnostics_headers.items():
                         <input type='hidden' name='{{platform_name}}_{{group_name}}_header' value='{{header_name}}' >
                         <tr>
-                            %selected_units = group.live_units(cookie, header_name)['internal_name']
+                            %live_units = group.live_units(cookie, header_name)
+                            %selected_units = live_units['internal_name']
                             <td>{{header['name']}}, 
                                 <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' onchange="GetDiagnostics()" >
                                     %for unit_name, unit_value in header.unit_list.items():
@@ -86,7 +87,8 @@
             %for header_name, header in diagnostics_headers.items():
                 <input type='hidden' name='{{platform_name}}_{{group_name}}_header' value='{{header_name}}' >
                 <tr>
-                    %selected_units = manager.live_units(cookie, header_name)['internal_name']
+                    %live_units = manager.live_units(cookie, header_name)
+                    %selected_units = live_units['internal_name']
                     <td>{{header['name']}},
                         <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' onchange="GetDiagnostics()" >
                             %for unit_name, unit_value in header.unit_list.items():

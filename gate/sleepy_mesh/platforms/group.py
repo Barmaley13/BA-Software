@@ -126,11 +126,11 @@ class Group(PlatformBase):
     ## Headers, Header and Unit Selection Methods ##
     def live_headers(self):
         """ Fetch enabled headers for the live page """
-        self.__enabled_headers('live')
+        return self.__enabled_headers('live')
 
     def log_headers(self):
         """ Fetch enabled headers for the log page """
-        self.__enabled_headers('log')
+        return self.__enabled_headers('log')
 
     def __enabled_headers(self, page_type):
         """ Fetch enabled headers """

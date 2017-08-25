@@ -8,6 +8,7 @@
 %# Platform and Group Names
 %platform_name = group['platform']
 %group_name = group['internal_name']
+%cookie = pages.get_cookie()
 %headers = group.live_headers()
 
 %if page_type == 'live':
@@ -34,7 +35,6 @@
         </tr>
         
         %# Unit Checkboxes
-        %cookie = pages.get_cookie()
         %onclick_functions = {'live': 'GetLiveData()', 'log': 'GetLogData(false, true)'}
         <tr>
             %for header_name, header in headers.items():
