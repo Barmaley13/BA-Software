@@ -143,7 +143,9 @@ class SleepyMeshStatistics(SleepyMeshBase):
         if header is not None:
             if _cookie is None:
                 # Fetch default Header Cookie
-                LOGGER.warning("Using default header cookie during 'selected' execution!")
+                LOGGER.warning("Using default header cookie during '__units' execution!")
+                LOGGER.warning('address: {}'.format(address))
+                LOGGER.warning('cookie: {}'.format(cookie))
                 _cookie = copy.deepcopy(header[page_type + '_cookie'])
 
             # Read portion
