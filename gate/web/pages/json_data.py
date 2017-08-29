@@ -233,12 +233,16 @@ class PagesJsonData(StatusIcons):
                     warning = ''
                     bar_graph_enable = True
 
+                    live_header_name = ''
+                    if live_header['name'] != 'Multiple':
+                        live_header_name = live_header['name'] + ' '
+
                     if not live_header.enables(node, 'const_set'):
                         warning += PLEASE_SET + node['name'] + ' ' + CONSTANTS
-                        warning += TO_DISPLAY1 + live_header['name'] + ' ' + TO_DISPLAY2
+                        warning += TO_DISPLAY1 + live_header_name + TO_DISPLAY2
                     elif not live_header.enables(node, 'live_enable'):
-                        warning += PLEASE_SET + live_header['name'] + ' ' + DISPLAY_ENABLES
-                        warning += TO_DISPLAY1 + live_header['name'] + ' ' + TO_DISPLAY2
+                        warning += PLEASE_SET + live_header_name + DISPLAY_ENABLES
+                        warning += TO_DISPLAY1 + live_header_name + TO_DISPLAY2
                     else:
                         switch_state = None
                         if live_units['internal_name'] in ('floating_switch', 'switch'):

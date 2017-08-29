@@ -10,7 +10,10 @@
 %### HTML ###
 %cookie = pages.get_cookie()
 %headers = getattr(group, page_type + '_headers')()
-%selected_header = getattr(group, page_type + '_header')(cookie)['internal_name']
+%selected_header = getattr(group, page_type + '_header')(cookie)
+%if selected_header:
+    %selected_header = selected_header['internal_name']
+%end
 %onclick_function = ONCLICK_FUNCTIONS[page_type]
 
 %# Platform and Group Names
