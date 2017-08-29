@@ -29,7 +29,7 @@
                     <th id="node{{index}}" ></th>
                 %end
             </tr>
-            %# Node Bargraphs #
+            %# Node Bar Graphs #
             <tr>
                 %for index in range(-1, LIVE_NODES_NUMBER):
                     <td><div id="chart{{index}}" style="width:98px;height:500px;margin:15px 0px 15px 0px;" ></div></td>

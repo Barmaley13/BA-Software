@@ -258,7 +258,10 @@ class WebHandler(WebHandlerBase):
         """ Updates node variables """
         return_dict = {'kwargs': {}}
 
-        if 'nodes' in address and len(address['nodes']):
+        group = self._object.group(address)
+        nodes = self._object.nodes(address)
+
+        if len(nodes):
             validate = True
             save_dict = dict()
             update_node = bool(request.forms.node_name)
@@ -312,16 +315,15 @@ class WebHandler(WebHandlerBase):
                         # LOGGER.debug('sensor_type: {}'.format(sensor_type))
 
                 # Alarms
-                group = self._object.group(address)
-                all_headers = group.read_headers('all').values()
-                for header in all_headers:
+                all_headers = group.read_headers('all', nodes)
+                for header in all_headers.values():
                     header_name = header['internal_name']
                     LOGGER.debug("header = " + header_name)
                     # Alarm Units
                     alarm_units = request.forms.get('alarm_units_' + header_name)
                     if alarm_units:
                         alarm_units = alarm_units.encode('ascii', 'ignore')
-                        for node in self._object.nodes(address):
+                        for node in nodes:
                             alarm_units = header.alarm_units(node, alarm_units)
 
                     for alarm_type in ('min_alarm', 'max_alarm'):
@@ -333,7 +335,7 @@ class WebHandler(WebHandlerBase):
                             if alarm_enables:
                                 if header_name in alarm_enables:
                                     LOGGER.debug(alarm_type + '_enable = ' + str(alarm_enables[header_name]))
-                                    for node in self._object.nodes(address):
+                                    for node in nodes:
                                         header.alarm_enable(node, alarm_type, alarm_enables[header_name])
 
                         # Alarm Values
@@ -342,7 +344,7 @@ class WebHandler(WebHandlerBase):
                             LOGGER.debug(alarm_type + "_value = " + str(alarm_value))
                             alarm_value = float(alarm_value)
 
-                            for node in self._object.nodes(address):
+                            for node in nodes:
                                 # Validate alarm values
                                 low_limit = alarm_units.get_min(node)
                                 high_limit = alarm_units.get_max(node)
@@ -375,7 +377,7 @@ class WebHandler(WebHandlerBase):
 
                     update_dict = dict()
                     if display and track and diagnostics:
-                        for node in self._object.nodes(address):
+                        for node in nodes:
                             enables_map = {'live_enable': display, 'log_enable': track, 'diagnostics': diagnostics}
                             for enable_type, enable_dict in enables_map.items():
                                 enables = node.update_enables(enable_type, enable_dict)
@@ -390,10 +392,8 @@ class WebHandler(WebHandlerBase):
 
                     update_node |= update_enables
 
-                nodes = self._object.nodes(address)
-
                 if update_node or update_network:
-                    self._manager.request_update(save_dict, nodes=nodes)
+                    self._manager.request_update(save_dict, nodes)
 
                 # Change node group (if needed)
                 new_group = request.forms.new_group.encode('ascii', 'ignore')
@@ -421,7 +421,10 @@ class WebHandler(WebHandlerBase):
             'save_cookie': False
         }
 
-        if len(address['nodes']):
+        group = self._object.group(address)
+        nodes = self._object.nodes(address)
+
+        if len(nodes):
             validate = True
 
             # Create save dictionary
@@ -429,9 +432,8 @@ class WebHandler(WebHandlerBase):
             header_list = []
 
             # Iterate over all constants
-            group = self._object.group(address)
-            all_headers = group.read_headers('all').values()
-            for header in all_headers:
+            all_headers = group.read_headers('all', nodes)
+            for header in all_headers.values():
                 if header.external_constants():
                     for constant_name, constant_value in header.constants.items():
                         if constant_value['_external']:
@@ -483,7 +485,7 @@ class WebHandler(WebHandlerBase):
                                 print('Value: {}'.format(value))
 
                                 # Do not allow multiple entry if one of the nodes does not have constants fully set
-                                for node in self._object.nodes(address):
+                                for node in nodes:
                                     validate &= header.enables(node, 'const_set')
 
                                     if not validate:
@@ -499,7 +501,7 @@ class WebHandler(WebHandlerBase):
             # Load local buffers with save dictionary
             if validate:
                 # Set const_set flag
-                for node in self._object.nodes(address):
+                for node in nodes:
                     for header in header_list:
                         header.enables(node, 'const_set', True)
 

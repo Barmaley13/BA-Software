@@ -70,38 +70,48 @@ class Group(PlatformBase):
         super(Group, self).delete()
 
     ## Header Related Methods ##
-    def read_headers(self, header_type):
+    def read_headers(self, header_type, nodes=None):
         """ Reads Headers for a particular group """
         output = {}
 
-        if len(self.nodes):
-            first_node = self.nodes.values()[0]
-            sensor_type = self.__sensor_type()
+        if nodes is None:
+            nodes = self.nodes.values()
 
+        if len(nodes):
+            first_node = nodes[0]
+            sensor_type = self.__sensor_type(nodes)
             # LOGGER.debug('sensor_type: {}'.format(sensor_type))
+
             output = first_node.headers.read(header_type, sensor_type)
 
         return output
 
-    def header_group(self, header_key):
+    def header_group(self, header_key, nodes=None):
         """ Returns header group for a particular header """
         output = None
 
-        if len(self.nodes):
-            first_node = self.nodes.values()[0]
-            sensor_type = self.__sensor_type()
+        if nodes is None:
+            nodes = self.nodes.values()
+
+        if len(nodes):
+            first_node = nodes[0]
+            sensor_type = self.__sensor_type(nodes)
+            LOGGER.debug('sensor_type: {}'.format(sensor_type))
 
             output = first_node.headers.header_group(header_key, sensor_type)
 
         return output
 
-    def __sensor_type(self):
+    def __sensor_type(self, nodes=None):
         """ Determine sensor type of the group """
-        first_node = self.nodes.values()[0]
+        if nodes is None:
+            nodes = self.nodes.values()
+
+        first_node = nodes[0]
         sensor_type = list(first_node['sensor_type'])
 
-        if len(self.nodes) > 1:
-            for node in self.nodes.values():
+        if len(nodes) > 1:
+            for node in nodes:
                 for sensor_index, sensor_code in enumerate(sensor_type):
                     if node['sensor_type'][sensor_index] != sensor_code:
                         sensor_type[sensor_index] = None
@@ -169,8 +179,8 @@ class Group(PlatformBase):
 
         if _cookie is None:
             LOGGER.warning("Using default cookies during '__selected' execution!")
-            LOGGER.warning('address: {}'.format(address))
-            LOGGER.warning('cookie: {}'.format(cookie))
+            # LOGGER.warning('address: {}'.format(address))
+            # LOGGER.warning('cookie: {}'.format(cookie))
             _cookie = self.default_cookie(page_type)
 
         # Read portion
@@ -229,8 +239,8 @@ class Group(PlatformBase):
             if _cookie is None:
                 # Fetch default Header Cookie
                 LOGGER.warning("Using default header cookie during '__units' execution!")
-                LOGGER.warning('address: {}'.format(address))
-                LOGGER.warning('cookie: {}'.format(cookie))
+                # LOGGER.warning('address: {}'.format(address))
+                # LOGGER.warning('cookie: {}'.format(cookie))
                 _cookie = copy.deepcopy(header[page_type + '_cookie'])
 
             # Read portion

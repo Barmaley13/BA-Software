@@ -24,5 +24,5 @@
 <td>
     <input type='number' name="{{alarm['value_name']}}" value="{{str(alarm_value)}}"
     min="{{alarm['min_value']}}" max="{{alarm['max_value']}}" 
-    step="{{str(alarm['units']['step'])}}" size='5' {{disabled(alarm['disabled'])}} >
+    step="{{alarm['step']}}" size='5' {{disabled(alarm['disabled'])}} >
 </td>

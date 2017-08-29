@@ -168,6 +168,12 @@ def _alarm_html(header, nodes, alarm_type):
             alarm_value = header.alarm_value(nodes[0], alarm_type)
 
         alarm_units = header.alarm_units(nodes[0])
+        min_value, max_value, alarm_step = '', '', ''
+        if alarm_units is not None:
+            min_value = str(alarm_units.get_min(nodes[0]))
+            max_value = str(alarm_units.get_max(nodes[0]))
+            alarm_step = str(alarm_units['step'])
+
         alarm_data = {
             'name': header['internal_name'],
             'enable': alarm_enable,
@@ -177,8 +183,9 @@ def _alarm_html(header, nodes, alarm_type):
             'value_name': alarm_type + '_value_' + header['internal_name'],
             'indeterminate1': indeterminate1,
             'indeterminate2': indeterminate2,
-            'min_value': str(alarm_units.get_min(nodes[0])),
-            'max_value': str(alarm_units.get_max(nodes[0])),
+            'min_value': min_value,
+            'max_value': max_value,
+            'step': alarm_step,
             'disabled': bool(
                 # not header.enables(nodes[0], 'live_enable') or
                 not header.enables(nodes[0], 'const_set') or indeterminate2
@@ -616,7 +623,7 @@ class WebPlatforms(object):
         nodes = self.nodes(address)
 
         if len(nodes):
-            all_headers = group.read_headers('all')
+            all_headers = group.read_headers('all', nodes)
             # diagnostics_headers = group.read_headers('diagnostics')
 
             # LOGGER.debug('all_headers: {}'.format(all_headers))
@@ -624,7 +631,7 @@ class WebPlatforms(object):
             header_table_content = ''
             for header_key, header in all_headers.items():
                 # hide_header = bool(header_key in diagnostics_headers.keys())
-                header_group = group.header_group(header_key)
+                header_group = group.header_group(header_key, nodes)
                 header_html = _header_html(header, nodes)
                 header_table_content += bottle.template(
                     'header_row_html',
@@ -650,9 +657,9 @@ class WebPlatforms(object):
             js_validation_list = list()
 
             group = self.group(address)
-            all_headers = group.read_headers('all').values()
+            all_headers = group.read_headers('all', nodes)
 
-            for header in all_headers:
+            for header in all_headers.values():
                 if header.external_constants():
                     js_validation_list += _constants_js(header, nodes)
 

@@ -428,8 +428,8 @@ class PagesJsonData(StatusIcons):
                 selected_headers = selected_nodes[node['net_addr']]
                 # LOGGER.debug("selected_headers[" + node['net_addr'] + "] = " + str(selected_headers))
 
-                display_headers = group.read_headers('display').values()
-                for header_index, header in enumerate(display_headers):
+                display_headers = group.read_headers('display')
+                for header_index, header in enumerate(display_headers.values()):
                     if header['internal_name'] in selected_headers.keys():
                         logs_data.append({
                             'node_index': node_index,
