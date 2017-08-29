@@ -632,12 +632,13 @@ class WebPlatforms(object):
             for header_key, header in all_headers.items():
                 # hide_header = bool(header_key in diagnostics_headers.keys())
                 header_group = group.header_group(header_key, nodes)
+                header_name = _header_select_html(header, header_group)
                 header_html = _header_html(header, nodes)
                 header_table_content += bottle.template(
                     'header_row_html',
                     hide_header=False,
                     # hide_header=hide_header,
-                    header_name=_header_select_html(header, header_group),
+                    header_name=header_name,
                     header_html=header_html,
                 )
 

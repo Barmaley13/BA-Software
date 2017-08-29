@@ -114,7 +114,7 @@ class Group(PlatformBase):
             for node in nodes:
                 for sensor_index, sensor_code in enumerate(sensor_type):
                     if node['sensor_type'][sensor_index] != sensor_code:
-                        sensor_type[sensor_index] = None
+                        sensor_type[sensor_index] = ' '
 
         return sensor_type
 

@@ -274,11 +274,12 @@ class Header(HeaderBase):
     def selected(self, sensor_type):
         output = False
 
-        # LOGGER.debug('sensor_code: {}'.format(self['sensor_code']))
-        # LOGGER.debug('sensor_type: {}'.format(sensor_type))
-        # LOGGER.debug('data_field_position: {}'.format(self['data_field_position']))
-
         if 'sensor_code' in self._main:
-            output = self['sensor_code'][-1] == sensor_type[self['data_field_position']]
+            output = bool(self['sensor_code'][-1] == sensor_type[self['data_field_position']])
+
+            # LOGGER.debug('sensor_code: {}'.format(self['sensor_code']))
+            # LOGGER.debug('sensor_type: {}'.format(sensor_type))
+            # LOGGER.debug('data_field_position: {}'.format(self['data_field_position']))
+            # LOGGER.debug('selected: {}'.format(output))
 
         return output

@@ -90,7 +90,7 @@ def generate_node_headers(platform):
         if len(channel_headers) > 1:
             multiple_header = copy.deepcopy(common.MULTIPLE)
             multiple_header['data_field'] = ADC_FIELDS[sensor_index]
-            multiple_header['sensor_code'] = [None]
+            multiple_header['sensor_code'] = platform_company + '_ '
 
             channel_headers = [multiple_header] + channel_headers
 

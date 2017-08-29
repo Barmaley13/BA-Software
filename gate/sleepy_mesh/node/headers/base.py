@@ -175,9 +175,9 @@ class Headers(DatabaseDict):
                         if header_type == header_type_map[header['diagnostics']]:
                             header['selected'] = len(header_group) == 1
                             header['selected'] |= header.selected(sensor_type)
+
                             if header['selected']:
                                 output[header_key] = header
-                                break
 
         else:
             LOGGER.error("Header type " + str(header_type) + " does not exist!")
@@ -187,13 +187,14 @@ class Headers(DatabaseDict):
     def header_group(self, header_key, sensor_type):
         """ Returns header group for a particular header """
         output = None
+
         for _header_group in self._headers:
             if len(_header_group) > 1:
                 if header_key in _header_group.keys():
                     output = copy.deepcopy(_header_group)
 
                     sensor_index = _header_group[header_key]['data_field_position']
-                    if sensor_type[sensor_index] is not None:
+                    if sensor_type[sensor_index] is not ' ':
                         del output[output.keys()[0]]
 
                     break
