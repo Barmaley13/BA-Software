@@ -311,7 +311,7 @@ class WebHandler(WebHandlerBase):
                                 sensor_type[_position] = _sensor_code
 
                         sensor_type = str(''.join(sensor_type))
-                        save_dict['sensor_type'] = sensor_type
+                        save_dict['raw_platform'] = node['platform'] + '-' + sensor_type
                         # LOGGER.debug('sensor_type: {}'.format(sensor_type))
 
                 # Alarms

@@ -20,7 +20,7 @@ from nodes import GroupNodes
 ### CONSTANTS ###
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
-# LOGGER.setLevel(logging.WARNING)
+# LOGGER.setLevel(logging.DEBUG)
 
 
 ### CLASSES ###
@@ -96,7 +96,7 @@ class Group(PlatformBase):
         if len(nodes):
             first_node = nodes[0]
             sensor_type = self.__sensor_type(nodes)
-            LOGGER.debug('sensor_type: {}'.format(sensor_type))
+            # LOGGER.debug('sensor_type: {}'.format(sensor_type))
 
             output = first_node.headers.header_group(header_key, sensor_type)
 

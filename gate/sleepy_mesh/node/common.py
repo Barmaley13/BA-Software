@@ -15,7 +15,7 @@ from gate.database import DatabaseOrderedDict
 
 ### CONSTANTS ###
 ## Node Fields ##
-NODE_UPDATE_FIELDS = ('name', 'live_enable', 'sensor_type')
+NODE_UPDATE_FIELDS = ('name', 'live_enable', 'raw_platform')
 # TO DO: ['firmware']                       # Snap Firmware
 # NOT USED: ['mac', 'rGroup', 'fGroup']
 

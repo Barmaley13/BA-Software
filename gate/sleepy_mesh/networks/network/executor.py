@@ -96,9 +96,9 @@ class NetworkExecutor(NetworkBase):
             self._manager.bridge.network_ucast(*update_args)
 
             if node['type'] == 'base':
-                LOGGER.debug("Base Update Args: " + str(update_args))
+                LOGGER.debug('Base Update Args: {}'.format(update_args))
             else:
-                LOGGER.debug("Node Update Args: " + str(update_args))
+                LOGGER.debug('Node Update Args: {}'.format(update_args))
 
             node['post_software_update'] = False
 
@@ -120,7 +120,7 @@ class NetworkExecutor(NetworkBase):
                         update_args += self.__update_args(node)
 
                         self._manager.bridge.base_node_ucast(*update_args)
-                        LOGGER.debug("Node Update Args: {}".format(update_args))
+                        LOGGER.debug('Node Update Args: {}'.format(update_args))
 
                 else:
                     node_str = ''.join(map(conversions.hex_to_bin, self._update_nodes.keys()))
@@ -140,7 +140,7 @@ class NetworkExecutor(NetworkBase):
         output = list()
 
         update_dict = self._update_dict(node)
-        # LOGGER.debug("Node Update Dict: " + str(update_dict))
+        # LOGGER.debug('Node Update Dict: {}'.format(update_dict))
 
         for field in update_dict.keys():
             arg = update_dict[field]
