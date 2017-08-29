@@ -18,7 +18,7 @@ from py_knife import aes, file_system, upload, zip, ordered_dict
 from gate import common, strings
 from gate.update_interface import WorkerThread
 from gate.sleepy_mesh import SYSTEM_STATISTICS_FILE
-from gate.sleepy_mesh.common import NETWORK_UPDATE_FIELDS
+from gate.sleepy_mesh.node.common import NETWORK_UPDATE_FIELDS
 
 from gate.web.pages.handlers import WebHandlerBase
 

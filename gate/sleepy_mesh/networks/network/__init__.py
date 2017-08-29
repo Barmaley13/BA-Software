@@ -8,8 +8,8 @@ Author: `Kirill V. Belyayev <http://kbelyayev.com>`_
 import copy
 import logging
 
-from gate import strings, conversions
-from gate.sleepy_mesh import common
+from gate import strings
+from gate.sleepy_mesh.node import common
 
 from base import NETWORK_DEFAULTS, NETWORK_UPDATE_TYPES
 from callbacks import NetworkCallbacks
@@ -89,8 +89,9 @@ class WebNetwork(NetworkCallbacks):
                     # This is made to update node's 'log_enables'
                     if 'type' in node and node['type'] == 'node':
                         for update_key, update_value in update_dict.items():
-                            if update_key not in update_dict.keys() and update_key in node.keys():
-                                node[update_key] = update_value
+                            if update_key not in node.update_dict.keys():
+                                if update_key in node.keys():
+                                    node[update_key] = update_value
 
                     node.update_dict.update(update_dict)
 
@@ -176,7 +177,7 @@ class WebNetwork(NetworkCallbacks):
             if not self.update_in_progress():
                 # Preset Update
                 for node in nodes:
-                    if common.network_preset_needed(node):
+                    if node.network_preset_needed():
                         self._start_update('preset_update', nodes)
                         break
 

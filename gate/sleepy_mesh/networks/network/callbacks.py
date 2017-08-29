@@ -10,15 +10,101 @@ import logging
 
 from gate import strings
 from gate import conversions
-from gate.sleepy_mesh import common
+from gate.sleepy_mesh.node import common
+from gate.sleepy_mesh.node.headers import generate_sensor_types
 
 from executor import NetworkExecutor
 
 
 ### CONSTANTS ###
+## Callback Arguments ##
+SHORT_LOG_FIELDS = ('raw_net_addr', 'name', 'raw_enables', 'raw_data', 'raw_lq', 'raw_error')
+LONG_LOG_FIELDS = ('name', 'raw_mac', 'raw_platform', 'firmware', 'software', 'raw_error')
+PRIMARY_NETWORK_LOG_FIELDS = ('raw_net_addr', ) + common.NETWORK_FIELDS
+NETWORK_LOG_FIELDS = PRIMARY_NETWORK_LOG_FIELDS + common.RAW_TIMEOUT_FIELDS
+BASE_LOG_FIELDS = PRIMARY_NETWORK_LOG_FIELDS + common.RAW_CYCLES_FIELDS
+
+## Callback Fields Map ##
+CALLBACK_FIELDS_MAP = {
+    'long': LONG_LOG_FIELDS,
+    'short': SHORT_LOG_FIELDS,
+    'network': NETWORK_LOG_FIELDS,
+    'base': BASE_LOG_FIELDS
+}
+
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
+
+
+### FUNCTIONS ###
+def __parse_callback_data(raw_dict):
+    """ Convert raw mac or network address """
+    # Generic Fields #
+    if 'raw_mac' in raw_dict:
+        # raw_net_addr = raw_mac[5:8]
+        raw_dict['mac'] = conversions.bin_to_hex(raw_dict['raw_mac'])
+        raw_dict['net_addr'] = raw_dict['mac'][10:16]
+        del raw_dict['raw_mac']
+
+    elif 'raw_net_addr' in raw_dict:
+        raw_dict['net_addr'] = conversions.bin_to_hex(raw_dict['raw_net_addr'])
+        del raw_dict['raw_net_addr']
+
+    # Short/Long Log Fields #
+    if 'name' in raw_dict:
+        # Protect name from None value
+        if raw_dict['name'] is None:
+            raw_dict['name'] = ""
+
+    if 'raw_platform' in raw_dict:
+        raw_dict['raw_platform'] = raw_dict['raw_platform'].lower()
+        raw_dict['sensor_type'] = generate_sensor_types(raw_dict['raw_platform'])
+
+    for field in ('raw_enables', 'raw_lq', 'raw_error') + common.RAW_CYCLES_FIELDS + common.RAW_TIMEOUT_FIELDS:
+        if field in raw_dict and type(raw_dict[field]) not in (int, long):
+            # LOGGER.debug("Overwriting field: " + str(field))
+            raw_dict[field] = conversions.bin_to_int(raw_dict[field])
+            # LOGGER.debug('raw_dict[field]: ' + str(raw_dict[field]))
+
+    if 'raw_enables' in raw_dict:
+        # Note: 'live_enable' is required for parsing data
+        raw_dict['live_enable'] = raw_dict['raw_enables']
+        del raw_dict['raw_enables']
+
+    # Network Log Fields #
+    network_fields = common.CYCLE_FIELDS + common.TIMEOUT_FIELDS
+    for field in network_fields:
+        field_integer = field + '_integer'
+        field_remainder = field + '_remainder'
+
+        if field_integer in raw_dict and field_remainder in raw_dict:
+            _get_float = conversions.get_float
+            if field in common.CYCLE_FIELDS:
+                _get_float = conversions.get_base_float
+
+            raw_dict[field] = _get_float(raw_dict[field_integer], raw_dict[field_remainder])
+            del raw_dict[field_integer]
+            del raw_dict[field_remainder]
+
+    return raw_dict
+
+
+def get_input_dict(callback_type, *callback_args):
+    """ Convert callback_args to dictionary format """
+    output = None
+
+    if callback_type in CALLBACK_FIELDS_MAP:
+        fields = CALLBACK_FIELDS_MAP[callback_type]
+        if len(fields) == len(callback_args):
+            raw_dict = dict(zip(fields, callback_args))
+
+            LOGGER.debug('callback_type:' + str(callback_type))
+            LOGGER.debug('raw_dict:' + str(raw_dict))
+
+            output = __parse_callback_data(raw_dict)
+
+    return output
 
 
 ### CLASSES ###
@@ -47,7 +133,7 @@ class NetworkCallbacks(NetworkExecutor):
         """ Called by nodes """
         node = None
 
-        input_dict = common.get_input_dict(callback_type, *args)
+        input_dict = get_input_dict(callback_type, *args)
         if input_dict is not None:
             # LOGGER.debug(callback_type.title() + " Log Dict: " + str(input_dict))
 
@@ -88,21 +174,6 @@ class NetworkCallbacks(NetworkExecutor):
                 else:
                     self._request_long_ack(input_dict['net_addr'])
 
-            else:
-                if callback_type == 'long':
-                    # Check if platform changed
-                    input_platform = self._manager.platforms.platform_match(input_dict, 'hw_type')
-
-                    if node['platform'] != input_platform:
-                        LOGGER.warning("Platform of a node '" + str(node['net_addr']) + "' has been changed!")
-                        LOGGER.warning("From '" + str(node['platform']) + "' to '" + str(input_platform) + "'!")
-
-                        # Delete node that had its platform changed
-                        self._manager.platforms.delete_node(node)
-                        node.delete()
-
-                        node = self._manager.platforms.create_node(input_dict)
-
         return node
 
     def _network_update_callback(self, callback_type, *args):
@@ -110,7 +181,7 @@ class NetworkCallbacks(NetworkExecutor):
         Base/Node Callback. Verifies that network update was successful
         If one of the node fails update this method will retry to update that particular node
         """
-        input_dict = common.get_input_dict(callback_type, *args)
+        input_dict = get_input_dict(callback_type, *args)
 
         if input_dict is not None:
             # Verify appropriate node
@@ -120,7 +191,7 @@ class NetworkCallbacks(NetworkExecutor):
                 node = nodes[net_addr]
 
                 if node['type'] == 'base':
-                    input_dict = common.get_input_dict('base', *args)
+                    input_dict = get_input_dict('base', *args)
 
                 LOGGER.debug("Network Log Dict: " + str(input_dict))
 

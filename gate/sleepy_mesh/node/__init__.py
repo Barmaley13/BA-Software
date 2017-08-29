@@ -27,7 +27,7 @@ class Node(NodePlatform):
 
     def update_logs(self):
         """ Append logs (if needed). Dump logs to a file (if needed). Return dump log flag """
-        self['log_enable'] = self.generate_enables('log_enable')
+        # self['log_enable'] = self.generate_enables('log_enable')
         if self['log_enable'] and self['new_data']:
             log_data = copy.deepcopy(self['data_out'])
             log_data['time'] = self['last_sync']
@@ -71,7 +71,13 @@ class Node(NodePlatform):
                 if header['data_field_position'] is not None:
                     header_mask = 1 << header['data_field_position']
                     if overwrite_headers:
-                        header_enable = bool(self[enable_type] & header_mask > 0)
+                        if enable_type == 'diagnostics':
+                            _enable_type = 'live_enable'
+                        else:
+                            _enable_type = enable_type
+
+                        header_enable = bool(self[_enable_type] & header_mask > 0)
+
                         header.enables(self, enable_type, header_enable)
 
                     if header.enables(self, enable_type):
@@ -122,3 +128,11 @@ class Node(NodePlatform):
             LOGGER.error("Enable type '{}' does not exist!".format(enable_type))
 
         return enable_value
+
+    def network_preset_needed(self):
+        """ Determines if the node needs network preset performed """
+        output = not self['network_preset']
+        output &= not self['inactive']
+        output &= self['type'] == 'node'
+
+        return output

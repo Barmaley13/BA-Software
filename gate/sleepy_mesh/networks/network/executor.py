@@ -8,7 +8,7 @@ Author: `Kirill V. Belyayev <http://kbelyayev.com>`_
 import logging
 
 from gate import strings, conversions
-from gate.sleepy_mesh import common
+from gate.sleepy_mesh.node import common
 
 from base import NetworkBase
 
@@ -70,7 +70,7 @@ class NetworkExecutor(NetworkBase):
                 update_node &= node['inactive'] and node['type'] != 'base'
 
             elif update_type == 'preset_update':
-                update_node &= common.network_preset_needed(node)
+                update_node &= node.network_preset_needed()
 
         if update_node:
             update_message = self._update_message(node)

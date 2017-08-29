@@ -6,9 +6,9 @@ ADC Enables and Data Parsing Intricacies
 import logging
 
 from gate.conversions import bin_to_int
-from gate.sleepy_mesh.common import parse_raw_data
 from gate.sleepy_mesh.error import ADC_MISMATCH, ABSENT_NODE
 
+from common import parse_raw_data
 from headers import DISPLAY_FIELDS
 from diagnostics import NodeDiagnostics, DIAGNOSTIC_FIELDS, DIAGNOSTIC_VALUES
 

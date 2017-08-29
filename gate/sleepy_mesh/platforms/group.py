@@ -20,7 +20,7 @@ from nodes import GroupNodes
 ### CONSTANTS ###
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.WARNING)
+# LOGGER.setLevel(logging.WARNING)
 
 
 ### CLASSES ###

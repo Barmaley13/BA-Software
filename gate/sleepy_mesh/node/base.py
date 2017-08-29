@@ -10,9 +10,9 @@ from distutils.version import StrictVersion
 
 from gate.conversions import find_version
 from gate.database import DatabaseDict
-from gate.sleepy_mesh import common
 from gate.sleepy_mesh import error
 
+from common import NODE_UPDATE_FIELDS, NETWORK_UPDATE_FIELDS, UpdateDict
 from headers import generate_node_headers, generate_sensor_types
 from logs import NodeLogs
 
@@ -138,7 +138,7 @@ class NodeBase(DatabaseDict):
             if 'raw_platform' in self._main:
                 self.headers = generate_node_headers(self['raw_platform'])
 
-        self.update_dict = common.UpdateDict(common.NODE_UPDATE_FIELDS + common.NETWORK_UPDATE_FIELDS)
+        self.update_dict = UpdateDict(NODE_UPDATE_FIELDS + NETWORK_UPDATE_FIELDS)
         self.error = error.NodeError(system_settings=self.system_settings, db_file=error_db_file)
 
         # Overloaded Error Methods #

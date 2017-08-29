@@ -39,7 +39,7 @@ SYNC_BY = "Sync by "
 
 ## Logger ##
 LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.WARNING)
+# LOGGER.setLevel(logging.WARNING)
 
 
 ### FUNCTIONS ###

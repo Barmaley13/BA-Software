@@ -21,8 +21,8 @@ REBOOT_REQUEST = "Sending reboot request to base node!"
 
 ## Message Maps ##
 LOG_DUMP_MESSAGE_MAP = {
-    False: LOG_DUMP_FAIL,
-    True: LOG_DUMP
+    True: LOG_DUMP,
+    False: LOG_DUMP_FAIL
 }
 
 ## Logger ##
@@ -34,20 +34,19 @@ LOGGER.setLevel(logging.WARNING)
 ### FUNCTIONS ###
 def _check_battery(node):
     """ Check battery voltage of a node, reset statistics if we get new battery """
-    if node['presence']:
-        battery_voltage = None
+    battery_voltage = None
 
-        # Fetch battery value
-        all_headers = node.read_headers('all')
-        for header_name, header in all_headers.items():
-            # FIXME: Probably not the best way to determine battery header
-            if header_name == 'battery':
-                battery_voltage = header.units('voltage').get_float(node)
-                break
+    # Fetch battery value
+    all_headers = node.read_headers('all')
+    for header_name, header in all_headers.items():
+        # FIXME: Probably not the best way to determine battery header
+        if header_name == 'battery':
+            battery_voltage = header.units('voltage').get_float(node)
+            break
 
-        # LOGGER.debug("Node '" + str(node['name']) + "' battery_voltage: " + str(battery_voltage))
+    # LOGGER.debug("Node '" + str(node['name']) + "' battery_voltage: " + str(battery_voltage))
 
-        node.check_battery(battery_voltage)
+    node.check_battery(battery_voltage)
 
 
 ### CLASSES ###
@@ -215,6 +214,20 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
             node.update_last_sync(last_sync)
 
             if not node['inactive']:
+                # Check Platform #
+                input_platform = self.platforms.platform_match(node, 'hw_type')
+
+                if node['platform'] != input_platform:
+                    LOGGER.warning("Platform of a node '" + str(node['net_addr']) + "' has been changed!")
+                    LOGGER.warning("From '" + str(node['platform']) + "' to '" + str(input_platform) + "'!")
+
+                    # Delete node that had its platform changed
+                    self.platforms.delete_node(node)
+                    node.delete()
+
+                    continue
+
+                # Parse Node Data #
                 node.parse_data()
 
                 if node['new_data']:
@@ -228,17 +241,19 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
                     # LOGGER.debug("Raw Data: " + str(node['data_in']))
                     # LOGGER.debug("Processed Data: " + str(node['data_out']))
 
-                elif not node['presence']:
+                if not node['presence']:
                     # Apply formulas to diagnostic headers (+ lq) of this node
                     all_headers = node.read_headers('all').values()
                     for header in all_headers:
                         if header['data_field'] in DIAGNOSTIC_FIELDS + ('lq', ):
                             header.apply_formulas(node)
 
-                _check_battery(node)
+                if node['presence']:
+                    _check_battery(node)
 
             self.__validate_node_enables(node)
 
+            # Dump Logs (if needed) #
             if not node['inactive']:
                 _log_dump_status = node.update_logs()
 
@@ -280,9 +295,13 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
                         LOGGER.debug('Node live_enable: {}'.format(node['live_enable']))
                         LOGGER.debug('Header live_enable: {}'.format(header_enable))
 
-                        # Request node enables update
-                        update_dict = {'live_enable': header_enable}
-                        self.networks[0].request_update(update_dict, [node])
+                        # Overwrite header values #
+                        for enable_type in ('live_enable', 'diagnostics'):
+                            node.generate_enables(enable_type, overwrite_headers=True)
+
+                        # # Request node enables update #
+                        # update_dict = {'live_enable': header_enable}
+                        # self.networks[0].request_update(update_dict, [node])
 
     def __complete_callback(self):
         """ Executes save complete callback (if needed) """

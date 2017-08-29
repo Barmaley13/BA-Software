@@ -27,8 +27,8 @@ from snapconnect import snap
 from py_knife import platforms, com_port
 
 from gate.conversions import hex_to_bin
-from gate.sleepy_mesh.common import AES_FIELDS
 from gate.sleepy_mesh.node import Node
+from gate.sleepy_mesh.node.common import AES_FIELDS
 
 # Imports from Snap Connect Tornado Example #
 # Monkey Patch so APY is happy with stock Tornado

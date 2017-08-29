@@ -13,7 +13,7 @@ from py_knife.ordered_dict import OrderedDict
 from gate import strings
 from gate import conversions
 from gate.database import DatabaseDict
-from gate.sleepy_mesh import common
+from gate.sleepy_mesh.node import common
 
 
 ### CONSTANTS ###
@@ -269,7 +269,7 @@ class NetworkBase(DatabaseDict):
             elif update_type == 'preset_update':
                 _preset_nodes = OrderedDict()
                 for net_addr, node in _nodes.items():
-                    if common.network_preset_needed(node):
+                    if node.network_preset_needed():
                         _preset_nodes[net_addr] = node
 
                 _nodes = _preset_nodes

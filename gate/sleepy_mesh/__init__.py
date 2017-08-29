@@ -24,11 +24,13 @@ from gate.strings import REBOOT, RESTART_REQUIRED
 from gate.conversions import bin_to_hex, get_base_float
 
 from error import OLD_SOFTWARE_DETECTED
-from common import network_preset_needed, parse_raw_data, CALLBACK_FIELDS_MAP
 from base import SYNC_TYPES
 from networks import NETWORK_UPDATE_TYPES
 from scheduler import SleepyMeshScheduler
 from statistics import SYSTEM_STATISTICS_FILE
+
+from node.common import parse_raw_data
+
 
 ### CONSTANTS ###
 # Automatic Refresh Info after bridge reboot
