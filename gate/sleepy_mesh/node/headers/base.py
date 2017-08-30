@@ -149,9 +149,11 @@ class Headers(DatabaseDict):
                     # Init enables
                     elif main_field == 'enables':
                         _external_constants = header.external_constants()
-                        for enable_type in ('live_enables', 'log_enables', 'const_set'):
+                        for enable_type in ('live_enables', 'log_enables', 'diag_enables', 'const_set'):
                             # Fill in enables variables
-                            enable_value = (enable_type == 'const_set' and not _external_constants)
+                            enable_value = False
+                            enable_value |= (enable_type == 'const_set' and not _external_constants)
+                            enable_value |= (enable_type == 'diag_enables' and header_enable)
                             header.enables(output, enable_type, enable_value)
 
         return output
@@ -172,7 +174,7 @@ class Headers(DatabaseDict):
             for header_type in header_types:
                 for header_group in self._headers:
                     for header_key, header in header_group.items():
-                        if header_type == header_type_map[header['diagnostics']]:
+                        if header_type == header_type_map[header.enables('diag_enables')]:
                             header['selected'] = len(header_group) == 1
                             header['selected'] |= header.selected(sensor_type)
 

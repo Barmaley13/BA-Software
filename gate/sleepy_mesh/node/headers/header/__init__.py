@@ -131,7 +131,7 @@ class Header(HeaderBase):
                         for alarm_type in ('min_alarm', 'max_alarm'):
                             alarm_triggered = group_variable.check_alarm(provider, calculated_value, alarm_type)
                             header_enable = self.enables(provider, 'live_enables')
-                            header_enable |= self.enables(provider, 'diagnostics')
+                            header_enable |= self.enables(provider, 'diag_enables')
                             alarm_enable = group_variable.alarm_enable(provider, alarm_type)
 
                             if alarm_triggered and header_enable:
@@ -196,7 +196,7 @@ class Header(HeaderBase):
 
                 for group_variable in getattr(self, field_types[error_register]).values():
                     if error_register == 'alarms':
-                        check_alarm_message = self['diagnostics'] is False
+                        check_alarm_message = not self.enables('diag_enables')
                     else:
                         check_alarm_message = group_variable.alarm_enable(None, alarm_type)
 

@@ -64,7 +64,7 @@ class Node(NodePlatform):
         """ Generates node enables from header enables """
         enable_value = 0
 
-        if enable_type in ('live_enables', 'log_enables', 'diagnostics'):
+        if enable_type in ('live_enables', 'log_enables', 'diag_enables'):
             # Convert to node enables
             all_headers = self.read_headers('all').values()
             for header in all_headers:
@@ -89,7 +89,7 @@ class Node(NodePlatform):
         """ Updates header enables using enable_dict. AKA User update. """
         enable_value = 0
 
-        if enable_type in ('live_enables', 'log_enables', 'diagnostics'):
+        if enable_type in ('live_enables', 'log_enables', 'diag_enables'):
             # Convert to node enables
             all_headers = self.read_headers('all')
             for header in all_headers.values():

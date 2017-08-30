@@ -39,7 +39,7 @@ NODE_DEFAULTS = {
     # Used only by node
     'live_enables': 0,          # internal (used by header indirectly)
     'log_enables': 0,           # internal (used by header indirectly)
-    'diagnostics': 0,           # internal (used by header indirectly)
+    'diag_enables': 0,          # internal (used by header indirectly)
     'presence': False,          # read/(write only virgins)
     # Tells if system waits for this node to respond during each sync
     'mcast_presence': True,     # internal

@@ -113,7 +113,7 @@ class HeaderUnit(HeaderVariable):
 
         # if data_in is None:
         #     header_enable = self.enables(provider, 'live_enables')
-        #     header_enable |= self.enables(provider, 'diagnostics')
+        #     header_enable |= self.enables(provider, 'diag_enables')
         # else:
         #     header_enable = self.enables(provider, 'log_enables')
 

@@ -71,7 +71,7 @@ class HeaderBase(DatabaseDict):
         """
         output = None
 
-        if enable_type in ('live_enables', 'log_enables', 'const_set'):
+        if enable_type in ('live_enables', 'log_enables', 'diag_enables', 'const_set'):
             # Write
             if set_value is not None:
                 provider['enables'][self['header_position']][enable_type] = bool(set_value)
@@ -88,13 +88,6 @@ class HeaderBase(DatabaseDict):
                 #         provider['enables'][self['header_position']][enable_type]
                 #     )
                 #     LOGGER.debug(debug_str)
-
-        elif enable_type in ('diagnostics', ):
-            # Write
-            if set_value is not None:
-                self[enable_type] = bool(set_value)
-            # Read
-            output = self[enable_type]
 
         else:
             LOGGER.error("Enable type: " + str(enable_type) + " does not exist!")

@@ -238,8 +238,8 @@ class SleepyMeshStatistics(SleepyMeshBase):
             self._calculate_current_draw()
 
             # Apply formulas on system headers
-            headers = self.read_headers('diagnostics').values()
-            for header in headers:
+            headers = self.read_headers('diagnostics')
+            for header in headers.values():
                 header.apply_formulas(self)
 
     def _current_period(self):

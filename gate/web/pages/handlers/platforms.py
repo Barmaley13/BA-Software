@@ -380,7 +380,7 @@ class WebHandler(WebHandlerBase):
                         enables_map = {
                             'live_enables': display,
                             'log_enables': track,
-                            'diagnostics': diagnostics
+                            'diag_enables': diagnostics
                         }
                         for node in nodes:
                             for enable_type, enable_dict in enables_map.items():
@@ -393,7 +393,7 @@ class WebHandler(WebHandlerBase):
                     if update_enables:
                         update_dict['raw_enables'] = 0
                         update_dict['raw_enables'] |= update_dict['live_enables']
-                        update_dict['raw_enables'] |= update_dict['diagnostics']
+                        update_dict['raw_enables'] |= update_dict['diag_enables']
                         save_dict.update(update_dict)
 
                     update_node |= update_enables
