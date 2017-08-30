@@ -149,7 +149,7 @@ class Group(PlatformBase):
         display_headers = self.read_headers('display')
         for header_name, header in display_headers.items():
             for node in self.nodes.values():
-                if header.enables(node, page_type + '_enable'):
+                if header.enables(node, page_type + '_enables'):
                     header_dict[header_name] = header
                     break
 
