@@ -240,7 +240,7 @@ class PagesJsonData(StatusIcons):
                     if not live_header.enables(node, 'const_set'):
                         warning += PLEASE_SET + node['name'] + ' ' + CONSTANTS
                         warning += TO_DISPLAY1 + live_header_name + TO_DISPLAY2
-                    elif not live_header.enables(node, 'live_enable'):
+                    elif not live_header.enables(node, 'live_enables'):
                         warning += PLEASE_SET + live_header_name + DISPLAY_ENABLES
                         warning += TO_DISPLAY1 + live_header_name + TO_DISPLAY2
                     else:
@@ -442,7 +442,7 @@ class PagesJsonData(StatusIcons):
                             'node': node,
                             'logs': []
                         })
-                        if header.enables(node, 'log_enable') and header.enables(node, 'const_set'):
+                        if header.enables(node, 'log_enables') and header.enables(node, 'const_set'):
                             logs_data[-1]['logs'] = [log for log in node.logs[-self.manager.system_settings['log_limit']:]
                                                      if log[header['data_field']] is not None]
 

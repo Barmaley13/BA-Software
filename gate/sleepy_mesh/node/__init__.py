@@ -27,8 +27,8 @@ class Node(NodePlatform):
 
     def update_logs(self):
         """ Append logs (if needed). Dump logs to a file (if needed). Return dump log flag """
-        # self['log_enable'] = self.generate_enables('log_enable')
-        if self['log_enable'] and self['new_data']:
+        # self['log_enables'] = self.generate_enables('log_enables')
+        if self['log_enables'] and self['new_data']:
             log_data = copy.deepcopy(self['data_out'])
             log_data['time'] = self['last_sync']
             self.logs.append(log_data)
@@ -64,7 +64,7 @@ class Node(NodePlatform):
         """ Generates node enables from header enables """
         enable_value = 0
 
-        if enable_type in ('live_enable', 'log_enable', 'diagnostics'):
+        if enable_type in ('live_enables', 'log_enables', 'diagnostics'):
             # Convert to node enables
             all_headers = self.read_headers('all').values()
             for header in all_headers:
@@ -89,7 +89,7 @@ class Node(NodePlatform):
         """ Updates header enables using enable_dict. AKA User update. """
         enable_value = 0
 
-        if enable_type in ('live_enable', 'log_enable', 'diagnostics'):
+        if enable_type in ('live_enables', 'log_enables', 'diagnostics'):
             # Convert to node enables
             all_headers = self.read_headers('all')
             for header in all_headers.values():

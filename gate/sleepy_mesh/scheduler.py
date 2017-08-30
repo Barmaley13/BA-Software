@@ -237,7 +237,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
                         header.apply_formulas(node)
 
                     # LOGGER.debug("Node: " + node['net_addr'])
-                    # LOGGER.debug("Enables: " + str(node['live_enable']))
+                    # LOGGER.debug("Enables: " + str(node['live_enables']))
                     # LOGGER.debug("Raw Data: " + str(node['data_in']))
                     # LOGGER.debug("Processed Data: " + str(node['data_out']))
 
@@ -287,7 +287,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
                 if node['presence'] and not node['inactive'] and node['type'] == 'node':
                     # Update headers (if needed)
                     header_enable = 0
-                    for enable_type in ('live_enable', 'diagnostics'):
+                    for enable_type in ('live_enables', 'diagnostics'):
                         header_enable |= node.generate_enables(enable_type)
 
                     if node['raw_enables'] != header_enable:
@@ -297,9 +297,9 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
                         # Overwrite header values #
                         node['diagnostics'] &= node['raw_enables']
-                        node['live_enable'] = node['raw_enables'] ^ node['diagnostics']
+                        node['live_enables'] = node['raw_enables'] ^ node['diagnostics']
 
-                        for enable_type in ('live_enable', 'diagnostics'):
+                        for enable_type in ('live_enables', 'diagnostics'):
                             node.generate_enables(enable_type, overwrite_headers=True)
 
                         # # Request node enables update #

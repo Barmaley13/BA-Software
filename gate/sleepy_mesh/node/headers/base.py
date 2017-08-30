@@ -149,7 +149,7 @@ class Headers(DatabaseDict):
                     # Init enables
                     elif main_field == 'enables':
                         _external_constants = header.external_constants()
-                        for enable_type in ('live_enable', 'log_enable', 'const_set'):
+                        for enable_type in ('live_enables', 'log_enables', 'const_set'):
                             # Fill in enables variables
                             enable_value = (enable_type == 'const_set' and not _external_constants)
                             header.enables(output, enable_type, enable_value)

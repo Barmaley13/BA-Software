@@ -49,7 +49,7 @@
                         %selected_headers = selected_nodes[node['net_addr']]
                     %end
                 
-                    %if header.enables(node, 'log_enable'):
+                    %if header.enables(node, 'log_enables'):
                         %check_mark = bool(header_name in selected_headers.keys())
                         <input type='checkbox' name="log_{{node['net_addr']}}"
                         value="{{header_name}}" onclick="GetLogData()" {{checked(check_mark)}} >

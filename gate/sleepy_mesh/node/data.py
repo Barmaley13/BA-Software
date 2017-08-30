@@ -88,11 +88,11 @@ class NodeData(NodeDiagnostics):
         if 'raw_data' in iter(self) and 'raw_lq' in iter(self):
             data_list = [None] * len(DISPLAY_FIELDS)
 
-            self['new_data'] |= bool(self['live_enable'])
+            self['new_data'] |= bool(self['raw_enables'])
             if self['new_data']:
                 raw_data = self.pop('raw_data')
                 self['new_data'] |= bool(len(raw_data))
-                raw_data_enables = self['live_enable'] & RAW_DATA_ENABLES_MASK
+                raw_data_enables = self['raw_enables'] & RAW_DATA_ENABLES_MASK
                 if raw_data_enables:
                     position = 0
                     while position < len(data_list):
@@ -114,7 +114,7 @@ class NodeData(NodeDiagnostics):
 
                     # LOGGER.debug('data_list: ' + str(data_list))
 
-                raw_lq_enables = self['live_enable'] & LQ_ENABLES_MASK
+                raw_lq_enables = self['raw_enables'] & LQ_ENABLES_MASK
                 raw_lq = self.pop('raw_lq')
                 if raw_lq_enables and raw_lq:
                     lq_index = DISPLAY_FIELDS.index('lq')

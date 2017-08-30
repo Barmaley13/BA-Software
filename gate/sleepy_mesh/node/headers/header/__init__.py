@@ -130,7 +130,7 @@ class Header(HeaderBase):
                         # Check/Clear Alarms
                         for alarm_type in ('min_alarm', 'max_alarm'):
                             alarm_triggered = group_variable.check_alarm(provider, calculated_value, alarm_type)
-                            header_enable = self.enables(provider, 'live_enable')
+                            header_enable = self.enables(provider, 'live_enables')
                             header_enable |= self.enables(provider, 'diagnostics')
                             alarm_enable = group_variable.alarm_enable(provider, alarm_type)
 

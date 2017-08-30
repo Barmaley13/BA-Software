@@ -65,13 +65,13 @@ class HeaderBase(DatabaseDict):
         Either get or sets particular enable value
 
         :param provider: data provider that we are working with
-        :param enable_type: choose between ``live_enable``, ``log_enable`` or ``const_set``
+        :param enable_type: choose between ``live_enables``, ``log_enables`` or ``const_set``
         :param set_value: provide None if reading, provide write value if writing
         :return: either read value or write value of the enable
         """
         output = None
 
-        if enable_type in ('live_enable', 'log_enable', 'const_set'):
+        if enable_type in ('live_enables', 'log_enables', 'const_set'):
             # Write
             if set_value is not None:
                 provider['enables'][self['header_position']][enable_type] = bool(set_value)

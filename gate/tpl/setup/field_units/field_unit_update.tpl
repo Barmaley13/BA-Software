@@ -194,7 +194,9 @@
         %node = pages.platforms.node(ADDRESS, net_addr)
         %display_headers = node.read_headers('display').values()
         %for header in display_headers:
-            %LOGGER.debug(header['name'] + ": display = " + str(header.enables(node, 'live_enable')) + " track = " + str(header.enables(node, 'log_enable')))
+            %display = header.enables(node, 'live_enables')
+            %track = header.enables(node, 'log_enables')
+            %LOGGER.debug('{}: display: {} track: {}'.format(header['name'], display, track))
         %end
     %end
     %"""

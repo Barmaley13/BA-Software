@@ -101,7 +101,7 @@ class WebNetwork(NetworkCallbacks):
                             update_dict['raw_platform'] = node['platform'] + '-' + sensor_type
                             del update_dict['sensor_type']
 
-                        # 'live_enable', 'log_enable' and 'diagnostics' Update #
+                        # 'live_enables', 'log_enables' and 'diagnostics' Update #
                         for update_key, update_value in update_dict.items():
                             if update_key not in node.update_dict.keys():
                                 if update_key in node.keys():

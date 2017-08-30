@@ -23,26 +23,26 @@ function AdcEnables(type, value)
     var total_track = new Object();
     var total_diagnostics = new Object();
     
-    if (type == 'live_enable')
+    if (type == 'live_enables')
     {
-        if ($("input[name='live_enable'][value='"+value+"']").prop('checked') == false)
+        if ($("input[name='live_enables'][value='"+value+"']").prop('checked') == false)
         {
-            $("input[name='live_enable'][value='"+value+"']").prop('indeterminate', false);
-            $("input[name='log_enable'][value='"+value+"']").prop('indeterminate', false);
-            $("input[name='log_enable'][value='"+value+"']").prop('checked', false);
+            $("input[name='live_enables'][value='"+value+"']").prop('indeterminate', false);
+            $("input[name='log_enables'][value='"+value+"']").prop('indeterminate', false);
+            $("input[name='log_enables'][value='"+value+"']").prop('checked', false);
         }
-        else if ($("input[name='live_enable'][value='"+value+"']").prop('checked') == true)
+        else if ($("input[name='live_enables'][value='"+value+"']").prop('checked') == true)
         {
             $("input[name='diagnostics'][value='"+value+"']").prop('checked', false);
         }
     }
-    else if(type == 'log_enable')
+    else if(type == 'log_enables')
     {
-        if ($("input[name='log_enable'][value='"+value+"']").prop('checked') == true)
+        if ($("input[name='log_enables'][value='"+value+"']").prop('checked') == true)
         {
-            $("input[name='log_enable'][value='"+value+"']").prop('indeterminate', false);
-            $("input[name='live_enable'][value='"+value+"']").prop('indeterminate', false);
-            $("input[name='live_enable'][value='"+value+"']").prop('checked', true);
+            $("input[name='log_enables'][value='"+value+"']").prop('indeterminate', false);
+            $("input[name='live_enables'][value='"+value+"']").prop('indeterminate', false);
+            $("input[name='live_enables'][value='"+value+"']").prop('checked', true);
             $("input[name='diagnostics'][value='"+value+"']").prop('checked', false);
         }
     }
@@ -50,22 +50,22 @@ function AdcEnables(type, value)
     {
         if ($("input[name='diagnostics'][value='"+value+"']").prop('checked') == true)
         {
-            $("input[name='log_enable'][value='"+value+"']").prop('indeterminate', false);
-            $("input[name='log_enable'][value='"+value+"']").prop('checked', false);
-            $("input[name='live_enable'][value='"+value+"']").prop('indeterminate', false);
-            $("input[name='live_enable'][value='"+value+"']").prop('checked', false);
+            $("input[name='log_enables'][value='"+value+"']").prop('indeterminate', false);
+            $("input[name='log_enables'][value='"+value+"']").prop('checked', false);
+            $("input[name='live_enables'][value='"+value+"']").prop('indeterminate', false);
+            $("input[name='live_enables'][value='"+value+"']").prop('checked', false);
         }
 
     }
 
-    $("input[name='live_enable']").each(function() {
+    $("input[name='live_enables']").each(function() {
         if ($(this).prop('indeterminate') == true)
             total_display[$(this).val()] = null;
         else
             total_display[$(this).val()] = $(this).prop('checked');
     });
     
-    $("input[name='log_enable']").each(function() {
+    $("input[name='log_enables']").each(function() {
         if ($(this).prop('indeterminate') == true)
             total_track[$(this).val()] = null;
         else

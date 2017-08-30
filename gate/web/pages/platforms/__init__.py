@@ -95,7 +95,7 @@ def _header_html(header, nodes):
     """ Creates html for a particular header """
     output = ''
 
-    for enable_type in ('live_enable', 'log_enable', 'diagnostics'):
+    for enable_type in ('live_enables', 'log_enables', 'diagnostics'):
         output += _enable_html(header, nodes, enable_type)
 
     for alarm_type in ('min_alarm', 'max_alarm'):
@@ -112,7 +112,7 @@ def _enable_html(header, nodes, enable_type):
 
     output = ''
 
-    if enable_type in ('live_enable', 'log_enable', 'diagnostics'):
+    if enable_type in ('live_enables', 'log_enables', 'diagnostics'):
         indeterminate = False
         check = None
         for node in nodes:
@@ -187,7 +187,7 @@ def _alarm_html(header, nodes, alarm_type):
             'max_value': max_value,
             'step': alarm_step,
             'disabled': bool(
-                # not header.enables(nodes[0], 'live_enable') or
+                # not header.enables(nodes[0], 'live_enables') or
                 not header.enables(nodes[0], 'const_set') or indeterminate2
             )
         }

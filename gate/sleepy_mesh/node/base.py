@@ -37,8 +37,8 @@ NODE_DEFAULTS = {
     'software': None,           # read
 
     # Used only by node
-    'live_enable': 0,           # internal (used by header indirectly)
-    'log_enable': 0,            # internal (used by header indirectly)
+    'live_enables': 0,          # internal (used by header indirectly)
+    'log_enables': 0,           # internal (used by header indirectly)
     'diagnostics': 0,           # internal (used by header indirectly)
     'presence': False,          # read/(write only virgins)
     # Tells if system waits for this node to respond during each sync
