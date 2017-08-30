@@ -32,12 +32,14 @@ NODE_DEFAULTS = {
     'net_addr': None,           # read
     'modbus_addr': None,        # read/write
     'raw_platform': None,       # read
+    'raw_enables': None,        # read
     'firmware': None,           # read
     'software': None,           # read
 
     # Used only by node
     'live_enable': 0,           # internal (used by header indirectly)
     'log_enable': 0,            # internal (used by header indirectly)
+    'diagnostics': 0,           # internal (used by header indirectly)
     'presence': False,          # read/(write only virgins)
     # Tells if system waits for this node to respond during each sync
     'mcast_presence': True,     # internal
@@ -70,7 +72,7 @@ NODE_DEFAULTS = {
 
 ## Minimum Firmware/Software Versions ##
 MIN_FIRMWARE_VERSION = '2.7.1'
-MIN_SOFTWARE_VERSION = '2.01'
+MIN_SOFTWARE_VERSION = '2.22'
 
 MIN_VERSION_MAP = {
     'firmware': MIN_FIRMWARE_VERSION,

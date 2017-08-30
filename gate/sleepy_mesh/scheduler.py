@@ -282,25 +282,28 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
     def __validate_node_enables(self, node):
         """ Check node enables against header enables. Fix any inconsistencies. """
-        if node.headers is not None:
-            if node['presence'] and not self.update_in_progress():
-                if not node['inactive']:
+        if not self.update_in_progress():
+            if node.headers is not None:
+                if node['presence'] and not node['inactive'] and node['type'] == 'node':
                     # Update headers (if needed)
                     header_enable = 0
                     for enable_type in ('live_enable', 'diagnostics'):
                         header_enable |= node.generate_enables(enable_type)
 
-                    if node['live_enable'] != header_enable:
-                        LOGGER.warning('Node and header live_enable do not match!')
-                        LOGGER.debug('Node live_enable: {}'.format(node['live_enable']))
-                        LOGGER.debug('Header live_enable: {}'.format(header_enable))
+                    if node['raw_enables'] != header_enable:
+                        LOGGER.warning('Node and header enables do not match!')
+                        LOGGER.debug('Node Enable: {}'.format(node['raw_enables']))
+                        LOGGER.debug('Header Enable: {}'.format(header_enable))
 
                         # Overwrite header values #
+                        node['diagnostics'] &= node['raw_enables']
+                        node['live_enable'] = node['raw_enables'] ^ node['diagnostics']
+
                         for enable_type in ('live_enable', 'diagnostics'):
                             node.generate_enables(enable_type, overwrite_headers=True)
 
                         # # Request node enables update #
-                        # update_dict = {'live_enable': header_enable}
+                        # update_dict = {'raw_enables': header_enable}
                         # self.networks[0].request_update(update_dict, [node])
 
     def __complete_callback(self):

@@ -32,20 +32,20 @@ class NetworkExecutor(NetworkBase):
         """ Checks if update in progress has been verified """
         update_type = self.update_in_progress()
         if update_type:
-            LOGGER.debug("Update Type: {}".format(update_type))
+            LOGGER.debug('Update Type: {}'.format(update_type))
 
             # Check if we can finalize network updates #
             all_verified = True
             for node in self._update_nodes.values():
-                LOGGER.debug("Node: " + node['net_addr'])
-                LOGGER.debug("Net Verify: " + str(node['net_verify']))
+                LOGGER.debug('Node: {}'.format(node['net_addr']))
+                LOGGER.debug('Net Verify: {}'.format(node['net_verify']))
 
                 all_verified &= bool(node['net_verify'] != self._cancel_update)
 
                 if not all_verified:
                     break
 
-            LOGGER.debug("All Verified: " + str(all_verified))
+            LOGGER.debug('All Verified: {}'.format(all_verified))
 
             if not all_verified and not self._cancel_update:
                 if self._cancel_update in NOT_VERIFIED_MESSAGE_MAP:
@@ -107,7 +107,7 @@ class NetworkExecutor(NetworkBase):
         """ Function sends RPC to update network or particular node """
         update_type = self.update_in_progress()
         if update_type:
-            LOGGER.debug("Update Type: {}".format(update_type))
+            LOGGER.debug('Update Type: {}'.format(update_type))
             if update_type == 'network_update':
                 node = self._manager.bridge.base
 
@@ -128,7 +128,7 @@ class NetworkExecutor(NetworkBase):
                     update_args += self.__update_args(node)
 
                     self._manager.bridge.base_node_ucast(*update_args)
-                    LOGGER.debug("Network Update Args: {}".format(update_args))
+                    LOGGER.debug('Network Update Args: {}'.format(update_args))
 
     def __update_args(self, node):
         """

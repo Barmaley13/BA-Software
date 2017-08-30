@@ -216,14 +216,6 @@ class NetworkBase(DatabaseDict):
             for node in inactive_nodes.values():
                 self._manager.platforms.delete_node(node)
 
-        # Reset net_verify flags
-        for node in self._update_nodes.values():
-            if node['net_verify']:
-                node['net_verify'] = False
-
-                if update_type == 'preset_update':
-                    node['network_preset'] = True
-
         # Request long acks from all nodes (just in case)
         for net_addr in self._update_nodes.keys():
             self._request_long_ack(net_addr)
@@ -235,6 +227,14 @@ class NetworkBase(DatabaseDict):
             update_complete_message += UPDATE_COMPLETE_MESSAGE_MAP[self._cancel_update]
 
         self._finish_update(update_complete_message)
+
+        # Reset net_verify flags
+        for node in self._update_nodes.values():
+            if node['net_verify']:
+                node['net_verify'] = False
+
+                if update_type == 'preset_update':
+                    node['network_preset'] = True
 
         self._manager.platforms.save()
         if update_type != 'node_update':

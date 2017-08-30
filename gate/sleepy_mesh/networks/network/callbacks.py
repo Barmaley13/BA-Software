@@ -18,8 +18,8 @@ from executor import NetworkExecutor
 
 ### CONSTANTS ###
 ## Callback Arguments ##
-SHORT_LOG_FIELDS = ('raw_net_addr', 'name', 'raw_enables', 'raw_data', 'raw_lq', 'raw_error')
-LONG_LOG_FIELDS = ('name', 'raw_mac', 'raw_platform', 'firmware', 'software', 'raw_error')
+SHORT_LOG_FIELDS = ('raw_net_addr', 'raw_enables', 'raw_data', 'raw_lq', 'raw_error')
+LONG_LOG_FIELDS = ('name', 'raw_mac', 'raw_platform', 'raw_enables', 'firmware', 'software', 'raw_error')
 PRIMARY_NETWORK_LOG_FIELDS = ('raw_net_addr', ) + common.NETWORK_FIELDS
 NETWORK_LOG_FIELDS = PRIMARY_NETWORK_LOG_FIELDS + common.RAW_TIMEOUT_FIELDS
 BASE_LOG_FIELDS = PRIMARY_NETWORK_LOG_FIELDS + common.RAW_CYCLES_FIELDS
@@ -67,11 +67,6 @@ def __parse_callback_data(raw_dict):
             raw_dict[field] = conversions.bin_to_int(raw_dict[field])
             # LOGGER.debug('raw_dict[field]: ' + str(raw_dict[field]))
 
-    if 'raw_enables' in raw_dict:
-        # Note: 'live_enable' is required for parsing data
-        raw_dict['live_enable'] = raw_dict['raw_enables']
-        del raw_dict['raw_enables']
-
     # Network Log Fields #
     network_fields = common.CYCLE_FIELDS + common.TIMEOUT_FIELDS
     for field in network_fields:
@@ -99,8 +94,8 @@ def get_input_dict(callback_type, *callback_args):
         if len(fields) == len(callback_args):
             raw_dict = dict(zip(fields, callback_args))
 
-            LOGGER.debug('callback_type:' + str(callback_type))
-            LOGGER.debug('raw_dict:' + str(raw_dict))
+            # LOGGER.debug('callback_type:' + str(callback_type))
+            # LOGGER.debug('raw_dict:' + str(raw_dict))
 
             output = __parse_callback_data(raw_dict)
 
@@ -135,7 +130,8 @@ class NetworkCallbacks(NetworkExecutor):
 
         input_dict = get_input_dict(callback_type, *args)
         if input_dict is not None:
-            # LOGGER.debug(callback_type.title() + " Log Dict: " + str(input_dict))
+            LOGGER.debug('callback_type: {}'.format(callback_type))
+            LOGGER.debug('input_dict: {}'.format(input_dict))
 
             # Find Node #
             nodes = self._manager.platforms.select_nodes('all')
@@ -193,7 +189,7 @@ class NetworkCallbacks(NetworkExecutor):
                 if node['type'] == 'base':
                     input_dict = get_input_dict('base', *args)
 
-                LOGGER.debug("Network Log Dict: " + str(input_dict))
+                # LOGGER.debug("Network Log Dict: " + str(input_dict))
 
                 ## Network update verify ##
                 update_type = self.update_in_progress()

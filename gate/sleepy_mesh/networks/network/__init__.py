@@ -86,8 +86,22 @@ class WebNetwork(NetworkCallbacks):
 
             else:
                 for node in nodes:
-                    # This is made to update node's 'log_enables'
                     if 'type' in node and node['type'] == 'node':
+                        # Platform (Sensor Type) Update #
+                        if 'sensor_type' in update_dict.keys():
+                            sensor_codes = update_dict['sensor_type']
+                            sensor_type = list(node['sensor_type'])
+
+                            for sensor_index, sensor_code in enumerate(sensor_codes):
+                                if sensor_code != '_':
+                                    if sensor_index < len(sensor_type):
+                                        sensor_type[sensor_index] = sensor_code
+
+                            sensor_type = ''.join(sensor_type)
+                            update_dict['raw_platform'] = node['platform'] + '-' + sensor_type
+                            del update_dict['sensor_type']
+
+                        # 'live_enable', 'log_enable' and 'diagnostics' Update #
                         for update_key, update_value in update_dict.items():
                             if update_key not in node.update_dict.keys():
                                 if update_key in node.keys():

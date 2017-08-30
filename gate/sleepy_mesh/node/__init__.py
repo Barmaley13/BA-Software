@@ -71,13 +71,7 @@ class Node(NodePlatform):
                 if header['data_field_position'] is not None:
                     header_mask = 1 << header['data_field_position']
                     if overwrite_headers:
-                        if enable_type == 'diagnostics':
-                            _enable_type = 'live_enable'
-                        else:
-                            _enable_type = enable_type
-
-                        header_enable = bool(self[_enable_type] & header_mask > 0)
-
+                        header_enable = (self[enable_type] & header_mask) > 0
                         header.enables(self, enable_type, header_enable)
 
                     if header.enables(self, enable_type):
@@ -109,13 +103,9 @@ class Node(NodePlatform):
                     if bit_value is not None and header_mask is not None:
                         if bit_value:
                             enable_value |= header_mask
-                        else:
-                            if enable_type == 'diagnostics':
-                                _enable_type = 'live_enable'
-                            else:
-                                _enable_type = enable_type
 
-                            enable_value |= self[_enable_type] & header_mask
+                        else:
+                            enable_value |= self[enable_type] & header_mask
 
                     # Update headers
                     if bit_value is not None:

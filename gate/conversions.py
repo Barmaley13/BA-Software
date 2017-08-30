@@ -26,7 +26,7 @@ BASE_COUNTER_PRECISION = 64
 CYCLES_MAX_INT = 0x7FFF
 
 ## Internal Name ##
-ALLOWED_CHARS = re.compile('[a-z0-9\-_:.]')
+ALLOWED_CHARS = re.compile('[a-z0-9-_]')
 VERSION_CHARS = re.compile('[0-9.]')
 
 ## Logger ##
