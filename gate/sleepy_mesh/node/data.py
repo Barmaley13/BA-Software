@@ -9,13 +9,14 @@ from gate.conversions import bin_to_int
 from gate.sleepy_mesh.error import ADC_MISMATCH, ABSENT_NODE
 
 from common import parse_raw_data
-from headers import DISPLAY_FIELDS
-from diagnostics import NodeDiagnostics, DIAGNOSTIC_FIELDS, DIAGNOSTIC_VALUES
+from headers import DISPLAY_FIELDS, DIAGNOSTIC_FIELDS
+from diagnostics import NodeDiagnostics
 
 
 ### CONSTANTS ###
-## Default Data Fields ##
-ALL_FIELDS = DISPLAY_FIELDS + DIAGNOSTIC_FIELDS
+## Diagnostics Constants ##
+DIAGNOSTIC_VALUES = (0.0, 100.0, 100.0, 0.0)
+
 ## Battery Monitor Conversions ##
 BAT_MON = [1.70, 1.75, 1.80, 1.85, 1.90, 1.95, 2.00, 2.05, 2.10, 2.15, 2.20,
            2.25, 2.30, 2.35, 2.40, 2.45, 2.550, 2.625, 2.700, 2.775, 2.850, 2.925,
@@ -96,7 +97,7 @@ class NodeData(NodeDiagnostics):
                 if raw_data_enables:
                     position = 0
                     while position < len(data_list):
-                        if raw_data_enables & 0x0001:
+                        if raw_data_enables & 1:
                             # Check
                             # LOGGER.debug('position: ' + str(position))
                             # LOGGER.debug('len(raw_data): ' + str(len(raw_data)))

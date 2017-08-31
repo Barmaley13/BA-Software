@@ -98,11 +98,11 @@ class WebHandler(WebHandlerBase):
                 inactive_group = self._object[address['platform']].groups.keys()[0]
                 if address['group'] != inactive_group:
                     # Move to inactive group
-                    # LOGGER.debug("Move node to inactive group!")
+                    # LOGGER.debug('Move node to inactive group!')
                     return_dict['new_cookie'] = self._object.move_nodes(inactive_group, address)
                 else:
                     # Remove
-                    # LOGGER.debug("Remove node!")
+                    # LOGGER.debug('Remove node!')
                     for node in self._object.nodes(address):
                         # del target[node['net_addr']]
                         node.delete()
@@ -287,7 +287,7 @@ class WebHandler(WebHandlerBase):
                 modbus_addr = request.forms.get('modbus_addr')
                 if modbus_addr:
                     modbus_addr = int(modbus_addr)
-                    node = self._object.node(address)
+                    node = nodes[0]
                     validate &= (modbus_addr not in self._manager.nodes.modbus_addresses() or
                                  modbus_addr == node['modbus_addr'])
                     if validate:
@@ -300,7 +300,7 @@ class WebHandler(WebHandlerBase):
                     # LOGGER.debug('sensor_codes: {}'.format(sensor_codes))
 
                     if sensor_codes:
-                        node = self._object.node(address)
+                        node = nodes[0]
                         sensor_type = list(node['sensor_type'])
 
                         for data_field, sensor_code in sensor_codes.items():
@@ -318,7 +318,7 @@ class WebHandler(WebHandlerBase):
                 all_headers = group.read_headers('all', nodes)
                 for header in all_headers.values():
                     header_name = header['internal_name']
-                    LOGGER.debug("header = " + header_name)
+                    # LOGGER.debug('header: {}'.format(header_name))
                     # Alarm Units
                     alarm_units = request.forms.get('alarm_units_' + header_name)
                     if alarm_units:
@@ -334,14 +334,14 @@ class WebHandler(WebHandlerBase):
                             # LOGGER.debug('alarm_enables: {}'.format(alarm_enables))
                             if alarm_enables:
                                 if header_name in alarm_enables:
-                                    LOGGER.debug(alarm_type + '_enable = ' + str(alarm_enables[header_name]))
+                                    # LOGGER.debug('{}_enable: {}'.format(alarm_type, alarm_enables[header_name]))
                                     for node in nodes:
                                         header.alarm_enable(node, alarm_type, alarm_enables[header_name])
 
                         # Alarm Values
                         alarm_value = request.forms.get(alarm_type + '_value_' + header_name)
                         if alarm_value:
-                            LOGGER.debug(alarm_type + "_value = " + str(alarm_value))
+                            # LOGGER.debug('{}_value: {}'.format(alarm_type, alarm_value))
                             alarm_value = float(alarm_value)
 
                             for node in nodes:
@@ -382,18 +382,25 @@ class WebHandler(WebHandlerBase):
                             'log_enables': track,
                             'diag_enables': diagnostics
                         }
-                        for node in nodes:
-                            for enable_type, enable_dict in enables_map.items():
-                                enables = node.update_enables(enable_type, enable_dict)
-                                update_dict[enable_type] = enables
-                                # LOGGER.debug('{}: {}'.format(enable_type, enable_dict))
-                                # LOGGER.debug('{}: {}'.format(enable_type, enables))
+                        for enable_type, enable_dict in enables_map.items():
+                            update_dict[enable_type] = group.enables_masks(enable_type, enable_dict)
+                            # LOGGER.debug('{}: {}'.format(enable_type, enable_dict))
+                            # LOGGER.debug('{}: {}'.format(enable_type, update_dict[enable_type]))
 
                     update_enables = bool(len(update_dict))
                     if update_enables:
-                        update_dict['raw_enables'] = 0
-                        update_dict['raw_enables'] |= update_dict['live_enables']
-                        update_dict['raw_enables'] |= update_dict['diag_enables']
+                        node = nodes[0]
+                        if node['diag_enables'] != update_dict['diag_enables'][0]:
+                            # Update all nodes in the group if diagnostics changed
+                            diag_dict = {'diag_enables': update_dict.pop('diag_enables')}
+                            self._manager.request_update(diag_dict, group.nodes.values())
+
+                            # Refresh diagnostics of the whole group
+                            group.refresh()
+
+                    update_enables = bool(len(update_dict))
+                    if update_enables:
+                        # Update the rest of enables (if needed)
                         save_dict.update(update_dict)
 
                     update_node |= update_enables
@@ -511,7 +518,7 @@ class WebHandler(WebHandlerBase):
                     for header in header_list:
                         header.enables(node, 'const_set', True)
 
-                    # LOGGER.debug(header['name'] + ' const_set = ' + str(header.enables(node, 'const_set')))
+                    # LOGGER.debug('{} const_set: {}'.format(header['name'], header.enables(node, 'const_set')))
 
                     # Update constants
                     for data_field, data_dict in save_dict.items():
@@ -543,14 +550,14 @@ class WebHandler(WebHandlerBase):
             node = active_nodes[net_addr]
 
             if node.logs.not_empty():
-                # LOGGER.debug('main niceness1 = ' + str(os.nice(0)))
+                # LOGGER.debug('main niceness1: {}'.format(os.nice(0)))
                 if self._log_export is not None:
                     self._log_export.stop()
 
                 self._log_export = LogExportThread(self._pages, address, node)
                 self._log_export.start()
 
-                # LOGGER.debug('main niceness2 = ' + str(os.nice(0)))
+                # LOGGER.debug('main niceness2: {}'.format(os.nice(0)))
             else:
                 return_dict['alert'] = strings.LOG_EMPTY
         else:
@@ -692,7 +699,7 @@ class LogExportThread(WorkerThread):
         self._update_interface.start_update('log_export')
 
         # process_niceness = os.nice(SIDE_PROCESS_NICENESS)
-        # LOGGER.debug('log export niceness = ' + str(process_niceness))
+        # LOGGER.debug('log export niceness: {}'.format(process_niceness))
 
         # Yield so web page fetched first before processing this request
         time.sleep(0.5)
@@ -722,7 +729,7 @@ class LogExportThread(WorkerThread):
             if len(files):
                 for item_path in files:
                     current_file += 1.0
-                    # LOGGER.debug("item_path = " + str(item_path))
+                    # LOGGER.debug('item_path: {}'.format(item_path))
                     item_name = os.path.basename(item_path)
                     logs = pickle.unpickle_file(os.path.join(LOGS_FOLDER, item_name))
                     if logs is not False:
@@ -741,7 +748,7 @@ class LogExportThread(WorkerThread):
             else:
                 csv_data = _csv_data
 
-            # LOGGER.debug("CSV data: " + csv_data)
+            # LOGGER.debug('CSV data: {}'.format(csv_data))
 
         message = 'Log Export'
         if self.get_running() and csv_data is not None:
@@ -764,7 +771,7 @@ class LogExportThread(WorkerThread):
         """ Appends CSV string """
         csv_data = ''
         files = self._node.logs.files()
-        # LOGGER.debug("files = " + str(files))
+        # LOGGER.debug('files: {}'.format(files))
         total_logs = float(len(files) + 1.0)
 
         _progress_message = strings.PROCESSING + 'log {0:>3} out of {1:>3} logs, '.format(

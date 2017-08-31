@@ -106,11 +106,11 @@ class Header(HeaderBase):
         :param provider: data provider that we are working with
         :return: NA, provider['data_out'] is updated with new data
         """
-        # Apply Formulas
-        for field in ('variables', 'unit_list'):
-            for group_variable in getattr(self, field).values():
-                # Recalculate all variables
-                if self.enables(provider, 'const_set'):
+        if self.enables(provider, 'const_set'):
+            # Apply Formulas
+            for field in ('variables', 'unit_list'):
+                for group_variable in getattr(self, field).values():
+                    # Recalculate all variables
                     calculated_value = group_variable.apply_formula(provider)
 
                     # We need to filter proper group_variables that apply for checking/clearing alarms
@@ -196,7 +196,7 @@ class Header(HeaderBase):
 
                 for group_variable in getattr(self, field_types[error_register]).values():
                     if error_register == 'alarms':
-                        check_alarm_message = not self.enables('diag_enables')
+                        check_alarm_message = not self['diagnostics']
                     else:
                         check_alarm_message = group_variable.alarm_enable(None, alarm_type)
 

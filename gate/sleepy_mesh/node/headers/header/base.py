@@ -3,7 +3,6 @@ Header Base Class
 """
 
 ### INCLUDES ###
-import os
 import logging
 
 from gate.database import DatabaseDict
@@ -43,6 +42,10 @@ class HeaderBase(DatabaseDict):
         data_field_position = None
         if data_field in DISPLAY_FIELDS:
             data_field_position = DISPLAY_FIELDS.index(data_field)
+        # else:
+        #     raise ValueError('name: {} data_field: {} header_name: {} header_position: {}'.format(
+        #         name, data_field, header_name, header_position)
+        #     )
 
         defaults = {
             # Global Must Haves
@@ -61,36 +64,18 @@ class HeaderBase(DatabaseDict):
 
     ## Enable Related ##
     def enables(self, provider, enable_type, set_value=None):
-        """
-        Either get or sets particular enable value
+        """ Either gets or sets particular enable """
+        header_mask = 1 << self['header_position']
 
-        :param provider: data provider that we are working with
-        :param enable_type: choose between ``live_enables``, ``log_enables`` or ``const_set``
-        :param set_value: provide None if reading, provide write value if writing
-        :return: either read value or write value of the enable
-        """
-        output = None
+        # Write
+        if set_value is not None:
+            if set_value:
+                provider[enable_type] |= header_mask        # set bit
+            else:
+                provider[enable_type] &= ~header_mask       # clear bit
 
-        if enable_type in ('live_enables', 'log_enables', 'diag_enables', 'const_set'):
-            # Write
-            if set_value is not None:
-                provider['enables'][self['header_position']][enable_type] = bool(set_value)
-            # Read
-            if self['header_position'] in provider['enables']:
-                output = provider['enables'][self['header_position']][enable_type]
-
-                # # Debugging
-                # if set_value is not None and 'net_addr' in provider:
-                #     debug_str = "nodes[{}]['enables'][{}][{}]: {}".format(
-                #         provider['net_addr'],
-                #         self['header_position'],
-                #         enable_type,
-                #         provider['enables'][self['header_position']][enable_type]
-                #     )
-                #     LOGGER.debug(debug_str)
-
-        else:
-            LOGGER.error("Enable type: " + str(enable_type) + " does not exist!")
+        # Read
+        output = bool(provider[enable_type] & header_mask)
 
         return output
 

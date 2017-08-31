@@ -11,7 +11,7 @@ import logging
 from base import Headers
 from gate.common import GATE_FOLDER, HEADERS_FOLDER
 
-from header.common import ADC_FIELDS, DISPLAY_FIELDS
+from header.common import ADC_FIELDS, DISPLAY_FIELDS, DIAGNOSTIC_FIELDS, ALL_FIELDS
 
 
 ### CONSTANTS ###
@@ -96,14 +96,14 @@ def generate_node_headers(platform):
 
         headers.append(channel_headers)
 
-    # Add global headers
-    headers += copy.deepcopy(common.HEADERS)
-
     # Add platform specific headers
     headers_name = platform_company.upper() + '_HEADERS'
     if hasattr(common, headers_name):
         common_headers = getattr(common, headers_name)
         headers += copy.deepcopy(common_headers)
+
+    # Add global headers
+    headers += copy.deepcopy(common.HEADERS)
 
     # Create headers instance
     output = Headers(headers, sensor_type)

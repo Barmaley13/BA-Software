@@ -9,7 +9,7 @@ from gate.strings import AWAKE, SLEEP
 
 from network import SleepyMeshNetwork
 from base import SleepyMeshBase
-from node import DIAGNOSTIC_FIELDS
+from node.headers import DIAGNOSTIC_FIELDS
 
 
 ### CONSTANTS ###
@@ -286,24 +286,18 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
             if node.headers is not None:
                 if node['presence'] and not node['inactive'] and node['type'] == 'node':
                     # Update headers (if needed)
-                    header_enable = 0
-                    for enable_type in ('live_enables', 'diag_enables'):
-                        header_enable |= node.generate_enables(enable_type)
+                    header_enables = node.raw_enables()
 
-                    if node['raw_enables'] != header_enable:
+                    if node['raw_enables'] != header_enables:
                         LOGGER.warning('Node and header enables do not match!')
                         LOGGER.debug('Node Enable: {}'.format(node['raw_enables']))
-                        LOGGER.debug('Header Enable: {}'.format(header_enable))
+                        LOGGER.debug('Header Enable: {}'.format(header_enables))
 
                         # Overwrite header values #
-                        node['diag_enables'] &= node['raw_enables']
-                        node['live_enables'] = node['raw_enables'] ^ node['diag_enables']
-
-                        for enable_type in ('live_enables', 'diag_enables'):
-                            node.generate_enables(enable_type, overwrite_headers=True)
+                        node.raw_enables(node['raw_enables'])
 
                         # # Request node enables update #
-                        # update_dict = {'raw_enables': header_enable}
+                        # update_dict = {'raw_enables': header_enables}
                         # self.networks[0].request_update(update_dict, [node])
 
     def __complete_callback(self):

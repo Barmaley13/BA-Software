@@ -86,7 +86,10 @@ class Headers(DatabaseDict):
             'constants': {},
             'data_out': {},
             'alarms': {},
-            'enables': {},
+            'live_enables': 0,
+            'log_enables': 0,
+            'diag_enables': 0,
+            'const_set': 0
         }
 
         # Create top level structure
@@ -109,7 +112,7 @@ class Headers(DatabaseDict):
                 main_fields = {
                     'constants': header_field,
                     'alarms': header['header_position'],
-                    'enables': header['header_position']
+                    # 'enables': header['header_position']
                 }
                 for main_field, sub_field in main_fields.items():
                     if sub_field not in output[main_field]:
@@ -147,14 +150,14 @@ class Headers(DatabaseDict):
                         output[main_field][sub_field]['alarm_units'] = 0
 
                     # Init enables
-                    elif main_field == 'enables':
-                        _external_constants = header.external_constants()
-                        for enable_type in ('live_enables', 'log_enables', 'diag_enables', 'const_set'):
-                            # Fill in enables variables
-                            enable_value = False
-                            enable_value |= (enable_type == 'const_set' and not _external_constants)
-                            enable_value |= (enable_type == 'diag_enables' and header_enable)
-                            header.enables(output, enable_type, enable_value)
+                    _external_constants = header.external_constants()
+                    for enable_type in ('live_enables', 'log_enables', 'diag_enables', 'const_set'):
+                        # Fill in enables variables
+                        enable_value = False
+                        enable_value |= (enable_type == 'const_set' and not _external_constants)
+                        enable_value |= (enable_type == 'diag_enables' and header_enable)
+
+                        header.enables(output, enable_type, enable_value)
 
         return output
 
@@ -174,7 +177,7 @@ class Headers(DatabaseDict):
             for header_type in header_types:
                 for header_group in self._headers:
                     for header_key, header in header_group.items():
-                        if header_type == header_type_map[header.enables('diag_enables')]:
+                        if header_type == header_type_map[header['diagnostics']]:
                             header['selected'] = len(header_group) == 1
                             header['selected'] |= header.selected(sensor_type)
 
@@ -242,6 +245,12 @@ class Headers(DatabaseDict):
                                     output[error_field + '-' + str(error_code)] = warning_description
 
         return output
+
+    def refresh(self, provider):
+        """ Refreshes diagnostics fields """
+        for header_group in self._headers:
+            for header_key, header in header_group.items():
+                header['diagnostics'] = header.enables(provider, 'diag_enables')
 
     # def rename_headers(self, sensor_type):
     #     """ Renames headers after changing sensor code of a particular node """

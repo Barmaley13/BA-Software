@@ -11,10 +11,6 @@ from .base import NodeBase
 ### CONSTANTS ###
 RECENT_SYNCS_NUMBER = 10
 
-## Diagnostics Constants ##
-DIAGNOSTIC_FIELDS = ('life_time', 'recent_sync_rate', 'life_sync_rate', 'total_draw')
-DIAGNOSTIC_VALUES = (0.0, 100.0, 100.0, 0.0)
-
 ## Node Capacity Draw ##
 DEFAULT_CURRENT_DRAW_TEMP = 25.0
 SLEEP_DRAW = [(-20.0, 2.4e-6), (0.0, 2.5e-6), (25.0, 3.8e-6), (55.0, 7.6e-6)]

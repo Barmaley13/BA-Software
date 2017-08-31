@@ -47,11 +47,6 @@ NODE_DEFAULTS = {
 
     # Used by PLATFORMS, created dynamically!
     'platform': None,           # read (used by platforms)
-    'sensor_type': None,
-    # Used by headers
-    'constants': {},
-    'alarms': {},
-    'enables': {},
 
     # Used by network
     'net_verify': False,
@@ -102,13 +97,14 @@ class NodeBase(DatabaseDict):
             self.headers = generate_node_headers(input_dict['raw_platform'])
             input_dict['sensor_type'] = generate_sensor_types(input_dict['raw_platform'])
 
-        node_defaults = copy.deepcopy(NODE_DEFAULTS)
-        if input_dict is not None:
-            node_defaults.update(input_dict)
-
+        node_defaults = {}
         if self.headers is not None:
             header_defaults = copy.deepcopy(self.headers.header_defaults)
             node_defaults.update(header_defaults)
+
+        node_defaults.update(copy.deepcopy(NODE_DEFAULTS))
+        if input_dict is not None:
+            node_defaults.update(input_dict)
 
         # Append defaults with time stamps
         current_time = self.system_settings.time()
@@ -139,6 +135,7 @@ class NodeBase(DatabaseDict):
         if self.headers is None and self['type'] == 'node':
             if 'raw_platform' in self._main:
                 self.headers = generate_node_headers(self['raw_platform'])
+                self.headers.refresh(self)
 
         self.update_dict = UpdateDict(NODE_UPDATE_FIELDS + NETWORK_UPDATE_FIELDS)
         self.error = error.NodeError(system_settings=self.system_settings, db_file=error_db_file)

@@ -8,7 +8,7 @@ import copy
 import logging
 
 from hw_platform import NodePlatform
-from diagnostics import DIAGNOSTIC_FIELDS
+from headers import DIAGNOSTIC_FIELDS
 
 
 ### CONSTANTS ###
@@ -27,7 +27,6 @@ class Node(NodePlatform):
 
     def update_logs(self):
         """ Append logs (if needed). Dump logs to a file (if needed). Return dump log flag """
-        # self['log_enables'] = self.generate_enables('log_enables')
         if self['log_enables'] and self['new_data']:
             log_data = copy.deepcopy(self['data_out'])
             log_data['time'] = self['last_sync']
@@ -60,62 +59,28 @@ class Node(NodePlatform):
 
         return output
 
-    def generate_enables(self, enable_type, overwrite_headers=False):
-        """ Generates node enables from header enables """
+    def raw_enables(self, set_value=None):
+        """ Reads/Sets raw_enables using header enables """
         enable_value = 0
 
-        if enable_type in ('live_enables', 'log_enables', 'diag_enables'):
-            # Convert to node enables
-            all_headers = self.read_headers('all').values()
-            for header in all_headers:
-                if header['data_field_position'] is not None:
-                    header_mask = 1 << header['data_field_position']
-                    if overwrite_headers:
-                        header_enable = (self[enable_type] & header_mask) > 0
-                        header.enables(self, enable_type, header_enable)
+        headers = self.read_headers('all')
+        for header in headers.values():
+            if header['data_field_position'] is not None:
+                raw_mask = 1 << header['data_field_position']
+                header_enable = header.enables(self, 'live_enables') or header.enables(self, 'diag_enables')
 
-                    if header.enables(self, enable_type):
-                        enable_value |= header_mask
+                # Write
+                if set_value is not None:
+                    raw_enable = bool(set_value & raw_mask)
+                    if raw_enable != header_enable:
+                        header_enable = raw_enable
+                        header.enables(self, 'live_enables', raw_enable)
+                        if not raw_enable:
+                            header.enables(self, 'diag_enables', raw_enable)
 
-            # LOGGER.debug("{} = {}".format(enable_type, enable_dict))
-            # LOGGER.debug("enable_value = ".format(enable_value))
-
-        else:
-            LOGGER.error("Enable type '{}' does not exist!".format(enable_type))
-
-        return enable_value
-
-    def update_enables(self, enable_type, enable_dict):
-        """ Updates header enables using enable_dict. AKA User update. """
-        enable_value = 0
-
-        if enable_type in ('live_enables', 'log_enables', 'diag_enables'):
-            # Convert to node enables
-            all_headers = self.read_headers('all')
-            for header in all_headers.values():
-                header_mask = None
-                if header['data_field_position'] is not None:
-                    header_mask = 1 << header['data_field_position']
-
-                if header['internal_name'] in enable_dict:
-                    bit_value = enable_dict[header['internal_name']]
-                    # Compose node enables
-                    if bit_value is not None and header_mask is not None:
-                        if bit_value:
-                            enable_value |= header_mask
-
-                        else:
-                            enable_value |= self[enable_type] & header_mask
-
-                    # Update headers
-                    if bit_value is not None:
-                        header.enables(self, enable_type, bit_value)
-
-            # LOGGER.debug("{} = {}".format(enable_type, enable_dict))
-            # LOGGER.debug("enable_value = ".format(enable_value))
-
-        else:
-            LOGGER.error("Enable type '{}' does not exist!".format(enable_type))
+                # Read
+                if header_enable:
+                    enable_value |= raw_mask
 
         return enable_value
 

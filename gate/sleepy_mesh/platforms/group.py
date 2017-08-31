@@ -259,3 +259,34 @@ class Group(PlatformBase):
             LOGGER.error("Header: " + str(header_name) + " does not exist!")
 
         return output
+
+    def enables_masks(self, enable_type, enable_dict):
+        """ Generates enables masks using enable dictionary """
+        set_mask, clear_mask = 0, 0
+
+        if enable_type in ('live_enables', 'log_enables', 'diag_enables'):
+            # Convert to node enables
+            all_headers = self.read_headers('all')
+            for header in all_headers.values():
+                header_mask = 1 << header['header_position']
+
+                if header['internal_name'] in enable_dict:
+                    bit_value = enable_dict[header['internal_name']]
+                    if bit_value is not None:
+                        if bit_value:
+                            set_mask |= header_mask
+                        else:
+                            clear_mask |= header_mask
+
+            # LOGGER.debug("{} dict: {}".format(enable_type, enable_dict))
+            # LOGGER.debug("enable_mask: ".format(output))
+
+        else:
+            LOGGER.error("Enable type '{}' does not exist!".format(enable_type))
+
+        return set_mask, clear_mask
+
+    def refresh(self):
+        """ Refreshes diagnostic fields """
+        for node in self.nodes.values():
+            node.headers.refresh(node)

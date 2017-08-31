@@ -10,6 +10,7 @@ import logging
 
 from gate import strings
 from gate.sleepy_mesh.node import common
+from gate.sleepy_mesh.node.headers import DISPLAY_FIELDS
 
 from base import NETWORK_DEFAULTS, NETWORK_UPDATE_TYPES
 from callbacks import NetworkCallbacks
@@ -86,10 +87,11 @@ class WebNetwork(NetworkCallbacks):
 
             else:
                 for node in nodes:
+                    _update_dict = copy.deepcopy(update_dict)
                     if 'type' in node and node['type'] == 'node':
                         # Platform (Sensor Type) Update #
-                        if 'sensor_type' in update_dict.keys():
-                            sensor_codes = update_dict['sensor_type']
+                        if 'sensor_type' in _update_dict.keys():
+                            sensor_codes = _update_dict['sensor_type']
                             sensor_type = list(node['sensor_type'])
 
                             for sensor_index, sensor_code in enumerate(sensor_codes):
@@ -98,16 +100,29 @@ class WebNetwork(NetworkCallbacks):
                                         sensor_type[sensor_index] = sensor_code
 
                             sensor_type = ''.join(sensor_type)
-                            update_dict['raw_platform'] = node['platform'] + '-' + sensor_type
-                            del update_dict['sensor_type']
+                            _update_dict['raw_platform'] = node['platform'] + '-' + sensor_type
+                            del _update_dict['sensor_type']
 
                         # 'live_enables', 'log_enables' and 'diag_enables' Update #
-                        for update_key, update_value in update_dict.items():
+                        for update_key, update_value in _update_dict.items():
                             if update_key not in node.update_dict.keys():
                                 if update_key in node.keys():
-                                    node[update_key] = update_value
+                                    if update_key in ('live_enables', 'log_enables', 'diag_enables'):
+                                        if update_key != 'diag_enables':
+                                            node[update_key] |= update_value[0]
+                                            node[update_key] &= ~update_value[1]
+                                        else:
+                                            node[update_key] = update_value[0]
 
-                    node.update_dict.update(update_dict)
+                                    else:
+                                        node[update_key] = update_value
+
+                        # Raw Enables (Sensor Type) Update #
+                        for update_key in ('live_enables', 'diag_enables'):
+                            if update_key in _update_dict.keys():
+                                _update_dict['raw_enables'] = node.raw_enables()
+
+                    node.update_dict.update(_update_dict)
 
         self._request_update(nodes)
 

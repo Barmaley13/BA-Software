@@ -98,72 +98,8 @@ class SleepyMeshStatistics(SleepyMeshBase):
 
         self.load()
 
-        # Apply enables
-        all_headers = self.read_headers('all').values()
-        for header in all_headers:
-            header.enables(self, 'const_set', True)
-
     def read_headers(self, header_type):
         return self.headers.read(header_type, '')
-
-    # TODO: Eliminate this!
-    def live_units(self, cookie, header_name):
-        """ Returns currently selected units for the bar graph on live page """
-        return self.__units(cookie, header_name, 'live', 'units')
-
-    def log_units(self, cookie, header_name):
-        """ Returns currently selected units for the bar graph on log page """
-        return self.__units(cookie, header_name, 'log', 'units')
-
-    def live_table_units(self, cookie, header_name):
-        """ Returns currently selected list of units for the live page """
-        return self.__units(cookie, header_name, 'live', 'table_units')
-
-    def log_table_units(self, cookie, header_name):
-        """ Returns currently selected list of units for the log page """
-        return self.__units(cookie, header_name, 'log', 'table_units')
-
-    def __units(self, cookie, header_name, page_type, units_type):
-        """ Returns currently selected units for the bar graph on live page """
-        output = None
-        if units_type == 'table_units':
-            output = OrderedDict()
-
-        address = [
-            'platforms', 'system', 'system', 'headers', header_name, units_type]
-        _cookie = load_from_cookie(cookie, address)
-
-        header = None
-        all_headers = self.read_headers('all')
-        for _header_name, _header in all_headers.items():
-            if header_name == _header_name:
-                header = _header
-                break
-
-        if header is not None:
-            if _cookie is None:
-                # Fetch default Header Cookie
-                LOGGER.warning("Using default header cookie during '__units' execution!")
-                LOGGER.warning('address: {}'.format(address))
-                LOGGER.warning('cookie: {}'.format(cookie))
-                _cookie = copy.deepcopy(header[page_type + '_cookie'])
-
-            # Read portion
-            if units_type == 'units':
-                unit_index = _cookie[units_type]
-                _output = header.units(unit_index)
-                if _output is not None:
-                    output = _output
-
-            elif units_type == 'table_units':
-                for unit_index in _cookie[units_type]:
-                    _output = header.units(unit_index)
-                    if _output is not None:
-                        output[_output['internal_name']] = _output
-        else:
-            LOGGER.error("Header: " + str(header_name) + " does not exist!")
-
-        return output
 
     ## Private Methods ##
     # Upstream #
@@ -311,5 +247,64 @@ class SleepyMeshStatistics(SleepyMeshBase):
         if self._sync_type != 'timeout':
             _log_processing_time(delay_average_list, self['data_in']['delay_current'], SYNC_AVERAGE_LENGTH)
             output = _rolling_average(delay_average_list)
+
+        return output
+
+    # TODO: Eliminate this!
+    def live_units(self, cookie, header_name):
+        """ Returns currently selected units for the bar graph on live page """
+        return self.__units(cookie, header_name, 'live', 'units')
+
+    def log_units(self, cookie, header_name):
+        """ Returns currently selected units for the bar graph on log page """
+        return self.__units(cookie, header_name, 'log', 'units')
+
+    def live_table_units(self, cookie, header_name):
+        """ Returns currently selected list of units for the live page """
+        return self.__units(cookie, header_name, 'live', 'table_units')
+
+    def log_table_units(self, cookie, header_name):
+        """ Returns currently selected list of units for the log page """
+        return self.__units(cookie, header_name, 'log', 'table_units')
+
+    def __units(self, cookie, header_name, page_type, units_type):
+        """ Returns currently selected units for the bar graph on live page """
+        output = None
+        if units_type == 'table_units':
+            output = OrderedDict()
+
+        address = [
+            'platforms', 'system', 'system', 'headers', header_name, units_type]
+        _cookie = load_from_cookie(cookie, address)
+
+        header = None
+        all_headers = self.read_headers('all')
+        for _header_name, _header in all_headers.items():
+            if header_name == _header_name:
+                header = _header
+                break
+
+        if header is not None:
+            if _cookie is None:
+                # Fetch default Header Cookie
+                LOGGER.warning("Using default header cookie during '__units' execution!")
+                LOGGER.warning('address: {}'.format(address))
+                LOGGER.warning('cookie: {}'.format(cookie))
+                _cookie = copy.deepcopy(header[page_type + '_cookie'])
+
+            # Read portion
+            if units_type == 'units':
+                unit_index = _cookie[units_type]
+                _output = header.units(unit_index)
+                if _output is not None:
+                    output = _output
+
+            elif units_type == 'table_units':
+                for unit_index in _cookie[units_type]:
+                    _output = header.units(unit_index)
+                    if _output is not None:
+                        output[_output['internal_name']] = _output
+        else:
+            LOGGER.error("Header: " + str(header_name) + " does not exist!")
 
         return output
