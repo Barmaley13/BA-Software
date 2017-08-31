@@ -97,7 +97,10 @@ class Platforms(ModifiedOrderedDict):
             # Add node to platform inactive group
             net_addr = node['net_addr']
             self._nodes[net_addr] = node
-            self[platform_name].groups.values()[0].nodes[net_addr] = node
+
+            inactive_group = self[platform_name].groups.values()[0]
+            node['group'] = inactive_group['internal_name']
+            inactive_group.nodes[net_addr] = node
 
             # Disabling to speed things up
             # self.save()

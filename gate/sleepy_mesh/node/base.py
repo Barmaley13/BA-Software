@@ -47,6 +47,7 @@ NODE_DEFAULTS = {
 
     # Used by PLATFORMS, created dynamically!
     'platform': None,           # read (used by platforms)
+    'group': None,              # read (used by platforms)
 
     # Used by network
     'net_verify': False,

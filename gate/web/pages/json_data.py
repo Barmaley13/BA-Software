@@ -212,18 +212,21 @@ class PagesJsonData(StatusIcons):
 
         if len(group.nodes):
             cookie = self.get_cookie()
-            live_headers = group.live_headers()
-            selected_header = group.live_header(cookie)
 
-            live_header = None
-            if selected_header is not None and selected_header['internal_name'] in live_headers.keys():
-                live_header = selected_header
-            elif len(live_headers):
-                live_header = live_headers.values()[0]
+            for node in group.nodes.values():
+                live_header = None
+                selected_header = group.live_header(cookie, [node])
 
-            if live_header is not None:
-                live_units = group.live_units(cookie, live_header['internal_name'])
-                for node in group.nodes.values():
+                if selected_header is not None:
+                    live_header = selected_header
+                else:
+                    live_headers = group.live_headers([node])
+                    if len(live_headers):
+                        live_header = live_headers.values()[0]
+
+                if live_header is not None:
+                    live_units = node.live_units(cookie, live_header['internal_name'])
+
                     json_dict['nodes'].append({})
 
                     # Name #
@@ -321,9 +324,9 @@ class PagesJsonData(StatusIcons):
 
                     # Node Data #
                     json_dict['nodes'][-1]['data'] = {}
-                    display_headers = group.read_headers('display')
+                    display_headers = node.read_headers('display')
                     for header_name, header in display_headers.items():
-                        log_units = group.log_table_units(cookie, header_name).values()
+                        log_units = node.log_table_units(cookie, header_name).values()
                         for log_unit in log_units:
                             data_name = header['internal_name'] + '_' + log_unit['internal_name']
                             current_value = log_unit.get_string(node)
@@ -368,7 +371,7 @@ class PagesJsonData(StatusIcons):
                 # json_dict['series'][-1]['yaxis'] = len(json_dict['series'])
                 json_dict['series'][-1]['data'] = []
 
-                log_units = group.log_units(cookie, header['internal_name'])
+                log_units = node.log_units(cookie, header['internal_name'])
                 if cookie['single_point']:
                     # LOGGER.debug("Single Point!")
                     current_time = self.manager.system_settings.log_time(logs[-1]['time'])
@@ -398,7 +401,7 @@ class PagesJsonData(StatusIcons):
 
                 if len(logs):
                     # Get min and max values while considering Output Options
-                    log_units = group.log_units(cookie, header['internal_name'])
+                    log_units = node.log_units(cookie, header['internal_name'])
                     min_value = log_units.get_min(node)
                     max_value = log_units.get_max(node)
 
@@ -426,15 +429,16 @@ class PagesJsonData(StatusIcons):
         logs_data = []
 
         cookie = self.get_cookie()
-        selected_nodes = group.log_header(cookie)
-        for node_index, node in enumerate(group.nodes.values()):
-            if node['net_addr'] in selected_nodes:
-                selected_headers = selected_nodes[node['net_addr']]
-                # LOGGER.debug("selected_headers[" + node['net_addr'] + "] = " + str(selected_headers))
+        selected_headers = group.log_header(cookie)
+        for net_addr, node in group.nodes.items():
+            if net_addr in selected_headers:
+                node_headers = selected_headers[net_addr]
+                # LOGGER.debug('node_headers[{}]: {}'.format(net_addr, node_headers))
 
-                display_headers = group.read_headers('display')
+                display_headers = node.read_headers('display')
                 for header_index, header in enumerate(display_headers.values()):
-                    if header['internal_name'] in selected_headers.keys():
+                    if header['internal_name'] in node_headers.keys():
+                        node_index = group.nodes.keys().index(net_addr)
                         logs_data.append({
                             'node_index': node_index,
                             'header_index': header_index,
@@ -446,7 +450,7 @@ class PagesJsonData(StatusIcons):
                             logs_data[-1]['logs'] = [log for log in node.logs[-self.manager.system_settings['log_limit']:]
                                                      if log[header['data_field']] is not None]
 
-        # LOGGER.debug("logs_data = " + str(logs_data))
+        # LOGGER.debug('logs_data: {}'.format(logs_data))
         return logs_data
 
     def __get_warnings(self, group, logs_data=None):

@@ -9,6 +9,7 @@ import logging
 
 from hw_platform import NodePlatform
 from headers import DIAGNOSTIC_FIELDS
+from header_mixin import HeaderMixin
 
 
 ### CONSTANTS ###
@@ -18,7 +19,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 ### CLASSES ###
-class Node(NodePlatform):
+class Node(NodePlatform, HeaderMixin):
     ## Public Methods ##
     def update_last_sync(self, last_sync):
         """ Updates last sync variable """
@@ -63,17 +64,21 @@ class Node(NodePlatform):
         """ Reads/Sets raw_enables using header enables """
         enable_value = 0
 
-        headers = self.read_headers('all')
-        for header in headers.values():
+        all_headers = self.read_headers('all')
+        for header in all_headers.values():
             if header['data_field_position'] is not None:
                 raw_mask = 1 << header['data_field_position']
-                header_enable = header.enables(self, 'live_enables') or header.enables(self, 'diag_enables')
+
+                live_enable = header.enables(self, 'live_enables')
+                diag_enagle = header.enables(self, 'diag_enables')
+                header_enable = live_enable or diag_enagle
 
                 # Write
                 if set_value is not None:
                     raw_enable = bool(set_value & raw_mask)
                     if raw_enable != header_enable:
                         header_enable = raw_enable
+
                         header.enables(self, 'live_enables', raw_enable)
                         if not raw_enable:
                             header.enables(self, 'diag_enables', raw_enable)

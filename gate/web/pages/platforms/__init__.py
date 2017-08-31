@@ -510,6 +510,8 @@ class WebPlatforms(object):
                     node['inactive'] = False
                     update_snmp_settings = True
 
+                node['group'] = new_group_key
+
                 # Update SNMP Settings (only when moving from or to inactive group)
                 if update_snmp_settings:
                     new_group = self[address['platform']].groups[new_group_key]
@@ -624,7 +626,7 @@ class WebPlatforms(object):
 
         if len(nodes):
             all_headers = group.read_headers('all', nodes)
-            # diagnostics_headers = group.read_headers('diagnostics')
+            # diagnostics_headers = group.read_headers('diagnostics', nodes)
 
             # LOGGER.debug('all_headers: {}'.format(all_headers))
 

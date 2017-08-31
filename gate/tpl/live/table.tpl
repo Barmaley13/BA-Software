@@ -40,8 +40,8 @@
     </thead>
     <tbody>
         %# Table with alternative units #
-        %headers = group.live_headers()
-        %for header_name, header in headers.items():
+        %live_headers = group.live_headers()
+        %for header_name, header in live_headers.items():
             %for unit_name, unit_value in header.unit_list.items():
                 %if unit_name in group.live_table_units(cookie, header_name).keys():
                     <tr>

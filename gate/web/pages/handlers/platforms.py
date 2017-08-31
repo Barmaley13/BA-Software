@@ -236,6 +236,11 @@ class WebHandler(WebHandlerBase):
             group_value.nodes = group.nodes
             group_key = group_value['internal_name']
 
+            # Remap nodes to new group
+            for node in group_value.nodes.values():
+                node['group'] = group_key
+                node.save()
+
             group.delete()
             del groups[group['internal_name']]
 
@@ -719,7 +724,7 @@ class LogExportThread(WorkerThread):
             display_headers = self._node.read_headers('display')
             for header_name, header in display_headers.items():
                 # FIXME: self._cookie is a wrong cookie!
-                table_units = self._group.log_table_units(self._cookie, header_name)
+                table_units = self._node.log_table_units(self._cookie, header_name)
                 for log_unit in table_units.values():
                     csv_data += ',' + header['name'] + ' - ' + log_unit['measuring_units']
 
@@ -800,7 +805,7 @@ class LogExportThread(WorkerThread):
 
                     csv_data += "\n" + self._manager.system_settings.local_time(point['time'])
                     for header_name, header in display_headers.items():
-                        table_units = self._group.log_table_units(self._cookie, header_name)
+                        table_units = self._node.log_table_units(self._cookie, header_name)
                         for log_unit in table_units.values():
                             value = log_unit.get_string(self._node, point)
                             csv_data += "," + str(value)

@@ -9,11 +9,7 @@
 
 %### HTML ###
 %cookie = pages.get_cookie()
-%headers = getattr(group, page_type + '_headers')()
-%selected_header = getattr(group, page_type + '_header')(cookie)
-%if selected_header:
-    %selected_header = selected_header['internal_name']
-%end
+%group_headers = getattr(group, page_type + '_headers')()
 %onclick_function = ONCLICK_FUNCTIONS[page_type]
 
 %# Platform and Group Names
@@ -21,10 +17,15 @@
 %group_name = group['internal_name']
 <input type='hidden' name='{{platform_name}}_group' value='{{group_name}}' >
 
-%for header_name, header in headers.items():
+%for header_name, header in group_headers.items():
     <input type='radio' name='{{platform_name}}_{{group_name}}_header' value='{{header_name}}'
     %if page_type == 'live':
-        onclick='{{onclick_function}}' {{checked(header_name == selected_header)}} >{{header['name']}},
+        %selected_name = None
+        %selected_header = getattr(group, page_type + '_header')(cookie)
+        %if selected_header and 'internal_name' in selected_header:
+            %selected_name = selected_header['internal_name']
+        %end
+        onclick='{{onclick_function}}' {{checked(header_name == selected_name)}} >{{header['name']}},
     %elif page_type == 'log':
         <th scope="col">{{header['name']}},
     %end

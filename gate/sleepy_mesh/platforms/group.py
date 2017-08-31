@@ -4,13 +4,14 @@ Author: `Kirill V. Belyayev <http://kbelyayev.com>`_
 """
 
 ### INCLUDES ###
-import copy
 import os
+import copy
 import logging
 
 from py_knife.ordered_dict import OrderedDict
 
 from gate.conversions import internal_name, fetch_item, load_from_cookie
+from gate.sleepy_mesh.node import HeaderMixin
 from gate.sleepy_mesh.error import NodeError
 
 from base import PlatformBase
@@ -24,7 +25,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 ### CLASSES ###
-class Group(PlatformBase):
+class Group(PlatformBase, HeaderMixin):
     def __init__(self, group_name, platform_name, nodes):
         self.system_settings = nodes.system_settings
         self._nodes = nodes
@@ -35,6 +36,7 @@ class Group(PlatformBase):
 
         # Default Cookies
         defaults_kwargs = {
+            'group': internal_name(group_name),
             'live_cookie': {'selected': 0},
             'log_cookie': {'selected': []}
         }
@@ -134,21 +136,24 @@ class Group(PlatformBase):
         return cookie
 
     ## Headers, Header and Unit Selection Methods ##
-    def live_headers(self):
+    def live_headers(self, nodes=None):
         """ Fetch enabled headers for the live page """
-        return self.__enabled_headers('live')
+        return self.__enabled_headers('live', nodes)
 
-    def log_headers(self):
+    def log_headers(self, nodes=None):
         """ Fetch enabled headers for the log page """
-        return self.__enabled_headers('log')
+        return self.__enabled_headers('log', nodes)
 
-    def __enabled_headers(self, page_type):
+    def __enabled_headers(self, page_type, nodes=None):
         """ Fetch enabled headers """
         header_dict = OrderedDict()
 
-        display_headers = self.read_headers('display')
+        if nodes is None:
+            nodes = self.nodes.values()
+
+        display_headers = self.read_headers('display', nodes)
         for header_name, header in display_headers.items():
-            for node in self.nodes.values():
+            for node in nodes:
                 if header.enables(node, page_type + '_enables'):
                     header_dict[header_name] = header
                     break
@@ -159,22 +164,18 @@ class Group(PlatformBase):
 
         return header_dict
 
-    def live_header(self, cookie):
+    def live_header(self, cookie, nodes=None):
         """ Returns selected header or set of headers on the live page """
-        return self.__selected_header(cookie, 'live')
+        return self.__selected_header(cookie, 'live', nodes)
 
-    def log_header(self, cookie):
+    def log_header(self, cookie, nodes=None):
         """ Returns selected header or set of headers on the log page """
-        return self.__selected_header(cookie, 'log')
+        return self.__selected_header(cookie, 'log', nodes)
 
-    def __selected_header(self, cookie, page_type):
+    def __selected_header(self, cookie, page_type, nodes=None):
         """ Returns selected header or set of headers """
-        output = None
-        if page_type == 'log':
-            output = {}
-
         address = [
-            'platforms', self['platform'], self['internal_name'], 'selected']
+            'platforms', self['platform'], self['group'], 'selected']
         _cookie = load_from_cookie(cookie, address)
 
         if _cookie is None:
@@ -184,79 +185,29 @@ class Group(PlatformBase):
             _cookie = self.default_cookie(page_type)
 
         # Read portion
-        display_headers = self.read_headers('display')
         if page_type == 'live':
+            output = None
+
             header_index = _cookie['selected']
+            display_headers = self.read_headers('display', nodes)
             _output = fetch_item(display_headers, header_index)
             if _output is not None:
                 output = _output
         else:
+            output = OrderedDict()
+
             selected_nodes = _cookie['selected']
             for net_addr in selected_nodes:
                 output[net_addr] = OrderedDict()
-                node_headers = selected_nodes[net_addr]
-                for header_index in node_headers:
-                    _output = fetch_item(display_headers, header_index)
-                    if _output is not None:
-                        output[net_addr][_output['internal_name']] = _output
 
-        return output
-
-    def live_units(self, cookie, header_name):
-        """ Returns currently selected units for the bar graph on live page """
-        return self.__units(cookie, header_name, 'live', 'units')
-
-    def log_units(self, cookie, header_name):
-        """ Returns currently selected units for the bar graph on log page """
-        return self.__units(cookie, header_name, 'log', 'units')
-
-    def live_table_units(self, cookie, header_name):
-        """ Returns currently selected list of units for the live page """
-        return self.__units(cookie, header_name, 'live', 'table_units')
-
-    def log_table_units(self, cookie, header_name):
-        """ Returns currently selected list of units for the log page """
-        return self.__units(cookie, header_name, 'log', 'table_units')
-
-    def __units(self, cookie, header_name, page_type, units_type):
-        """ Returns currently selected units for the bar graph on live page """
-        output = None
-        if units_type == 'table_units':
-            output = OrderedDict()
-
-        address = [
-            'platforms', self['platform'], self['internal_name'], 'headers', header_name, units_type]
-        _cookie = load_from_cookie(cookie, address)
-
-        header = None
-        all_headers = self.read_headers('all')
-        for _header_name, _header in all_headers.items():
-            if header_name == _header_name:
-                header = _header
-                break
-
-        if header is not None:
-            if _cookie is None:
-                # Fetch default Header Cookie
-                LOGGER.warning("Using default header cookie during '__units' execution!")
-                # LOGGER.warning('address: {}'.format(address))
-                # LOGGER.warning('cookie: {}'.format(cookie))
-                _cookie = copy.deepcopy(header[page_type + '_cookie'])
-
-            # Read portion
-            if units_type == 'units':
-                unit_index = _cookie[units_type]
-                _output = header.units(unit_index)
-                if _output is not None:
-                    output = _output
-
-            elif units_type == 'table_units':
-                for unit_index in _cookie[units_type]:
-                    _output = header.units(unit_index)
-                    if _output is not None:
-                        output[_output['internal_name']] = _output
-        else:
-            LOGGER.error("Header: " + str(header_name) + " does not exist!")
+                if net_addr in self.nodes.keys():
+                    node = self.nodes[net_addr]
+                    node_headers = selected_nodes[net_addr]
+                    for header_index in node_headers:
+                        display_headers = node.read_headers('display')
+                        _output = fetch_item(display_headers, header_index)
+                        if _output is not None:
+                            output[net_addr][_output['internal_name']] = _output
 
         return output
 
@@ -290,3 +241,10 @@ class Group(PlatformBase):
         """ Refreshes diagnostic fields """
         for node in self.nodes.values():
             node.headers.refresh(node)
+
+    ## Overloading Generic Macros ##
+    def __getitem__(self, key):
+        if key == 'group':
+            key = 'internal_name'
+
+        return super(Group, self).__getitem__(key)

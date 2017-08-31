@@ -226,14 +226,14 @@ class Headers(DatabaseDict):
                 error_registers = ('sensor_fault', 'alarms')
 
             if alert_group in ('sensor_fault', 'alarms'):
-                headers = self.read('display').values()
+                alarm_headers = self.read('display').values()
             elif alert_group == 'diagnostics':
-                headers = self.read('diagnostics').values()
+                alarm_headers = self.read('diagnostics').values()
             else:
-                headers = self.read('all').values()
+                alarm_headers = self.read('all').values()
 
             for error_register in error_registers:
-                for header in headers:
+                for header in alarm_headers:
                     for alarm_type in ('min_alarm', 'max_alarm'):
                         error_field = error_register + '_' + alarm_type
                         warning_description = header.alarm_messages(error_register, alarm_type)

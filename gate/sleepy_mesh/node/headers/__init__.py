@@ -58,7 +58,7 @@ def generate_node_headers(platform):
     sys.path.append(GATE_FOLDER)
     from headers import common
 
-    headers = []
+    platform_headers = []
     for sensor_index, sensor_code in enumerate(sensor_type):
         channel_headers = []
         for importer, module_name, is_package in pkgutil.iter_modules([HEADERS_FOLDER]):
@@ -94,21 +94,21 @@ def generate_node_headers(platform):
 
             channel_headers = [multiple_header] + channel_headers
 
-        headers.append(channel_headers)
+        platform_headers.append(channel_headers)
 
     # Add platform specific headers
     headers_name = platform_company.upper() + '_HEADERS'
     if hasattr(common, headers_name):
         common_headers = getattr(common, headers_name)
-        headers += copy.deepcopy(common_headers)
+        platform_headers += copy.deepcopy(common_headers)
 
     # Add global headers
-    headers += copy.deepcopy(common.HEADERS)
+    platform_headers += copy.deepcopy(common.HEADERS)
 
     # Create headers instance
-    output = Headers(headers, sensor_type)
+    output = Headers(platform_headers, sensor_type)
 
-    # LOGGER.debug('headers: {}'.format(headers))
+    # LOGGER.debug('headers: {}'.format(platform_headers))
     # LOGGER.debug('sensor_type: {}'.format(sensor_type))
     # LOGGER.debug('header keys: {}'.format(output.read('all', sensor_type).keys()))
 
