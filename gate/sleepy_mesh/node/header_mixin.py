@@ -63,6 +63,7 @@ class HeaderMixin(object):
                 break
 
         if header is not None:
+
             if _cookie is None:
                 # Fetch default Header Cookie
                 LOGGER.warning("Using default header cookie during '__units' execution!")
@@ -73,12 +74,27 @@ class HeaderMixin(object):
             # Read portion
             if units_type == 'units':
                 unit_index = _cookie[units_type]
+
+                # Multiple Hack
+                if unit_index == 'multiple':
+                    default_index = header[page_type + '_cookie'][units_type]
+                    unit_index = default_index
+
                 _output = header.units(unit_index)
                 if _output is not None:
                     output = _output
 
             elif units_type == 'table_units':
-                for unit_index in _cookie[units_type]:
+                for index, unit_index in enumerate(_cookie[units_type]):
+
+                    # Multiple Hack
+                    if unit_index == 'multiple':
+                        default_indexes = header[page_type + '_cookie'][units_type]
+                        if index < len(default_indexes):
+                            unit_index = default_indexes[index]
+                        else:
+                            break
+
                     _output = header.units(unit_index)
                     if _output is not None:
                         output[_output['internal_name']] = _output

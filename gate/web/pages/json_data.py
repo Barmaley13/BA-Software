@@ -213,7 +213,7 @@ class PagesJsonData(StatusIcons):
         if len(group.nodes):
             cookie = self.get_cookie()
 
-            for node in group.nodes.values():
+            for net_addr, node in group.nodes.items():
                 live_header = None
                 selected_header = group.live_header(cookie, [node])
 
@@ -237,7 +237,7 @@ class PagesJsonData(StatusIcons):
                     bar_graph_enable = True
 
                     live_header_name = ''
-                    if live_header['name'] != 'Multiple':
+                    if not live_header['internal_name'].startswith('multiple'):
                         live_header_name = live_header['name'] + ' '
 
                     if not live_header.enables(node, 'const_set'):
@@ -268,7 +268,7 @@ class PagesJsonData(StatusIcons):
                     bar_graph_enable &= bool(current_value is not None)
 
                     if bar_graph_enable:
-                        # LOGGER.debug("node = " + str(node['net_addr']))
+                        # LOGGER.debug('node: '.format(net_addr))
 
                         min_value = live_units.get_min(node)
                         max_value = live_units.get_max(node)
@@ -281,14 +281,14 @@ class PagesJsonData(StatusIcons):
                             json_dict['nodes'][-1]['series'][-1]['color'] = 'yellow'
                         else:
                             alarm_triggered = node.error.alarm_triggered(live_header)
-                            # LOGGER.debug("alarm_triggered = " + str(alarm_triggered))
+                            # LOGGER.debug('alarm_triggered: {}'.format(alarm_triggered))
 
                             if alarm_triggered:
                                 json_dict['nodes'][-1]['series'][-1]['color'] = 'red'
                             else:
                                 json_dict['nodes'][-1]['series'][-1]['color'] = 'green'
 
-                        #json_dict['nodes'][-1]['series'][-1]['label'] = header['name']
+                        # json_dict['nodes'][-1]['series'][-1]['label'] = header['name']
 
                         # Options #
                         json_dict['nodes'][-1]['options'] = {}
@@ -373,7 +373,7 @@ class PagesJsonData(StatusIcons):
 
                 log_units = node.log_units(cookie, header['internal_name'])
                 if cookie['single_point']:
-                    # LOGGER.debug("Single Point!")
+                    # LOGGER.debug('Single Point!')
                     current_time = self.manager.system_settings.log_time(logs[-1]['time'])
                     current_value = log_units.get_string(node, logs[-1])
                     json_dict['series'][-1]['data'].append([current_time, current_value])
@@ -498,7 +498,7 @@ class PagesJsonData(StatusIcons):
         snmp_response = unpickle_file(SNMP_RESPONSES_PATH)
         if snmp_response is not False:
             # If on snmp_agents or snmp_command page prompt success
-            # LOGGER.debug("SNMP Response: " + str(snmp_response))
+            # LOGGER.debug('SNMP Response: {}'.format(snmp_response))
             if snmp_response is not None:
                 page_url = self.url()
                 if self.url('snmp_agents') in page_url or self.url('snmp_commands') in page_url:

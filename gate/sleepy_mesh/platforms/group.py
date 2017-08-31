@@ -158,9 +158,9 @@ class Group(PlatformBase, HeaderMixin):
                     header_dict[header_name] = header
                     break
 
-        # LOGGER.debug('page_type: ' + str(page_type))
-        # LOGGER.debug('nodes: ' + str(nodes.keys()))
-        # LOGGER.debug('headers: ' + str(header_dict.keys()))
+        # LOGGER.debug('page_type: {}'.format(page_type))
+        # LOGGER.debug('nodes: {}'.format(nodes.keys()))
+        # LOGGER.debug('headers: {}'.format(header_dict.keys()))
 
         return header_dict
 
@@ -189,6 +189,12 @@ class Group(PlatformBase, HeaderMixin):
             output = None
 
             header_index = _cookie['selected']
+
+            # Multiple Hack
+            if 'multiple' in header_index:
+                header_index = int(header_index.split('_')[-1])
+            # LOGGER.debug('header_index: {}'.format(header_index))
+
             display_headers = self.read_headers('display', nodes)
             _output = fetch_item(display_headers, header_index)
             if _output is not None:
@@ -204,6 +210,12 @@ class Group(PlatformBase, HeaderMixin):
                     node = self.nodes[net_addr]
                     node_headers = selected_nodes[net_addr]
                     for header_index in node_headers:
+
+                        # Multiple Hack
+                        if 'multiple' in header_index:
+                            header_index = int(header_index.split('_')[-1])
+                        # LOGGER.debug('header_index: {}'.format(header_index))
+
                         display_headers = node.read_headers('display')
                         _output = fetch_item(display_headers, header_index)
                         if _output is not None:
@@ -229,8 +241,8 @@ class Group(PlatformBase, HeaderMixin):
                         else:
                             clear_mask |= header_mask
 
-            # LOGGER.debug("{} dict: {}".format(enable_type, enable_dict))
-            # LOGGER.debug("enable_mask: ".format(output))
+            # LOGGER.debug('{} dict: {}'.format(enable_type, enable_dict))
+            # LOGGER.debug('enable_mask: {}'.format(output))
 
         else:
             LOGGER.error("Enable type '{}' does not exist!".format(enable_type))
