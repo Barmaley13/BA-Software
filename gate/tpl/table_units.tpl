@@ -42,7 +42,7 @@
                     <td>
                         <input type='checkbox' name='{{platform_name}}_{{group_name}}_{{header_name}}_table_units'
                         value='{{unit_name}}' onclick='{{onclick_functions[page_type]}}'
-                        %table_units = getattr(group, page_type + '_table_units')(cookie, header_name).keys()
+                        %table_units = getattr(group, page_type + '_table_units')(cookie, header).keys()
                         {{checked(unit_name in table_units)}} >
                     </td>
                 %end

@@ -29,76 +29,65 @@ class HeaderMixin(object):
         raise NotImplementedError
 
     ## Headers, Header and Unit Selection Methods ##
-    def live_units(self, cookie, header_name, *args, **kwargs):
+    def live_units(self, cookie, header):
         """ Returns currently selected units for the bar graph on live page """
-        return self.__units(cookie, header_name, 'live', 'units', *args, **kwargs)
+        return self.__units(cookie, header, 'live', 'units')
 
-    def log_units(self, cookie, header_name, *args, **kwargs):
+    def log_units(self, cookie, header):
         """ Returns currently selected units for the bar graph on log page """
-        return self.__units(cookie, header_name, 'log', 'units', *args, **kwargs)
+        return self.__units(cookie, header, 'log', 'units')
 
-    def live_table_units(self, cookie, header_name, *args, **kwargs):
+    def live_table_units(self, cookie, header):
         """ Returns currently selected list of units for the live page """
-        return self.__units(cookie, header_name, 'live', 'table_units', *args, **kwargs)
+        return self.__units(cookie, header, 'live', 'table_units')
 
-    def log_table_units(self, cookie, header_name, *args, **kwargs):
+    def log_table_units(self, cookie, header):
         """ Returns currently selected list of units for the log page """
-        return self.__units(cookie, header_name, 'log', 'table_units', *args, **kwargs)
+        return self.__units(cookie, header, 'log', 'table_units')
 
-    def __units(self, cookie, header_name, page_type, units_type, *args, **kwargs):
+    def __units(self, cookie, header, page_type, units_type):
         """ Returns currently selected units for the bar graph on live page """
         output = None
         if units_type == 'table_units':
             output = OrderedDict()
 
         address = [
-            'platforms', self['platform'], self['group'], 'headers', header_name, units_type]
+            'platforms', self['platform'], self['group'], 'headers', header['internal_name'], units_type]
         _cookie = load_from_cookie(cookie, address)
 
-        header = None
-        all_headers = self.read_headers('all', *args, **kwargs)
-        for _header_name, _header in all_headers.items():
-            if header_name == _header_name:
-                header = _header
-                break
+        if _cookie is None:
+            # Fetch default Header Cookie
+            LOGGER.warning("Using default header cookie during '__units' execution!")
+            # LOGGER.warning('address: {}'.format(address))
+            # LOGGER.warning('cookie: {}'.format(cookie))
+            _cookie = copy.deepcopy(header[page_type + '_cookie'])
 
-        if header is not None:
+        # Read portion
+        if units_type == 'units':
+            unit_index = _cookie[units_type]
 
-            if _cookie is None:
-                # Fetch default Header Cookie
-                LOGGER.warning("Using default header cookie during '__units' execution!")
-                # LOGGER.warning('address: {}'.format(address))
-                # LOGGER.warning('cookie: {}'.format(cookie))
-                _cookie = copy.deepcopy(header[page_type + '_cookie'])
+            # # Multiple Hack
+            # if unit_index == 'multiple':
+            #     default_index = header[page_type + '_cookie'][units_type]
+            #     unit_index = default_index
 
-            # Read portion
-            if units_type == 'units':
-                unit_index = _cookie[units_type]
+            _output = header.units(unit_index)
+            if _output is not None:
+                output = _output
 
-                # Multiple Hack
-                if unit_index == 'multiple':
-                    default_index = header[page_type + '_cookie'][units_type]
-                    unit_index = default_index
+        elif units_type == 'table_units':
+            for index, unit_index in enumerate(_cookie[units_type]):
+
+                # # Multiple Hack
+                # if unit_index == 'multiple':
+                #     default_indexes = header[page_type + '_cookie'][units_type]
+                #     if index < len(default_indexes):
+                #         unit_index = default_indexes[index]
+                #     else:
+                #         break
 
                 _output = header.units(unit_index)
                 if _output is not None:
-                    output = _output
-
-            elif units_type == 'table_units':
-                for index, unit_index in enumerate(_cookie[units_type]):
-
-                    # Multiple Hack
-                    if unit_index == 'multiple':
-                        default_indexes = header[page_type + '_cookie'][units_type]
-                        if index < len(default_indexes):
-                            unit_index = default_indexes[index]
-                        else:
-                            break
-
-                    _output = header.units(unit_index)
-                    if _output is not None:
-                        output[_output['internal_name']] = _output
-        else:
-            LOGGER.error("Header: " + str(header_name) + " does not exist!")
+                    output[_output['internal_name']] = _output
 
         return output

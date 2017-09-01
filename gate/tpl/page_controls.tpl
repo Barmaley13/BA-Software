@@ -32,7 +32,7 @@
     
     <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' onchange='{{onclick_function}}' >
         %for unit_name, unit_value in header.unit_list.items():
-            %selected_units = getattr(group, page_type + '_units')(cookie, header_name)['internal_name']
+            %selected_units = getattr(group, page_type + '_units')(cookie, header)['internal_name']
             <option value='{{unit_name}}'' {{selected(unit_name == selected_units)}}>
                 {{unit_value['measuring_units']}}
             </option>

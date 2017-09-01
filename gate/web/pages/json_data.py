@@ -213,33 +213,32 @@ class PagesJsonData(StatusIcons):
         if len(group.nodes):
             cookie = self.get_cookie()
 
-            for net_addr, node in group.nodes.items():
-                live_header = None
-                selected_header = group.live_header(cookie, [node])
+            live_header = group.live_header(cookie)
 
-                if selected_header is not None:
-                    live_header = selected_header
-                else:
-                    live_headers = group.live_headers([node])
-                    if len(live_headers):
-                        live_header = live_headers.values()[0]
+            for net_addr, node in group.nodes.items():
+                # if live_header is None:
+                #     live_headers = group.live_headers([node])
+                #     if len(live_headers):
+                #         live_header = live_headers.values()[0]
 
                 if live_header is not None:
-                    live_units = node.live_units(cookie, live_header['internal_name'])
+                    node_json = {'name': node['name']}
 
-                    json_dict['nodes'].append({})
+                    # Data Entry Hack for 'Multiple' Headers #
+                    group_header_name = live_header['internal_name']
+                    if 'multiple' in group_header_name:
+                        live_headers = group.live_headers([node])
+                        live_header = live_headers.values()[live_header['header_position']]
 
-                    # Name #
-                    json_dict['nodes'][-1]['name'] = node['name']
+                    # LOGGER.debug('live_header: {}'.format(live_header['name']))
+
+                    live_units = node.live_units(cookie, live_header)
 
                     # Warning #
                     warning = ''
                     bar_graph_enable = True
 
-                    live_header_name = ''
-                    if not live_header['internal_name'].startswith('multiple'):
-                        live_header_name = live_header['name'] + ' '
-
+                    live_header_name = live_header['name'] + ' '
                     if not live_header.enables(node, 'const_set'):
                         warning += PLEASE_SET + node['name'] + ' ' + CONSTANTS
                         warning += TO_DISPLAY1 + live_header_name + TO_DISPLAY2
@@ -261,7 +260,7 @@ class PagesJsonData(StatusIcons):
                                 warning += potential_warning
                                 break
 
-                    json_dict['nodes'][-1]['warning'] = warning
+                    node_json['warning'] = warning
 
                     # Bar Graph Data #
                     current_value = live_units.get_string(node)
@@ -274,63 +273,72 @@ class PagesJsonData(StatusIcons):
                         max_value = live_units.get_max(node)
 
                         # Series #
-                        json_dict['nodes'][-1]['series'] = []
-                        json_dict['nodes'][-1]['series'].append({'data': [[0, current_value, min_value]]})
+                        series_dict = {'data': [[0, current_value, min_value]]}
 
                         if not node['presence']:
-                            json_dict['nodes'][-1]['series'][-1]['color'] = 'yellow'
+                            series_dict['color'] = 'yellow'
                         else:
                             alarm_triggered = node.error.alarm_triggered(live_header)
                             # LOGGER.debug('alarm_triggered: {}'.format(alarm_triggered))
 
                             if alarm_triggered:
-                                json_dict['nodes'][-1]['series'][-1]['color'] = 'red'
+                                series_dict['color'] = 'red'
                             else:
-                                json_dict['nodes'][-1]['series'][-1]['color'] = 'green'
+                                series_dict['color'] = 'green'
 
-                        # json_dict['nodes'][-1]['series'][-1]['label'] = header['name']
+                        # series_dict['label'] = live_header['name']
+                        node_json['series'] = [series_dict]
 
                         # Options #
-                        json_dict['nodes'][-1]['options'] = {}
-                        json_dict['nodes'][-1]['options']['series'] = {
-                            'bars': {
-                                'show': True,
-                                'barWidth': 0.25,
-                                'align': 'center'
+                        node_json['options'] = {
+                            'series': {
+                                'bars': {
+                                    'show': True,
+                                    'barWidth': 0.25,
+                                    'align': 'center'
+                                }
+                            },
+                            'grid': {
+                                'hoverable': True,
+                                'clickable': True
+                            },
+                            'legend': {
+                                'position': 'se'
+                            },
+                            'xaxis': {
+                                # 'position': 'top',
+                                'min': -0.5,
+                                'max': 0.5,
+                                # 'ticks': [[0, node['name']]],
+                                'ticks': [[0, '']],
+                                'tickLength': 0
+                            },
+                            'yaxis': {
+                                'min': min_value,
+                                'max': max_value
                             }
                         }
 
-                        json_dict['nodes'][-1]['options']['grid'] = {
-                            'hoverable': True,
-                            'clickable': True
-                        }
-                        json_dict['nodes'][-1]['options']['legend'] = {
-                            'position': 'se'
-                        }
-                        json_dict['nodes'][-1]['options']['xaxis'] = {
-                            # 'position': 'top',
-                            'min': -0.5,
-                            'max': 0.5,
-                            # 'ticks': [[0, node['name']]],
-                            'ticks': [[0, ""]],
-                            'tickLength': 0
-                        }
-                        json_dict['nodes'][-1]['options']['yaxis'] = {
-                            'min': min_value, 'max': max_value
-                        }
-
                         # Presence #
-                        # json_dict['nodes'][-1]['presence'] = int(node['presence'])
+                        # node_json['presence'] = int(node['presence'])
 
                     # Node Data #
-                    json_dict['nodes'][-1]['data'] = {}
-                    display_headers = node.read_headers('display')
-                    for header_name, header in display_headers.items():
-                        log_units = node.log_table_units(cookie, header_name).values()
-                        for log_unit in log_units:
-                            data_name = header['internal_name'] + '_' + log_unit['internal_name']
-                            current_value = log_unit.get_string(node)
-                            json_dict['nodes'][-1]['data'][data_name] = current_value
+                    node_json['data'] = {}
+                    group_headers = group.read_headers('display')
+                    node_headers = node.read_headers('display')
+                    for group_header_name, group_header in group_headers.items():
+                        group_log_units = group.log_table_units(cookie, group_header)
+
+                        node_header = node_headers.values()[group_header['header_position']]
+                        node_log_units = node.log_table_units(cookie, node_header)
+                        for unit_index, group_log_unit_name in enumerate(group_log_units.keys()):
+                            data_name = group_header_name + '_' + group_log_unit_name
+
+                            node_log_unit = node_log_units.values()[unit_index]
+                            current_value = node_log_unit.get_string(node)
+                            node_json['data'][data_name] = current_value
+
+                    json_dict['nodes'].append(node_json)
 
         return json_dict
 
@@ -371,7 +379,7 @@ class PagesJsonData(StatusIcons):
                 # json_dict['series'][-1]['yaxis'] = len(json_dict['series'])
                 json_dict['series'][-1]['data'] = []
 
-                log_units = node.log_units(cookie, header['internal_name'])
+                log_units = node.log_units(cookie, header)
                 if cookie['single_point']:
                     # LOGGER.debug('Single Point!')
                     current_time = self.manager.system_settings.log_time(logs[-1]['time'])
@@ -401,7 +409,7 @@ class PagesJsonData(StatusIcons):
 
                 if len(logs):
                     # Get min and max values while considering Output Options
-                    log_units = node.log_units(cookie, header['internal_name'])
+                    log_units = node.log_units(cookie, header)
                     min_value = log_units.get_min(node)
                     max_value = log_units.get_max(node)
 

@@ -43,11 +43,11 @@
         %live_headers = group.live_headers()
         %for header_name, header in live_headers.items():
             %for unit_name, unit_value in header.unit_list.items():
-                %if unit_name in group.live_table_units(cookie, header_name).keys():
+                %if unit_name in group.live_table_units(cookie, header).keys():
                     <tr>
                         <td>{{header['name']}}, {{unit_value['measuring_units']}}</td>
                         %for index in range(0, LIVE_NODES_NUMBER):
-                            <td id="{{header_name + '_' + unit_name + str(index)}}"></td>
+                            <td id="{{header_name}}_{{unit_name + str(index)}}"></td>
                         %end          
                     </tr>
                 %end

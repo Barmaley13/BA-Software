@@ -724,7 +724,7 @@ class LogExportThread(WorkerThread):
             display_headers = self._node.read_headers('display')
             for header_name, header in display_headers.items():
                 # FIXME: self._cookie is a wrong cookie!
-                table_units = self._node.log_table_units(self._cookie, header_name)
+                table_units = self._node.log_table_units(self._cookie, header)
                 for log_unit in table_units.values():
                     csv_data += ',' + header['name'] + ' - ' + log_unit['measuring_units']
 
@@ -805,10 +805,10 @@ class LogExportThread(WorkerThread):
 
                     csv_data += "\n" + self._manager.system_settings.local_time(point['time'])
                     for header_name, header in display_headers.items():
-                        table_units = self._node.log_table_units(self._cookie, header_name)
+                        table_units = self._node.log_table_units(self._cookie, header)
                         for log_unit in table_units.values():
-                            value = log_unit.get_string(self._node, point)
-                            csv_data += "," + str(value)
+                            log_value = log_unit.get_string(self._node, point)
+                            csv_data += "," + str(log_value)
                 else:
                     csv_data = None
                     break

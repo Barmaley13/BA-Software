@@ -190,10 +190,10 @@ class Group(PlatformBase, HeaderMixin):
 
             header_index = _cookie['selected']
 
-            # Multiple Hack
-            if 'multiple' in header_index:
-                header_index = int(header_index.split('_')[-1])
-            # LOGGER.debug('header_index: {}'.format(header_index))
+            # # Multiple Hack
+            # if 'multiple' in header_index:
+            #     header_index = int(header_index.split('_')[-1])
+            # # LOGGER.debug('header_index: {}'.format(header_index))
 
             display_headers = self.read_headers('display', nodes)
             _output = fetch_item(display_headers, header_index)
@@ -211,10 +211,10 @@ class Group(PlatformBase, HeaderMixin):
                     node_headers = selected_nodes[net_addr]
                     for header_index in node_headers:
 
-                        # Multiple Hack
-                        if 'multiple' in header_index:
-                            header_index = int(header_index.split('_')[-1])
-                        # LOGGER.debug('header_index: {}'.format(header_index))
+                        # # Multiple Hack
+                        # if 'multiple' in header_index:
+                        #     header_index = int(header_index.split('_')[-1])
+                        # # LOGGER.debug('header_index: {}'.format(header_index))
 
                         display_headers = node.read_headers('display')
                         _output = fetch_item(display_headers, header_index)
