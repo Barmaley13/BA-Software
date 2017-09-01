@@ -58,13 +58,13 @@ def parse_raw_data(raw_data):
     raw_packet = None
 
     if raw_data is not None and len(raw_data):
-        LOGGER.debug("Incoming raw_data len: " + str(len(raw_data)))
+        LOGGER.debug('Incoming raw_data len: {}'.format(len(raw_data)))
         if len(raw_data) >= 1:
             raw_packet_len = raw_data[:1]
             raw_data = raw_data[1:]
 
             packet_len = bin_to_int(raw_packet_len)
-            LOGGER.debug("Packet length: " + str(packet_len))
+            LOGGER.debug('Packet length: {}'.format(packet_len))
 
             if packet_len is not None and len(raw_data) >= packet_len:
                 raw_packet = raw_data[:packet_len]
@@ -74,7 +74,7 @@ def parse_raw_data(raw_data):
                 del raw_data[:]
 
         if raw_packet is None:
-            LOGGER.warning("Dropping the rest of the data length of '" + str(len(raw_data)) + "'!")
+            LOGGER.warning('Dropped raw_data len: {}'.format(len(raw_data)))
 
     return raw_packet, raw_data
 

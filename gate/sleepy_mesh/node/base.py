@@ -180,6 +180,10 @@ class NodeBase(DatabaseDict):
         """ Overloading Base Update Method """
         self.__set_flags()
 
+        if 'sensor_type' in update_dict:
+            if self['sensor_type'] != update_dict['sensor_type']:
+                self.headers.rename_headers(update_dict['sensor_type'])
+
         if 'raw_error' in update_dict:
             self.__update_error(update_dict['raw_error'])
             del update_dict['raw_error']
