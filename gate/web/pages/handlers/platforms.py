@@ -371,6 +371,7 @@ class WebHandler(WebHandlerBase):
                             _save_dict = {'sensor_type': sensor_type}
                             LOGGER.debug('sensor_type: {}'.format(sensor_type))
 
+                            # TODO: Update all nodes at ones and not individual node!!!
                             self._manager.request_update(_save_dict, [_node])
 
             if update_enables:
@@ -780,7 +781,8 @@ class LogExportThread(WorkerThread):
         # LOGGER.debug('files: {}'.format(files))
         total_logs = float(len(files) + 1.0)
 
-        _progress_message = strings.PROCESSING + 'log {0:>3} out of {1:>3} logs, '.format(
+        _progress_message = strings.PROCESSING
+        _progress_message += ' log {0:>3} out of {1:>3} logs, '.format(
             int(current_log), int(total_logs))
 
         if points is None:

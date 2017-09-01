@@ -481,7 +481,8 @@ class DatabaseExportThread(WorkerThread):
                 for _file in files:
                     if self.get_running():
                         current_file += 1.0
-                        progress_message = strings.PROCESSING + 'file {0:>3} out of {1:>3} files!'.format(
+                        progress_message = strings.PROCESSING
+                        progress_message += ' file {0:>3} out of {1:>3} files!'.format(
                             int(current_file), int(total_files))
                         progress_percentage = ((current_file - 1.0) / total_files) * 80.0
                         self._manager.websocket.send(

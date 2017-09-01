@@ -12,8 +12,8 @@ from bottle import template, request
 
 from gate.common import TPL_FOLDER
 
-from .base import init_page
-from .json_data import PagesJsonData
+from base import init_page
+from json_data import PagesJsonData
 
 
 ### CONSTANTS ###
@@ -80,7 +80,7 @@ class WebPages(PagesJsonData):
             post_access = handler_tuple[1]
 
             action_method = request.forms.action_method.encode('ascii', 'ignore')
-            # LOGGER.debug('action_method: ' + str(action_method))
+            # LOGGER.debug('action_method: {}'.format(action_method))
 
             # FIXME: This should go away when we move cookie scheme to link addressing
             if action_method == 'load_base_page':
@@ -100,7 +100,7 @@ class WebPages(PagesJsonData):
                     self.set_cookie(new_cookie)
                     json_dict['new_cookie'] = new_cookie
 
-                    # LOGGER.debug('New Cookie: ' + str(new_cookie))
+                    # LOGGER.debug('New Cookie: {}'.format(new_cookie))
 
                 if 'new_page' in handler_dict:
                     return handler_dict['new_page']
@@ -130,12 +130,12 @@ class WebPages(PagesJsonData):
         if request.query.data:
             data = yaml.safe_load(request.query.data)
 
-            # LOGGER.debug("data = " + str(data))
+            # LOGGER.debug('data: {}'.format(data))
 
             if 'url' in data:
                 input_form_url, input_form_name = _split_url(data['url'])
-                # LOGGER.debug("input_form_url: " + str(input_form_url))
-                # LOGGER.debug("input_form_name: " + str(input_form_name))
+                # LOGGER.debug('input_form_url: {}'.format(input_form_url))
+                # LOGGER.debug('input_form_name: {}'.format(input_form_name))
 
                 # Select page
                 self.select_page(input_form_url)
@@ -143,9 +143,9 @@ class WebPages(PagesJsonData):
                 _url = self.url()
 
                 if 'cookies' in data:
-                    # LOGGER.debug("New Cookie: " + str(data['cookies']))
+                    # LOGGER.debug('New Cookie: {}'.format(data['cookies']))
                     self.users.update_current_user_cookies({_url: data['cookies']}, pre_format_cookies=True)
-                    # LOGGER.debug('requested form = ' + str(_url) + '/' + str(input_form_name))
+                    # LOGGER.debug('requested form: {}/{}'.format(_url, input_form_name))
 
                 # Kwargs
                 kwargs = {'url': data['url']}
@@ -153,7 +153,7 @@ class WebPages(PagesJsonData):
                     kwargs.update(data['kwargs'])
 
                 for form in self._forms:
-                    # LOGGER.debug('form url: ' + str(form['template']))
+                    # LOGGER.debug('form url: {}'.format(form['template']))
                     form_template, form_name = _split_url(form['template'].replace(os.sep, '/'))
                     # TODO: Might wanna create separate pages for login/logout
                     # As of now there is a patch to fetch form on 'live', 'logs' pages
@@ -166,17 +166,29 @@ class WebPages(PagesJsonData):
                         tpl = self.__fetch_form_html(form, kwargs)
                         break
                 else:
-                    # Dynamic form creation
-                    template_path = os.path.join(os.path.join(*_url.split('/')), input_form_name)
-                    if os.path.isfile(os.path.join(TPL_FOLDER, template_path + '.tpl')):
-                        new_form = {
-                            'template': template_path,
-                            'get_handler': self._parse('get_handler')
-                        }
+                    # Dynamic form creation #
+                    # Creating Path from url
+                    template_path = os.path.join(*_url.split('/'))
 
-                        self._forms.append(new_form)
+                    while len(template_path):
+                        # LOGGER.debug('template_path: {}'.format(template_path))
 
-                        tpl = self.__fetch_form_html(new_form, kwargs)
+                        _template_path = os.path.join(template_path, input_form_name)
+                        _template_path = os.path.join(TPL_FOLDER, _template_path + '.tpl')
+
+                        if os.path.isfile(_template_path):
+                            new_form = {
+                                'template': _template_path,
+                                'get_handler': self._parse('get_handler')
+                            }
+
+                            self._forms.append(new_form)
+
+                            tpl = self.__fetch_form_html(new_form, kwargs)
+                            break
+                        else:
+                            template_path = os.path.dirname(template_path)
+
                     else:
                         tpl = '<p>' + AJAX_ERROR + NO_FORM_NAMED1 + data['url'] + NO_FORM_NAMED2 + '</p>'
 
@@ -200,7 +212,7 @@ class WebPages(PagesJsonData):
                             json_dict.update({'form': ''})
 
                 else:
-                    # LOGGER.debug("type(tpl) = " + str(type(tpl)))
+                    # LOGGER.debug('type(tpl): {}'.format(type(tpl)))
                     json_dict[form_key] = '<p>' + AJAX_ERROR + WRONG_FORMAT + '</p>'
             else:
                 json_dict[form_key] = '<p>' + AJAX_ERROR + NO_FORM + '</p>'
@@ -230,10 +242,10 @@ class WebPages(PagesJsonData):
 
         if get_access is not None and self.users.check_access(get_access):
             if get_handler is None:
-                # LOGGER.debug("form tpl = " + form['template'])
+                # LOGGER.debug('form tpl: {}'.format(form['template']))
                 return template(form['template'], **kwargs)
             else:
-                # LOGGER.debug("kwargs = " + str(kwargs))
+                # LOGGER.debug('kwargs: {}'.format(kwargs))
                 del kwargs['url']
                 return get_handler(**kwargs)
         else:

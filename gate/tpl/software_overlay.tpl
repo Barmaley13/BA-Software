@@ -79,16 +79,24 @@
             %# Does not matter what method we use because it triggers reboot
             %# AJAX
             $.post('', {action_method: 'post_upload'});
+
             %# Page Submit
-            %# $("<form action='/{{URL}}' method='post'><input type='hidden' name='action_method' value='post_upload'></form>").submit();
+            %# var update_form = $("<form action='/{{URL}}' method='post'><input type='hidden' name='action_method' value='post_upload'></form>");
+            %# $(document.body).append(update_form);
+            %# update_form.submit();
+
             window.location = window.location.protocol + "//" + window.location.hostname + '/logout';
         });
     %elif update_type in ('log_export', 'database_export'):
         $('#overlay_okay').click(function() {
             %# AJAX
             %# $.post('', {action_method: 'finish_{{update_type}}'});
+
             %# Page Submit
-            $("<form action='/{{URL}}' method='post'><input type='hidden' name='action_method' value='finish_{{update_type}}'></form>").submit();
+            var export_form = $("<form action='/{{URL}}' method='post'><input type='hidden' name='action_method' value='finish_{{update_type}}'></form>");
+            $(document.body).append(export_form);
+            export_form.submit();
+
             %# Update page content via ajax
             UpdatePage();
         });

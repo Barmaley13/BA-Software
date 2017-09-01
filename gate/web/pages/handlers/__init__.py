@@ -56,7 +56,8 @@ class WebHandlerBase(object):
         }
 
         action_method = request.forms.action_method.encode('ascii', 'ignore')
-        LOGGER.debug("action_method = " + action_method + ", cookie = " + str(cookie))
+        # LOGGER.debug('action_method: {}'.format(action_method))
+        # LOGGER.debug('cookie: {}'.format(cookie))
 
         if type(cookie) is dict and 'index' in cookie:
             address = cookie['index']

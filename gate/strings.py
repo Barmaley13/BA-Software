@@ -60,7 +60,7 @@ UPDATE_HEADERS = {
 }
 
 # Log/Database Export Progress #
-PROCESSING = 'Processing: '
+PROCESSING = 'Processing:'
 FAILED = ' Failed!'
 COMPLETE = ' is Complete!'
 CANCELLED = ' has been cancelled!'

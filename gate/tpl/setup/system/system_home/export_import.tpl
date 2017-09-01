@@ -58,7 +58,9 @@ function RemoveDatabase()
     if (removeConfirm)
     {
         %# Page Submit
-        $("<form action='/{{URL}}' method='post'><input type='hidden' name='action_method' value='remove_database'></form>").submit();
+        var remove_form = $("<form action='/{{URL}}' method='post'><input type='hidden' name='action_method' value='remove_database'></form>");
+        $(document.body).append(remove_form);
+        remove_form.submit();
     }
 }
 //--></script>
