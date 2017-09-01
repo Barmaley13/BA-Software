@@ -265,12 +265,14 @@ class WebHandler(WebHandlerBase):
 
         group = self._object.group(address)
         nodes = self._object.nodes(address)
+        node = self._object.node(address)
 
         if len(nodes):
             validate = True
             save_dict = dict()
             update_node = bool(request.forms.node_name)
             update_network = bool(request.forms.channel)
+            update_sensor_type = bool(request.forms.sensor_codes)
             update_enables = bool(request.forms.total_display)
             update_enables &= bool(request.forms.total_track)
             update_enables &= bool(request.forms.total_diagnostics)
@@ -292,32 +294,10 @@ class WebHandler(WebHandlerBase):
                 modbus_addr = request.forms.get('modbus_addr')
                 if modbus_addr:
                     modbus_addr = int(modbus_addr)
-                    node = nodes[0]
                     validate &= (modbus_addr not in self._manager.nodes.modbus_addresses() or
                                  modbus_addr == node['modbus_addr'])
                     if validate:
                         node['modbus_addr'] = modbus_addr
-                
-                # Sensor Type
-                sensor_codes = request.forms.sensor_codes
-                if sensor_codes:
-                    sensor_codes = yaml.safe_load(sensor_codes)
-                    # LOGGER.debug('sensor_codes: {}'.format(sensor_codes))
-
-                    if sensor_codes:
-                        node = nodes[0]
-                        sensor_type = list(node['sensor_type'])
-
-                        for data_field, sensor_code in sensor_codes.items():
-                            _position = int(data_field.split('_')[-1])
-                            _sensor_code = sensor_code.split('_')[-1][0]
-
-                            if _position < len(sensor_type):
-                                sensor_type[_position] = _sensor_code
-
-                        sensor_type = ''.join(sensor_type)
-                        save_dict['sensor_type'] = sensor_type
-                        # LOGGER.debug('sensor_type: {}'.format(sensor_type))
 
                 # Alarms
                 all_headers = group.read_headers('all', nodes)
@@ -328,8 +308,8 @@ class WebHandler(WebHandlerBase):
                     alarm_units = request.forms.get('alarm_units_' + header_name)
                     if alarm_units:
                         alarm_units = alarm_units.encode('ascii', 'ignore')
-                        for node in nodes:
-                            alarm_units = header.alarm_units(node, alarm_units)
+                        for _node in nodes:
+                            alarm_units = header.alarm_units(_node, alarm_units)
 
                     for alarm_type in ('min_alarm', 'max_alarm'):
                         # Alarm Enables
@@ -340,8 +320,8 @@ class WebHandler(WebHandlerBase):
                             if alarm_enables:
                                 if header_name in alarm_enables:
                                     # LOGGER.debug('{}_enable: {}'.format(alarm_type, alarm_enables[header_name]))
-                                    for node in nodes:
-                                        header.alarm_enable(node, alarm_type, alarm_enables[header_name])
+                                    for _node in nodes:
+                                        header.alarm_enable(_node, alarm_type, alarm_enables[header_name])
 
                         # Alarm Values
                         alarm_value = request.forms.get(alarm_type + '_value_' + header_name)
@@ -349,18 +329,16 @@ class WebHandler(WebHandlerBase):
                             # LOGGER.debug('{}_value: {}'.format(alarm_type, alarm_value))
                             alarm_value = float(alarm_value)
 
-                            for node in nodes:
+                            for _node in nodes:
                                 # Validate alarm values
-                                low_limit = alarm_units.get_min(node)
-                                high_limit = alarm_units.get_max(node)
+                                low_limit = alarm_units.get_min(_node)
+                                high_limit = alarm_units.get_max(_node)
                                 validate &= low_limit is not None and high_limit is not None
                                 if validate:
                                     validate &= (low_limit < alarm_value < high_limit)
                                     if validate:
                                         # Set alarm values
-                                        header.alarm_value(node, alarm_type, alarm_value)
-                                else:
-                                    validate = False
+                                        header.alarm_value(_node, alarm_type, alarm_value)
 
             if update_network:
                 save_dict['channel'] = int(request.forms.channel)
@@ -372,44 +350,67 @@ class WebHandler(WebHandlerBase):
                     save_dict['aes_key'] = request.forms.aes_key.encode('ascii', 'ignore').ljust(16)
                     validate &= (len(save_dict['aes_key']) <= 16)
 
+            if update_sensor_type:
+                sensor_codes = request.forms.sensor_codes
+                if sensor_codes:
+                    sensor_codes = yaml.safe_load(sensor_codes)
+                    LOGGER.debug('sensor_codes: {}'.format(sensor_codes))
+
+                    if sensor_codes:
+                        for _node in nodes:
+                            sensor_type = list(_node['sensor_type'])
+
+                            for data_field, sensor_code in sensor_codes.items():
+                                _position = int(data_field.split('_')[-1])
+                                _sensor_code = sensor_code.split('_')[-1][0]
+
+                                if _position < len(sensor_type):
+                                    sensor_type[_position] = _sensor_code
+
+                            sensor_type = ''.join(sensor_type)
+                            _save_dict = {'sensor_type': sensor_type}
+                            LOGGER.debug('sensor_type: {}'.format(sensor_type))
+
+                            self._manager.request_update(_save_dict, [_node])
+
+            if update_enables:
+                display = yaml.safe_load(request.forms.total_display)
+                track = yaml.safe_load(request.forms.total_track)
+                diagnostics = yaml.safe_load(request.forms.total_diagnostics)
+
+                update_dict = dict()
+                if display and track and diagnostics:
+                    enables_map = {
+                        'live_enables': display,
+                        'log_enables': track,
+                        'diag_enables': diagnostics
+                    }
+                    for enable_type, enable_dict in enables_map.items():
+                        update_dict[enable_type] = group.enables_masks(enable_type, enable_dict)
+                        # LOGGER.debug('{}: {}'.format(enable_type, enable_dict))
+                        # LOGGER.debug('{}: {}'.format(enable_type, update_dict[enable_type]))
+
+                update_enables = bool(len(update_dict))
+                if update_enables:
+                    if node['diag_enables'] != update_dict['diag_enables'][0]:
+                        # Update all nodes in the group if diagnostics changed
+                        _save_dict = {'diag_enables': update_dict.pop('diag_enables')}
+                        all_group_nodes = group.nodes.values()
+                        self._manager.request_update(_save_dict, all_group_nodes)
+
+                        # Refresh diagnostics of the whole group
+                        group.refresh()
+
+                update_enables = bool(len(update_dict))
+                if update_enables:
+                    # Update the rest of enables (if needed)
+                    save_dict.update(update_dict)
+
+                update_node |= update_enables
+
             return_dict['save_cookie'] = validate
 
             if validate:
-                if update_enables:
-                    display = yaml.safe_load(request.forms.total_display)
-                    track = yaml.safe_load(request.forms.total_track)
-                    diagnostics = yaml.safe_load(request.forms.total_diagnostics)
-
-                    update_dict = dict()
-                    if display and track and diagnostics:
-                        enables_map = {
-                            'live_enables': display,
-                            'log_enables': track,
-                            'diag_enables': diagnostics
-                        }
-                        for enable_type, enable_dict in enables_map.items():
-                            update_dict[enable_type] = group.enables_masks(enable_type, enable_dict)
-                            # LOGGER.debug('{}: {}'.format(enable_type, enable_dict))
-                            # LOGGER.debug('{}: {}'.format(enable_type, update_dict[enable_type]))
-
-                    update_enables = bool(len(update_dict))
-                    if update_enables:
-                        node = nodes[0]
-                        if node['diag_enables'] != update_dict['diag_enables'][0]:
-                            # Update all nodes in the group if diagnostics changed
-                            diag_dict = {'diag_enables': update_dict.pop('diag_enables')}
-                            self._manager.request_update(diag_dict, group.nodes.values())
-
-                            # Refresh diagnostics of the whole group
-                            group.refresh()
-
-                    update_enables = bool(len(update_dict))
-                    if update_enables:
-                        # Update the rest of enables (if needed)
-                        save_dict.update(update_dict)
-
-                    update_node |= update_enables
-
                 if update_node or update_network:
                     self._manager.request_update(save_dict, nodes)
 
