@@ -214,13 +214,21 @@ class NodeBase(DatabaseDict):
         """ Detects old versions of either software or firmware """
         for ware_type in ('firmware', 'software'):
             if ware_type in update_dict:
-                current_version = StrictVersion(find_version(update_dict[ware_type]))
-                min_version = StrictVersion(find_version(MIN_VERSION_MAP[ware_type]))
+                current_version_str = find_version(update_dict[ware_type])
                 min_version_error = MIN_VERSION_ERROR_MAP[ware_type]
-                if current_version < min_version:
-                    LOGGER.debug('Current ' + ware_type + ' version: ' + str(current_version))
-                    LOGGER.debug('Min ' + ware_type + ' version: ' + str(min_version))
+
+                if not len(current_version_str):
                     self.error.set_error('generic', min_version_error)
 
                 else:
-                    self.error.clear_error('generic', min_version_error)
+                    current_version = StrictVersion(current_version_str)
+                    min_version = StrictVersion(find_version(MIN_VERSION_MAP[ware_type]))
+
+                    if current_version < min_version:
+                        self.error.set_error('generic', min_version_error)
+
+                        LOGGER.debug('Current {} version: {}'.format(ware_type, current_version))
+                        LOGGER.debug('Min {} version: {}'.format(ware_type, min_version))
+
+                    else:
+                        self.error.clear_error('generic', min_version_error)

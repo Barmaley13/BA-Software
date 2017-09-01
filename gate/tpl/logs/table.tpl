@@ -35,6 +35,7 @@
     %# Header Data
     <tbody>
 
+    %log_headers = group.log_headers()
     %selected_headers = group.log_header(cookie)
     %for net_addr, node in group.nodes.items():
         <tr>
@@ -42,16 +43,16 @@
             <td>{{node['name']}}</td>
             <td>{{node['mac']}}</td>          
 
-            %log_headers = group.log_headers([node])
             %for header_name, header in log_headers.items():
                 <td>
+                    %node_headers = {}
                     %if net_addr in selected_headers.keys():
                         %node_headers = selected_headers[net_addr]
-                        %if header.enables(node, 'log_enables'):
-                            %check_mark = bool(header_name in node_headers.keys())
-                            <input type='checkbox' name="log_{{node['net_addr']}}"
-                            value="{{header_name}}" onclick="GetLogData()" {{checked(check_mark)}} >
-                        %end
+                    %end
+                    %if header.enables(node, 'log_enables'):
+                        %check_mark = bool(header_name in node_headers.keys())
+                        <input type='checkbox' name="log_{{node['net_addr']}}"
+                        value="{{header_name}}" onclick="GetLogData()" {{checked(check_mark)}} >
                     %end
                 </td>
             %end

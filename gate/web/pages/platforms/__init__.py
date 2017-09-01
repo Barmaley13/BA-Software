@@ -650,9 +650,7 @@ class WebPlatforms(object):
 
     # Constants #
     def constants_js_html(self, address):
-        """
-        Generates constants js that validates constants
-        """
+        """ Generates constants js that validates constants """
         constants_js, constants_html = '', ''
 
         nodes = self.nodes(address)
@@ -669,7 +667,7 @@ class WebPlatforms(object):
             constants_js = 'else '.join(js_validation_list)
 
             constants_html = ''
-            for header in all_headers:
+            for header in all_headers.values():
                 if header.external_constants():
                     header_html = _constants_html(header, nodes)
                     constants_html += bottle.template(

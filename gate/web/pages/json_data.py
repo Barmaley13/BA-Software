@@ -223,15 +223,19 @@ class PagesJsonData(StatusIcons):
                     node_json = {'name': node['name']}
 
                     # Data Entry Hack for 'Multiple' Headers #
+                    live_header = None
                     if 'multiple' in group_header['internal_name']:
                         live_headers = group.live_headers([node]).values()
                         # live_headers = node.read_headers('display')
 
-                        live_header = live_headers[group_header['header_position']]
-                        # LOGGER.debug('live_header: {}'.format(live_header['name']))
+                        header_position = group_header['header_position']
+                        if header_position < len(live_headers):
+                            live_header = live_headers[header_position]
 
-                    else:
+                    if live_header is None:
                         live_header = group_header
+
+                    # LOGGER.debug('live_header: {}'.format(live_header['name']))
 
                     live_units = node.live_units(cookie, live_header)
                     # LOGGER.debug('live_units: {}'.format(live_units['name']))
@@ -327,18 +331,20 @@ class PagesJsonData(StatusIcons):
                     # Node Data #
                     node_json['data'] = {}
                     group_headers = group.read_headers('display')
-                    node_headers = node.read_headers('display')
+                    node_headers = node.read_headers('display').values()
                     for _group_header_name, _group_header in group_headers.items():
                         group_log_units = group.log_table_units(cookie, _group_header)
 
-                        node_header = node_headers.values()[_group_header['header_position']]
-                        node_log_units = node.log_table_units(cookie, node_header)
-                        for unit_index, group_log_unit_name in enumerate(group_log_units.keys()):
-                            data_name = _group_header_name + '_' + group_log_unit_name
+                        _group_header_position = _group_header['header_position']
+                        if _group_header_position < len(node_headers):
+                            node_header = node_headers[_group_header_position]
+                            node_log_units = node.log_table_units(cookie, node_header)
+                            for unit_index, group_log_unit_name in enumerate(group_log_units.keys()):
+                                data_name = _group_header_name + '_' + group_log_unit_name
 
-                            node_log_unit = node_log_units.values()[unit_index]
-                            current_value = node_log_unit.get_string(node)
-                            node_json['data'][data_name] = current_value
+                                node_log_unit = node_log_units.values()[unit_index]
+                                current_value = node_log_unit.get_string(node)
+                                node_json['data'][data_name] = current_value
 
                     json_dict['nodes'].append(node_json)
 
