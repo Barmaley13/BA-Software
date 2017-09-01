@@ -213,38 +213,38 @@ class PagesJsonData(StatusIcons):
         if len(group.nodes):
             cookie = self.get_cookie()
 
-            live_header = group.live_header(cookie)
+            group_header = group.live_header(cookie)
+            # LOGGER.debug('')
+            # LOGGER.debug('group_header: {}'.format(group_header['name']))
 
             for net_addr, node in group.nodes.items():
-                # if live_header is None:
-                #     live_headers = group.live_headers([node])
-                #     if len(live_headers):
-                #         live_header = live_headers.values()[0]
-
-                if live_header is not None:
+                # LOGGER.debug('node: {}'.format(node['name']))
+                if group_header is not None:
                     node_json = {'name': node['name']}
 
                     # Data Entry Hack for 'Multiple' Headers #
-                    group_header_name = live_header['internal_name']
-                    if 'multiple' in group_header_name:
-                        live_headers = group.live_headers([node])
-                        live_header = live_headers.values()[live_header['header_position']]
+                    if 'multiple' in group_header['internal_name']:
+                        live_headers = group.live_headers([node]).values()
+                        # live_headers = node.read_headers('display')
 
-                    # LOGGER.debug('live_header: {}'.format(live_header['name']))
+                        live_header = live_headers[group_header['header_position']]
+                        # LOGGER.debug('live_header: {}'.format(live_header['name']))
+
+                    else:
+                        live_header = group_header
 
                     live_units = node.live_units(cookie, live_header)
+                    # LOGGER.debug('live_units: {}'.format(live_units['name']))
 
                     # Warning #
                     warning = ''
                     bar_graph_enable = True
-
-                    live_header_name = live_header['name'] + ' '
                     if not live_header.enables(node, 'const_set'):
                         warning += PLEASE_SET + node['name'] + ' ' + CONSTANTS
-                        warning += TO_DISPLAY1 + live_header_name + TO_DISPLAY2
+                        warning += TO_DISPLAY1 + live_header['name'] + ' ' + TO_DISPLAY2
                     elif not live_header.enables(node, 'live_enables'):
-                        warning += PLEASE_SET + live_header_name + DISPLAY_ENABLES
-                        warning += TO_DISPLAY1 + live_header_name + TO_DISPLAY2
+                        warning += PLEASE_SET + live_header['name'] + ' ' + DISPLAY_ENABLES
+                        warning += TO_DISPLAY1 + live_header['name'] + ' ' + TO_DISPLAY2
                     else:
                         switch_state = None
                         if live_units['internal_name'] in ('floating_switch', 'switch'):
@@ -264,6 +264,8 @@ class PagesJsonData(StatusIcons):
 
                     # Bar Graph Data #
                     current_value = live_units.get_string(node)
+                    # LOGGER.debug('current_value: {}'.format(current_value))
+
                     bar_graph_enable &= bool(current_value is not None)
 
                     if bar_graph_enable:
@@ -326,13 +328,13 @@ class PagesJsonData(StatusIcons):
                     node_json['data'] = {}
                     group_headers = group.read_headers('display')
                     node_headers = node.read_headers('display')
-                    for group_header_name, group_header in group_headers.items():
-                        group_log_units = group.log_table_units(cookie, group_header)
+                    for _group_header_name, _group_header in group_headers.items():
+                        group_log_units = group.log_table_units(cookie, _group_header)
 
-                        node_header = node_headers.values()[group_header['header_position']]
+                        node_header = node_headers.values()[_group_header['header_position']]
                         node_log_units = node.log_table_units(cookie, node_header)
                         for unit_index, group_log_unit_name in enumerate(group_log_units.keys()):
-                            data_name = group_header_name + '_' + group_log_unit_name
+                            data_name = _group_header_name + '_' + group_log_unit_name
 
                             node_log_unit = node_log_units.values()[unit_index]
                             current_value = node_log_unit.get_string(node)

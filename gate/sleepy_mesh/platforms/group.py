@@ -110,9 +110,10 @@ class Group(PlatformBase, HeaderMixin):
             nodes = self.nodes.values()
 
         first_node = nodes[0]
-        sensor_type = list(first_node['sensor_type'])
+        sensor_type = first_node['sensor_type']
 
         if len(nodes) > 1:
+            sensor_type = list(sensor_type)
             for node in nodes:
                 for sensor_index, sensor_code in enumerate(sensor_type):
                     if node['sensor_type'][sensor_index] != sensor_code:
