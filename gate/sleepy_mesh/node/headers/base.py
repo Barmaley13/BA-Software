@@ -246,11 +246,14 @@ class Headers(DatabaseDict):
 
         return output
 
-    def refresh(self, provider):
+    def refresh(self, provider, reverse=False):
         """ Refreshes diagnostics fields """
         for header_group in self._headers:
             for header_key, header in header_group.items():
-                header['diagnostics'] = header.enables(provider, 'diag_enables')
+                if reverse:
+                    header.enables(provider, 'diag_enables', header['diagnostics'])
+                else:
+                    header['diagnostics'] = header.enables(provider, 'diag_enables')
 
     # def rename_headers(self, sensor_type):
     #     """ Renames headers after changing sensor code of a particular node """

@@ -93,7 +93,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
     def resume_scheduler(self, complete_callback=None):
         """ Resume scheduler either after stopping (or silencing) """
-        LOGGER.debug('Resuming Scheduler!')
+        # LOGGER.debug('Resuming Scheduler!')
 
         self.__save_complete_callback = complete_callback
         self.bridge.base_node_ucast('smn__autopilot', True)
@@ -105,7 +105,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
     def silence_scheduler(self, complete_callback=None):
         """ Silences base scheduler """
-        LOGGER.debug('Silencing Scheduler!')
+        # LOGGER.debug('Silencing Scheduler!')
 
         self.__save_complete_callback = complete_callback
         self.bridge.base_node_ucast('smn__autopilot_notify', False)
@@ -116,7 +116,7 @@ class SleepyMeshScheduler(SleepyMeshNetwork):
 
     def stop_scheduler(self, complete_callback=None):
         """ Stops Scheduler completely """
-        LOGGER.debug('Stopping Scheduler!')
+        # LOGGER.debug('Stopping Scheduler!')
 
         self.__save_complete_callback = complete_callback
         self.bridge.base_node_ucast('smn__autopilot', False)

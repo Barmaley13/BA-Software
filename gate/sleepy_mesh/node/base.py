@@ -96,6 +96,7 @@ class NodeBase(DatabaseDict):
         self.headers = None
         if 'raw_platform' in input_dict:
             self.headers = generate_node_headers(input_dict['raw_platform'])
+            self.headers.refresh(self, reverse=True)
             input_dict['sensor_type'] = generate_sensor_types(input_dict['raw_platform'])
 
         node_defaults = {}
