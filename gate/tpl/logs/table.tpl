@@ -35,7 +35,6 @@
     %# Header Data
     <tbody>
 
-    %log_headers = group.log_headers()
     %selected_headers = group.log_header(cookie)
     %for net_addr, node in group.nodes.items():
         <tr>
@@ -43,6 +42,7 @@
             <td>{{node['name']}}</td>
             <td>{{node['mac']}}</td>          
 
+            %log_headers = group.log_headers([node])
             %for header_name, header in log_headers.items():
                 <td>
                     %node_headers = {}

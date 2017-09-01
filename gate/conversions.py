@@ -368,17 +368,20 @@ def fetch_item(item_dict, item_index):
         if item_index < len(item_dict):
             output = item_dict.values()[item_index]
         else:
-            LOGGER.error("No such unit index '{}' during 'fetch_item' execution!".format(item_index))
+            LOGGER.warning(
+                "No such unit index '{}' during 'fetch_item' execution!".format(item_index))
 
     elif item_type in (str, unicode):
         unit_key = item_index.encode('ascii', 'ignore')
         if unit_key in item_dict.keys():
             output = item_dict[unit_key]
         else:
-            LOGGER.error("No such unit key '{}' during 'fetch_item' execution!".format(unit_key))
+            LOGGER.warning(
+                "No such unit key '{}' during 'fetch_item' execution!".format(unit_key))
 
     else:
-        LOGGER.error("Wrong item type: '{}' during 'fetch_item' execution!".format(item_type))
+        LOGGER.warning(
+            "Wrong item type: '{}' during 'fetch_item' execution!".format(item_type))
 
     return output
 
