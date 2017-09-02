@@ -28,24 +28,25 @@
                 <option value="1" {{selected(register_order)}}>{{REGISTER_ORDER[1]}}</option>
             </select>
         </p>
-    
-    <p><b>Modbus Units</b><p>
+
     %active_platforms = pages.platforms.active_platforms()
     %for platform_name, platform in active_platforms.items():
-        %if len(active_platforms) > 1:
-            <p>{{pages.platforms[platform_name]['name']}}</p>
-        %end
-        %display_headers = platform.read_headers('display')
-        %for header_name, header in display_headers.items():
-            <p>{{header['name']}}:
-                <select name="{{platform_name}}_{{group_name}}_{{header_name}}_units" >
-                    %for unit_name, unit_value in header.unit_list.items():
-                        <option value="{{unit_name}}" {{selected(unit_value == header.modbus_units())}}>
-                            {{unit_value['measuring_units']}}
-                        </option>
-                    %end
-                </select>
-            </p>
+        %for group_name, group in platform.groups.items():
+            %if group_name != 'inactive_group':
+                <p><b>Modbus Units - {{platform['name']}} - {{group['name']}}</b><p>
+                %display_headers = group.read_headers('display')
+                %for header_name, header in display_headers.items():
+                    <p>{{header['name']}}:
+                        <select name='{{platform_name}}_{{group_name}}_{{header_name}}_units' >
+                            %for unit_name, unit_value in header.unit_list.items():
+                                <option value='{{unit_name}}' {{selected(unit_value == header.modbus_units())}}>
+                                    {{unit_value['measuring_units']}}
+                                </option>
+                            %end
+                        </select>
+                    </p>
+                %end
+            %end
         %end
     %end
 
