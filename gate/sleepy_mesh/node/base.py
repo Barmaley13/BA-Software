@@ -96,7 +96,8 @@ class NodeBase(DatabaseDict):
         self.headers = None
         if 'raw_platform' in input_dict:
             self.headers = generate_node_headers(input_dict['raw_platform'])
-            self.headers.refresh(self, reverse=True)
+            # Can not refresh here since node is not initialized yet
+            # self.headers.refresh(self, reverse=True)
             input_dict['sensor_type'] = generate_sensor_types(input_dict['raw_platform'])
 
         node_defaults = {}
@@ -133,11 +134,16 @@ class NodeBase(DatabaseDict):
             defaults=node_defaults
         )
 
+        # Refresh Headers (if needed)
+        if 'raw_platform' in input_dict:
+            self.headers.refresh(self, reverse=True)
+
         # Load Headers
         if self.headers is None and self['type'] == 'node':
             if 'raw_platform' in self._main:
-                self.headers = generate_node_headers(self['raw_platform'])
-                self.headers.refresh(self)
+                if self['raw_platform'] is not None:
+                    self.headers = generate_node_headers(self['raw_platform'])
+                    self.headers.refresh(self)
 
         self.update_dict = UpdateDict(NODE_UPDATE_FIELDS + NETWORK_UPDATE_FIELDS)
         self.error = error.NodeError(system_settings=self.system_settings, db_file=error_db_file)
